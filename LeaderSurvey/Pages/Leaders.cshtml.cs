@@ -7,6 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Linq;
 
 
 namespace LeaderSurvey.Pages
@@ -18,19 +21,17 @@ namespace LeaderSurvey.Pages
         public LeadersModel(ApplicationDbContext context)
         {
             _context = context;
-            // Initialize collections to empty lists to avoid null reference exceptions
             Leaders = new List<Leader>();
             NewLeader = new InputModel { Name = "", Area = "" };
         }
 
-        // Add required modifier to non-nullable properties
         public required List<Leader> Leaders { get; set; }
+        
         [BindProperty]
         public required InputModel NewLeader { get; set; }
+
         [BindProperty]
-        public Leader SelectedLeader { get; set; } = new Leader { Name = "", Area = "" };
-        [TempData]
-        public string? StatusMessage { get; set; }  // Make nullable since it's optional
+        public Leader SelectedLeader { get; set; } = default!;
 
         public class InputModel
         {
@@ -38,86 +39,87 @@ namespace LeaderSurvey.Pages
             [Display(Name = "Full Name")]
             [StringLength(100, MinimumLength = 2, ErrorMessage = "Name must be between 2 and 100 characters")]
             [RegularExpression(@"^[a-zA-Z\s-']+$", ErrorMessage = "Name can only contain letters, spaces, hyphens and apostrophes")]
-            public required string Name { get; set; }
+            public string Name { get; set; } = string.Empty;
             
             [Required(ErrorMessage = "Work area is required")]
             [Display(Name = "Work Area")]
-            public required string Area { get; set; }
+            public string Area { get; set; } = string.Empty;
         }
 
-        public async Task OnGetAsync(int? id)
+        public async Task OnGetAsync()
         {
-            Leaders = await _context.Leaders.ToListAsync();
-            
-            // Initialize properties to avoid null reference when binding
-            NewLeader = new InputModel { Name = "", Area = "" };
-            
-            if (id.HasValue)
-            {
-                SelectedLeader = await _context.Leaders.FirstOrDefaultAsync(m => m.Id == id) ?? new Leader { Name = "", Area = "" };
-            }
-            else
-            {
-                SelectedLeader = new Leader { Name = "", Area = "" };
-            }
+            Leaders = await _context.Leaders.OrderBy(l => l.Name).ToListAsync();
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync([FromBody] JsonElement body)
         {
             try 
             {
-                // Debug line to check what's coming in
-                var isValid = ModelState.IsValid;
-                var modelStateErrors = string.Join("; ", ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage));
+                // Extract the values from the JSON body
+                var newLeader = body.GetProperty("newLeader");
+                var name = newLeader.GetProperty("name").GetString()?.Trim();
+                var area = newLeader.GetProperty("area").GetString()?.Trim();
 
-                if (!isValid)
+                // Clear existing ModelState errors
+                ModelState.Clear();
+
+                // Validate the input
+                if (string.IsNullOrWhiteSpace(name))
                 {
-                    Leaders = await _context.Leaders.ToListAsync();
-                    StatusMessage = $"Validation errors: {modelStateErrors}";
-                    return Page();
+                    ModelState.AddModelError("NewLeader.Name", "Leader name is required");
+                }
+                if (string.IsNullOrWhiteSpace(area))
+                {
+                    ModelState.AddModelError("NewLeader.Area", "Work area is required");
                 }
 
-                // Sanitize input
-                var sanitizedName = NewLeader.Name?.Trim().Replace("  ", " ") ?? string.Empty;
-                var sanitizedArea = NewLeader.Area?.Trim() ?? string.Empty;
-
-                if (string.IsNullOrWhiteSpace(sanitizedName) || string.IsNullOrWhiteSpace(sanitizedArea))
+                // Check if the model is valid
+                if (!ModelState.IsValid)
                 {
-                    ModelState.AddModelError(string.Empty, "Name and Area are required");
-                    Leaders = await _context.Leaders.ToListAsync();
-                    return Page();
+                    var errors = string.Join(", ", ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage));
+                    return new JsonResult(new { 
+                        success = false, 
+                        message = errors 
+                    });
                 }
 
-                // Check if leader with same name already exists
+                // Check for existing leader
                 var existingLeader = await _context.Leaders
-                    .FirstOrDefaultAsync(l => l.Name.ToLower() == sanitizedName.ToLower());
+                    .FirstOrDefaultAsync(l => l.Name.ToLower() == name.ToLower());
                 
                 if (existingLeader != null)
                 {
-                    ModelState.AddModelError("NewLeader.Name", "A leader with this name already exists");
-                    Leaders = await _context.Leaders.ToListAsync();
-                    return Page();
+                    return new JsonResult(new { 
+                        success = false, 
+                        message = "A leader with this name already exists" 
+                    });
                 }
 
+                // Create and save the new leader
                 var leader = new Leader 
                 { 
-                    Name = sanitizedName,
-                    Area = sanitizedArea
+                    Name = name,
+                    Area = area
                 };
 
                 _context.Leaders.Add(leader);
                 await _context.SaveChangesAsync();
-                
-                StatusMessage = "Leader was successfully added!";
-                return RedirectToPage();
+
+                return new JsonResult(new { 
+                    success = true, 
+                    id = leader.Id,
+                    name = leader.Name,
+                    area = leader.Area
+                });
             }
             catch (Exception ex) 
             {
-                Leaders = await _context.Leaders.ToListAsync();
-                StatusMessage = $"An error occurred: {ex.Message}";
-                return Page();
+                return new JsonResult(new { 
+                    success = false, 
+                    message = $"Failed to save leader: {ex.Message}" 
+                });
             }
         }
 
@@ -136,11 +138,17 @@ namespace LeaderSurvey.Pages
         {
             if (!ModelState.IsValid)
             {
-                // If model state is invalid, return to the page with validation errors
                 return Page();
             }
 
-            _context.Attach(SelectedLeader).State = EntityState.Modified;
+            var leaderToUpdate = await _context.Leaders.FindAsync(SelectedLeader.Id);
+            if (leaderToUpdate == null)
+            {
+                return NotFound();
+            }
+
+            leaderToUpdate.Name = SelectedLeader.Name;
+            leaderToUpdate.Area = SelectedLeader.Area;
 
             try
             {

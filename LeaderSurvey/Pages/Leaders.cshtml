@@ -7,22 +7,20 @@
 
 <h2 class="page-title"><i class="bi bi-people-fill"></i> Leaders Management</h2>
 
-<div class="container">
-    <div class="filters-section">
-        <div class="filter-group">
-            <select id="areaFilter" class="cfa-select" onchange="applyFilters()">
-                <option value="">Filter by Area</option>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="filters-section">
+            <select id="areaFilter" class="form-select" aria-label="Filter by area">
+                <option value="">All Areas</option>
                 <option value="Drive">Drive</option>
                 <option value="Front">Front</option>
                 <option value="Kitchen">Kitchen</option>
                 <option value="Hospitality">Hospitality</option>
             </select>
         </div>
-        <div class="filter-group">
-            <button class="cfa-btn" onclick="showAddLeaderModal()">
-                <i class="bi bi-person-plus-fill"></i> Add New Leader
-            </button>
-        </div>
+        <button class="btn btn-primary" onclick="showAddLeaderModal()">
+            <i class="bi bi-person-plus-fill"></i> Add New Leader
+        </button>
     </div>
 
     <div class="table-responsive">
@@ -35,24 +33,27 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var leader in Model.Leaders)
+                @if (Model.Leaders != null && Model.Leaders.Any())
                 {
-                    <tr data-id="@leader.Id">
-                        <td>@leader.Name</td>
-                        <td>
-                            <span class="badge area-badge area-@leader.Area.ToLower()">@leader.Area</span>
-                        </td>
-                        <td>
-                            <div class="action-buttons">
-                                <button class="btn btn-sm btn-outline-primary me-2" onclick="editLeader(@leader.Id)">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="deleteLeader(@leader.Id, '@leader.Name')">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                    @foreach (var leader in Model.Leaders)
+                    {
+                        <tr data-id="@leader.Id">
+                            <td>@leader.Name</td>
+                            <td>
+                                <span class="badge area-badge area-@leader.Area.ToLower()">@leader.Area</span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-outline-primary me-2" onclick="editLeader(@leader.Id)">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteLeader(@leader.Id, '@leader.Name')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
                 }
             </tbody>
         </table>
@@ -116,21 +117,76 @@
                 }
 
                 try {
-                    const formData = new FormData(form);
+                    const name = document.getElementById('Name').value.trim();
+                    const area = document.getElementById('Area').value.trim();
+
+                    if (!name || !area) {
+                        showNotification('Name and Area are required', 'error');
+                        return;
+                    }
+
+                    console.log('Submitting form with:', { name, area });
+
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                    
                     const response = await fetch('?handler=Post', {
                         method: 'POST',
                         headers: {
-                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
                         },
-                        body: formData
+                        body: JSON.stringify({
+                            newLeader: {
+                                name: name,
+                                area: area
+                            }
+                        })
                     });
 
-                    if (response.ok) {
+                    const responseData = await response.json();
+                    console.log('Response data:', responseData);
+
+                    if (responseData.success) {
+                        // Ensure table exists and has proper structure
+                        let table = document.getElementById('leadersTable');
+                        if (!table) {
+                            table = createLeadersTable();
+                            document.querySelector('.table-responsive').appendChild(table);
+                        }
+
+                        let tbody = table.querySelector('tbody');
+                        if (!tbody) {
+                            tbody = document.createElement('tbody');
+                            table.appendChild(tbody);
+                        }
+
+                        // Create and append the new row
+                        const newRow = document.createElement('tr');
+                        newRow.dataset.id = responseData.id;
+                        newRow.innerHTML = `
+                            <td>${responseData.name}</td>
+                            <td><span class="badge area-badge area-${responseData.area.toLowerCase()}">${responseData.area}</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-outline-primary me-2" onclick="editLeader(${responseData.id})">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteLeader(${responseData.id}, '${responseData.name}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        `;
+                        tbody.appendChild(newRow);
+                        
+                        // Reset form and close modal
+                        form.reset();
+                        form.classList.remove('was-validated');
                         leaderModal.hide();
-                        window.location.reload();
+                        
                         showNotification('My Pleasure! Leader saved successfully', 'success');
                     } else {
-                        showNotification('Failed to save leader', 'error');
+                        showNotification(responseData.message || 'Failed to save leader', 'error');
                     }
                 } catch (error) {
                     console.error('Error:', error);
@@ -196,6 +252,23 @@
                     }
                 });
             });
+        }
+
+        function createLeadersTable() {
+            const table = document.createElement('table');
+            table.id = 'leadersTable';
+            table.className = 'table table-cfa';
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Area</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            `;
+            return table;
         }
     </script>
 }
