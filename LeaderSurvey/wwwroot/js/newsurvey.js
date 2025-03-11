@@ -1,12 +1,8 @@
 // Global variables
 let questions = [];
-let questionModal = null;
 
 // Initialize everything when the document is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the Bootstrap modal
-    questionModal = new bootstrap.Modal(document.getElementById('questionModal'));
-    
     // Initialize Sortable
     if (document.getElementById('questionsContainer')) {
         new Sortable(document.getElementById('questionsContainer'), {
@@ -28,67 +24,90 @@ document.addEventListener('DOMContentLoaded', function() {
             return true;
         });
     }
+
+    updateQuestionCounter();
 });
 
-// Function to show the add question modal
-window.showAddQuestionModal = function() {
+window.addNewQuestionRow = function() {
     if (questions.length >= 10) {
         alert('Maximum 10 questions allowed');
         return;
     }
+
+    const tbody = document.getElementById('questionsContainer');
+    const questionNumber = questions.length + 1;
     
-    document.getElementById('questionModalLabel').textContent = 'Add New Question';
-    document.getElementById('questionForm').reset();
-    document.getElementById('questionIndex').value = '';
-    questionModal.show();
+    const tr = document.createElement('tr');
+    tr.dataset.isNew = 'true';
+    tr.innerHTML = `
+        <td>${questionNumber}</td>
+        <td>
+            <input type="text" class="form-control" placeholder="Enter question text" required>
+        </td>
+        <td>
+            <select class="form-select">
+                <option value="yesno">Yes/No</option>
+                <option value="score">Score (0-10)</option>
+            </select>
+        </td>
+        <td>
+            <button type="button" class="btn btn-sm btn-success me-2" onclick="saveQuestionRow(this)">
+                <i class="bi bi-check-lg"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-danger" onclick="removeQuestionRow(this)">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </td>
+        <td>
+            <i class="bi bi-grip-vertical drag-handle"></i>
+        </td>
+    `;
+    
+    tbody.appendChild(tr);
+    tr.querySelector('input').focus();
+    
+    // Disable the Add Question button while editing
+    document.getElementById('addQuestionBtn').disabled = true;
 };
 
-// Function to save the question
-window.saveQuestion = function() {
-    const form = document.getElementById('questionForm');
+window.saveQuestionRow = function(button) {
+    const row = button.closest('tr');
+    const input = row.querySelector('input');
+    const select = row.querySelector('select');
     
-    if (!form.checkValidity()) {
-        form.classList.add('was-validated');
+    if (!input.value.trim()) {
+        input.classList.add('is-invalid');
         return;
     }
 
-    const questionText = document.getElementById('questionText').value.trim();
-    const questionType = document.getElementById('questionType').value;
-    const questionIndex = document.getElementById('questionIndex').value;
-
-    if (questionIndex === '') {
+    const questionText = input.value.trim();
+    const questionType = select.value;
+    
+    if (row.dataset.isNew === 'true') {
         // Add new question
-        addQuestionToTable({
+        questions.push({
             text: questionText,
             type: questionType
         });
     } else {
         // Update existing question
-        updateQuestionInTable(parseInt(questionIndex), {
+        const index = Array.from(row.parentNode.children).indexOf(row);
+        questions[index] = {
             text: questionText,
             type: questionType
-        });
+        };
     }
 
-    questionModal.hide();
-    form.classList.remove('was-validated');
-};
-
-function addQuestionToTable(question) {
-    const questionNumber = questions.length + 1;
-    questions.push(question);
-
-    const tbody = document.getElementById('questionsContainer');
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td>${questionNumber}</td>
-        <td>${question.text}</td>
-        <td>${question.type === 'yesno' ? 'Yes/No' : 'Score (0-10)'}</td>
+    // Convert row to static display
+    row.innerHTML = `
+        <td>${row.cells[0].textContent}</td>
+        <td>${questionText}</td>
+        <td>${questionType === 'yesno' ? 'Yes/No' : 'Score (0-10)'}</td>
         <td>
-            <button type="button" class="btn btn-sm btn-outline-primary me-2" onclick="editQuestion(${questions.length - 1})">
+            <button type="button" class="btn btn-sm btn-outline-primary me-2" onclick="editQuestionRow(this)">
                 <i class="bi bi-pencil"></i>
             </button>
-            <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteQuestion(${questions.length - 1})">
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteQuestion(this)">
                 <i class="bi bi-trash"></i>
             </button>
         </td>
@@ -96,52 +115,94 @@ function addQuestionToTable(question) {
             <i class="bi bi-grip-vertical drag-handle"></i>
         </td>
     `;
-    tbody.appendChild(tr);
+
+    // Re-enable the Add Question button
+    document.getElementById('addQuestionBtn').disabled = false;
     
     updateQuestionCounter();
     updateQuestionsInput();
-}
-
-window.editQuestion = function(index) {
-    const question = questions[index];
-    document.getElementById('questionModalLabel').textContent = 'Edit Question';
-    document.getElementById('questionText').value = question.text;
-    document.getElementById('questionType').value = question.type;
-    document.getElementById('questionIndex').value = index;
-    questionModal.show();
 };
 
-window.deleteQuestion = function(index) {
+window.editQuestionRow = function(button) {
+    const row = button.closest('tr');
+    const index = Array.from(row.parentNode.children).indexOf(row);
+    const question = questions[index];
+    
+    row.innerHTML = `
+        <td>${row.cells[0].textContent}</td>
+        <td>
+            <input type="text" class="form-control" value="${question.text}" required>
+        </td>
+        <td>
+            <select class="form-select">
+                <option value="yesno" ${question.type === 'yesno' ? 'selected' : ''}>Yes/No</option>
+                <option value="score" ${question.type === 'score' ? 'selected' : ''}>Score (0-10)</option>
+            </select>
+        </td>
+        <td>
+            <button type="button" class="btn btn-sm btn-success me-2" onclick="saveQuestionRow(this)">
+                <i class="bi bi-check-lg"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-danger" onclick="cancelEdit(this, ${index})">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </td>
+        <td>
+            <i class="bi bi-grip-vertical drag-handle"></i>
+        </td>
+    `;
+    
+    row.querySelector('input').focus();
+    document.getElementById('addQuestionBtn').disabled = true;
+};
+
+window.cancelEdit = function(button, index) {
+    const row = button.closest('tr');
+    const question = questions[index];
+    
+    row.innerHTML = `
+        <td>${row.cells[0].textContent}</td>
+        <td>${question.text}</td>
+        <td>${question.type === 'yesno' ? 'Yes/No' : 'Score (0-10)'}</td>
+        <td>
+            <button type="button" class="btn btn-sm btn-outline-primary me-2" onclick="editQuestionRow(this)">
+                <i class="bi bi-pencil"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteQuestion(this)">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+        <td>
+            <i class="bi bi-grip-vertical drag-handle"></i>
+        </td>
+    `;
+    
+    document.getElementById('addQuestionBtn').disabled = false;
+};
+
+window.removeQuestionRow = function(button) {
+    const row = button.closest('tr');
+    row.remove();
+    document.getElementById('addQuestionBtn').disabled = false;
+    updateQuestionCounter();
+};
+
+window.deleteQuestion = function(button) {
     if (confirm('Are you sure you want to delete this question?')) {
+        const row = button.closest('tr');
+        const index = Array.from(row.parentNode.children).indexOf(row);
         questions.splice(index, 1);
-        updateQuestionTable();
+        row.remove();
+        updateQuestionNumbers();
         updateQuestionCounter();
         updateQuestionsInput();
     }
 };
 
-function updateQuestionTable() {
-    const tbody = document.getElementById('questionsContainer');
-    tbody.innerHTML = '';
-    questions.forEach((question, index) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${question.text}</td>
-            <td>${question.type === 'yesno' ? 'Yes/No' : 'Score (0-10)'}</td>
-            <td>
-                <button type="button" class="btn btn-sm btn-outline-primary me-2" onclick="editQuestion(${index})">
-                    <i class="bi bi-pencil"></i>
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteQuestion(${index})">
-                    <i class="bi bi-trash"></i>
-                </button>
-            </td>
-            <td>
-                <i class="bi bi-grip-vertical drag-handle"></i>
-            </td>
-        `;
-        tbody.appendChild(tr);
+function updateQuestionNumbers() {
+    const rows = document.querySelectorAll('#questionsContainer tr');
+    rows.forEach((row, index) => {
+        row.cells[0].textContent = (index + 1).toString();
     });
 }
 
@@ -160,11 +221,4 @@ function updateQuestionsInput() {
         document.getElementById('surveyForm').appendChild(questionsInput);
     }
     questionsInput.value = JSON.stringify(questions);
-}
-
-function updateQuestionNumbers() {
-    const rows = document.querySelectorAll('#questionsContainer tr');
-    rows.forEach((row, index) => {
-        row.cells[0].textContent = (index + 1).toString();
-    });
 }
