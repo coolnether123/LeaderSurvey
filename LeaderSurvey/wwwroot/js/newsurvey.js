@@ -8,7 +8,19 @@ document.addEventListener('DOMContentLoaded', function() {
         new Sortable(document.getElementById('questionsContainer'), {
             animation: 150,
             handle: '.drag-handle',
-            onEnd: updateQuestionNumbers
+            onEnd: function() {
+                updateQuestionNumbers();
+                // Reorder the questions array to match the new DOM order
+                const rows = document.querySelectorAll('#questionsContainer tr');
+                const newQuestions = [];
+                rows.forEach(row => {
+                    const index = parseInt(row.getAttribute('data-index'));
+                    if (!isNaN(index)) {
+                        newQuestions.push(questions[index]);
+                    }
+                });
+                questions = newQuestions;
+            }
         });
     }
 
@@ -39,6 +51,7 @@ window.addNewQuestionRow = function() {
     
     const tr = document.createElement('tr');
     tr.dataset.isNew = 'true';
+    tr.dataset.index = questions.length.toString();
     tr.innerHTML = `
         <td>${questionNumber}</td>
         <td>
@@ -68,6 +81,8 @@ window.addNewQuestionRow = function() {
     
     // Disable the Add Question button while editing
     document.getElementById('addQuestionBtn').disabled = true;
+    
+    updateQuestionCounter();
 };
 
 window.saveQuestionRow = function(button) {
@@ -82,6 +97,7 @@ window.saveQuestionRow = function(button) {
 
     const questionText = input.value.trim();
     const questionType = select.value;
+    const index = parseInt(row.dataset.index);
     
     if (row.dataset.isNew === 'true') {
         // Add new question
@@ -91,7 +107,6 @@ window.saveQuestionRow = function(button) {
         });
     } else {
         // Update existing question
-        const index = Array.from(row.parentNode.children).indexOf(row);
         questions[index] = {
             text: questionText,
             type: questionType
@@ -120,12 +135,13 @@ window.saveQuestionRow = function(button) {
     document.getElementById('addQuestionBtn').disabled = false;
     
     updateQuestionCounter();
+    updateQuestionNumbers();
     updateQuestionsInput();
 };
 
 window.editQuestionRow = function(button) {
     const row = button.closest('tr');
-    const index = Array.from(row.parentNode.children).indexOf(row);
+    const index = parseInt(row.dataset.index);
     const question = questions[index];
     
     row.innerHTML = `
@@ -185,14 +201,22 @@ window.removeQuestionRow = function(button) {
     row.remove();
     document.getElementById('addQuestionBtn').disabled = false;
     updateQuestionCounter();
+    updateQuestionNumbers();
 };
 
 window.deleteQuestion = function(button) {
     if (confirm('Are you sure you want to delete this question?')) {
         const row = button.closest('tr');
-        const index = Array.from(row.parentNode.children).indexOf(row);
+        const index = parseInt(row.dataset.index);
         questions.splice(index, 1);
         row.remove();
+        
+        // Update indices for remaining rows
+        const rows = document.querySelectorAll('#questionsContainer tr');
+        rows.forEach((row, idx) => {
+            row.dataset.index = idx.toString();
+        });
+        
         updateQuestionNumbers();
         updateQuestionCounter();
         updateQuestionsInput();
@@ -209,6 +233,12 @@ function updateQuestionNumbers() {
 function updateQuestionCounter() {
     const counter = document.getElementById('question-counter');
     counter.textContent = `${questions.length}/10`;
+    
+    // Update Add Question button state
+    const addButton = document.getElementById('addQuestionBtn');
+    if (addButton) {
+        addButton.disabled = questions.length >= 10 || addButton.disabled;
+    }
 }
 
 function updateQuestionsInput() {
