@@ -77,14 +77,34 @@
     </div>
 </div>
 
+<!-- Replace the modal with this simpler viewer -->
+<div id="surveyViewer" class="survey-viewer" style="display: none;">
+    <div class="survey-viewer-content">
+        <div class="survey-viewer-header">
+            <h5 id="viewerTitle">View Survey</h5>
+            <button type="button" class="btn-close" onclick="closeSurveyViewer()"></button>
+        </div>
+        <div class="survey-viewer-body">
+            <ul class="nav nav-tabs" id="surveyTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="editor-tab" onclick="switchTab('editor')">Editor</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="preview-tab" onclick="switchTab('preview')">Preview</button>
+                </li>
+            </ul>
+            <div id="editorTab" class="tab-content active">
+                <div id="questionsContainer"></div>
+            </div>
+            <div id="previewTab" class="tab-content">
+                <h3 id="previewTitle"></h3>
+                <div id="previewQuestions"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/surveys.js"></script>
-    <script>
-        // Ensure scripts are loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof deleteSurvey !== 'function') {
-                console.error('deleteSurvey function not loaded');
-            }
-        });
-    </script>
 }

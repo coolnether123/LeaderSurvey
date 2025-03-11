@@ -14,7 +14,7 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                <div class="nav-links">
+                <div class="navbar-nav">
                     <a href="/Index" class="nav-item @(ViewContext.RouteData.Values["Page"]?.ToString() == "/Index" ? "active" : "")">
                         <i class="bi bi-house-fill"></i> Home
                     </a>
@@ -23,6 +23,9 @@
                     </a>
                     <a href="/Surveys" class="nav-item @(ViewContext.RouteData.Values["Page"]?.ToString() == "/Surveys" ? "active" : "")">
                         <i class="bi bi-card-checklist"></i> Surveys
+                    </a>
+                    <a href="/NewSurvey" class="nav-item @(ViewContext.RouteData.Values["Page"]?.ToString() == "/NewSurvey" ? "active" : "")">
+                        <i class="bi bi-plus-circle"></i> New Survey
                     </a>
                     <a href="/Surveys" class="nav-item @(ViewContext.RouteData.Values["Page"]?.ToString() == "/TakeSurvey" ? "active" : "")">
                         <i class="bi bi-check-circle-fill"></i> Take Survey
