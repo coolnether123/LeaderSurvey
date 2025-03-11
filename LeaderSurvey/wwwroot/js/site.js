@@ -1,9 +1,6 @@
 // Site JavaScript
 function navigateTo(url) {
-    // Add a loading state to the body
     document.body.classList.add('navigating');
-    
-    // Perform the navigation
     window.location.href = url;
 }
 
@@ -16,6 +13,14 @@ function applyScrollbarPadding() {
     document.documentElement.style.setProperty('--scrollbar-width', `${scrollbarWidth}px`);
 }
 
+function saveMenuState(isOpen) {
+    localStorage.setItem('menuState', isOpen ? 'open' : 'closed');
+}
+
+function getMenuState() {
+    return localStorage.getItem('menuState') === 'open';
+}
+
 // Toggle hamburger menu
 function toggleMenu() {
     const hamburgerMenu = document.querySelector('.hamburger-menu');
@@ -26,9 +31,12 @@ function toggleMenu() {
     hamburgerMenu.classList.toggle('open');
     sidebarMenu.classList.toggle('open');
     menuOverlay.classList.toggle('open');
-
+    
     // Toggle menu-open class on body
     document.body.classList.toggle('menu-open');
+    
+    // Save the menu state
+    saveMenuState(hamburgerMenu.classList.contains('open'));
     
     // Toggle side-menu-active class on html element
     document.documentElement.classList.toggle('side-menu-active');
@@ -123,57 +131,8 @@ function setupSidebarNavigation() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Calculate scrollbar width and set CSS variable
-    applyScrollbarPadding();
-    
-    // Add resize listener
-    window.addEventListener('resize', applyScrollbarPadding);
-    
-    // Setup hamburger menu first to ensure it's initialized properly
-    const hamburgerMenu = document.querySelector('.hamburger-menu');
-    if (hamburgerMenu) {
-        hamburgerMenu.addEventListener('click', toggleMenu);
-        // Add a pulsating effect to draw attention to the menu button on first load
-        setTimeout(() => {
-            hamburgerMenu.classList.add('pulse-attention');
-            setTimeout(() => {
-                hamburgerMenu.classList.remove('pulse-attention');
-            }, 2000);
-        }, 500);
-        closeMenuOnOverlayClick();
-        setActiveMenuItem();
-    }
-
-    // Add table hover class to all tables
-    const tables = document.querySelectorAll('table');
-    tables.forEach(table => {
-        table.classList.add('table-hover');
-    });
-
-    // Add confirmation to delete buttons that don't already have it
-    const deleteLinks = document.querySelectorAll('a[href*="Delete"]');
-    deleteLinks.forEach(link => {
-        if (!link.hasAttribute('onclick')) {
-            link.setAttribute('onclick', 'return confirm("Are you sure you want to delete this item?")');
-        }
-    });
-
-    // Add animation to cards
-    const cards = document.querySelectorAll('.card');
-    cards.forEach(card => {
-        card.addEventListener('mouseenter', function () {
-            this.style.transform = 'translateY(-5px)';
-            this.style.boxShadow = '0 0.5rem 1rem rgba(0, 0, 0, 0.15)';
-        });
-
-        card.addEventListener('mouseleave', function () {
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = '0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)';
-        });
-    });
-
     // Add click events to navigation buttons
-    const navigationButtons = document.querySelectorAll('.navigation-button, .cfa-btn');
+    const navigationButtons = document.querySelectorAll('.navigation-button, .cfa-btn, .nav-item');
     navigationButtons.forEach(button => {
         button.addEventListener('click', function (e) {
             const url = this.getAttribute('href');
@@ -184,31 +143,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // The hamburger menu has already been initialized at the top of the function
+    // Add table hover class to all tables
+    const tables = document.querySelectorAll('table');
+    tables.forEach(table => {
+        table.classList.add('table-hover');
+    });
+
+    // Add confirmation to delete buttons
+    const deleteLinks = document.querySelectorAll('a[href*="Delete"]');
+    deleteLinks.forEach(link => {
+        if (!link.hasAttribute('onclick')) {
+            link.setAttribute('onclick', 'return confirm("Are you sure you want to delete this item?")');
+        }
+    });
 
     // Setup form validation
     setupFormValidation();
-
-    // Initialize toggle switches if any
-    const toggleSwitches = document.querySelectorAll('.toggle-switch input');
-    toggleSwitches.forEach(toggle => {
-        toggle.addEventListener('change', function () {
-            const targetId = this.getAttribute('data-target');
-            if (targetId) {
-                const target = document.getElementById(targetId);
-                if (target) {
-                    if (this.checked) {
-                        target.style.display = 'block';
-                    } else {
-                        target.style.display = 'none';
-                    }
-                }
-            }
-        });
-        // Trigger change event to initialize state
-        toggle.dispatchEvent(new Event('change'));
-    });
-
-    // Add the sidebar navigation setup
-    setupSidebarNavigation();
 });

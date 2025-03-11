@@ -59,13 +59,13 @@ body.menu-open .navbar,
 .navbar {
     background-color: var(--dark-bg) !important;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    padding: 0.75rem 1rem; /* Adjusted padding */
+    padding: 0.75rem 1rem;
     position: fixed;
     width: 100%;
     top: 0;
     z-index: 1030;
     transition: all 0.3s ease-in-out;
-    height: 60px; /* Ensure consistent height */
+    height: 60px;
     display: flex;
     align-items: center;
 }
@@ -133,46 +133,55 @@ header {
     margin: 0.15rem 0;
 }
 
-/* Sidebar Menu - Start from left side and slide left/right */
-.sidebar-menu {
-    position: fixed;
-    top: 56px;
-    left: 0; /* Changed from right to left */
-    width: var(--menu-width);
-    height: 100vh;
-    background-color: var(--dark-bg);
-    padding-top: 5px;
-    transition: all 0.3s ease-in-out;
-    z-index: 1020;
-    overflow-y: auto;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2); /* Changed shadow direction */
-    transform: translateX(-100%); /* Changed to slide from left */
+/* Add new navigation styles */
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
-    .sidebar-menu.open {
-        transform: translateX(0); /* Reset transform to show menu */
-    }
+.nav-item {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
 
-    .sidebar-menu ul {
-        list-style: none;
-        padding: 0;
-    }
+.nav-item:hover {
+    background-color: var(--secondary-color);
+    color: white;
+    transform: translateY(-2px);
+}
 
-        .sidebar-menu ul li {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
+.nav-item.active {
+    background-color: var(--secondary-color);
+    color: white;
+    font-weight: 600;
+}
 
-            .sidebar-menu ul li a {
-                color: #333;
-                text-decoration: none;
-                display: block;
-            }
+.nav-item i {
+    font-size: 1.1rem;
+}
 
-                .sidebar-menu ul li a.active {
-                    background-color: #007bff;
-                    color: #fff;
-                }
+/* Update container padding */
+.container {
+    padding-top: 1rem;
+    transition: none;
+    margin-left: auto !important;
+}
+
+/* Remove menu-related styles */
+body.menu-open .container,
+body.menu-open .navbar {
+    margin-left: 0 !important;
+    transform: none !important;
+}
+
 /* Remove dimming overlay */
 .menu-overlay {
     position: fixed; /* Fixed positioning */
@@ -228,12 +237,29 @@ body.menu-open .navbar {
 /* Ensure container doesn't move */
 .container {
     position: relative;
-    transition: none !important;
+    transition: margin-left 0.3s ease-in-out;
+    margin-left: 0;
+}
+
+/* Add margin when menu is open */
+body.menu-open .container {
+    margin-left: var(--menu-width);
 }
 
 /* Ensure navbar doesn't move */
 .navbar {
-    transition: none !important;
+    transition: margin-left 0.3s ease-in-out;
+    margin-left: 0;
+}
+
+/* Add margin to navbar when menu is open */
+body.menu-open .navbar {
+    margin-left: var(--menu-width);
+}
+
+/* Remove the menu overlay since we're not overlapping content */
+.menu-overlay {
+    display: none !important;
 }
 
 /* ALL OTHER CSS BELOW IS UNCHANGED */

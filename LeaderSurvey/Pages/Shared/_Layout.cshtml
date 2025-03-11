@@ -12,11 +12,20 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow">
             <div class="container position-relative">
-                <button class="hamburger-menu fixed-hamburger" aria-label="Toggle Menu">
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                </button>
+                <div class="nav-links">
+                    <a href="/Index" class="nav-item @(ViewContext.RouteData.Values["Page"]?.ToString() == "/Index" ? "active" : "")">
+                        <i class="bi bi-house-fill"></i> Home
+                    </a>
+                    <a href="/Leaders" class="nav-item @(ViewContext.RouteData.Values["Page"]?.ToString() == "/Leaders" ? "active" : "")">
+                        <i class="bi bi-people-fill"></i> Leaders
+                    </a>
+                    <a href="/Surveys" class="nav-item @(ViewContext.RouteData.Values["Page"]?.ToString() == "/Surveys" ? "active" : "")">
+                        <i class="bi bi-card-checklist"></i> Surveys
+                    </a>
+                    <a href="/Surveys" class="nav-item @(ViewContext.RouteData.Values["Page"]?.ToString() == "/TakeSurvey" ? "active" : "")">
+                        <i class="bi bi-check-circle-fill"></i> Take Survey
+                    </a>
+                </div>
                 <a class="navbar-brand" asp-area="" asp-page="/Index">
                     <i class="bi bi-clipboard-data"></i> Leader Survey
                 </a>
