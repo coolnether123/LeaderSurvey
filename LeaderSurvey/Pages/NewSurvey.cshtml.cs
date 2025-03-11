@@ -11,6 +11,7 @@ namespace LeaderSurvey.Pages
     public class NewSurveyModel : PageModel
     {
         private readonly ApplicationDbContext _context;
+        public List<Leader> Leaders { get; set; } = new();
 
         public NewSurveyModel(ApplicationDbContext context)
         {
@@ -55,12 +56,10 @@ namespace LeaderSurvey.Pages
 
         public async Task OnGetAsync()
         {
-            // Get all leaders from the database
-            var leaders = await _context.Leaders
+            // Load leaders directly into the property
+            Leaders = await _context.Leaders
                 .OrderBy(l => l.Name)
                 .ToListAsync();
-            
-            LeaderSelectList = new SelectList(leaders, "Id", "Name");
 
             // Define the four valid areas
             var areas = new[] { "Front", "Drive", "Kitchen", "Hospitality" };

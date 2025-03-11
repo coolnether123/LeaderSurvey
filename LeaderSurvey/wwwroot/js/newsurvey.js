@@ -41,6 +41,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
     updateQuestionCounter();
 });
 
@@ -260,11 +266,39 @@ function updateQuestionCounter() {
     // Update the counter text
     counter.textContent = `${currentCount}/10`;
     
-    // Update Add Question button state
+    // Update Add Question button state and tooltip
     const addButton = getAddQuestionButton();
     if (addButton) {
         // Only disable if we're at max questions or there's a question being edited
-        addButton.disabled = currentCount >= 10 || hasNewQuestion;
+        const isDisabled = currentCount >= 10 || hasNewQuestion;
+        addButton.disabled = isDisabled;
+        
+        // Update tooltip message based on the reason for being disabled
+        let tooltipMessage = '';
+        if (currentCount >= 10) {
+            tooltipMessage = 'Maximum of 10 questions reached';
+        } else if (hasNewQuestion) {
+            tooltipMessage = 'Please save or cancel the current question first';
+        }
+        
+        // Update tooltip
+        if (isDisabled) {
+            addButton.setAttribute('data-bs-toggle', 'tooltip');
+            addButton.setAttribute('data-bs-placement', 'top');
+            addButton.setAttribute('title', tooltipMessage);
+            
+            // Reinitialize tooltip
+            new bootstrap.Tooltip(addButton);
+        } else {
+            // Remove tooltip when button is enabled
+            const tooltip = bootstrap.Tooltip.getInstance(addButton);
+            if (tooltip) {
+                tooltip.dispose();
+            }
+            addButton.removeAttribute('data-bs-toggle');
+            addButton.removeAttribute('data-bs-placement');
+            addButton.removeAttribute('title');
+        }
     }
 }
 

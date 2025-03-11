@@ -27,7 +27,7 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label asp-for="Survey.Area" class="form-label">Area</label>
-                                <select asp-for="Survey.Area" class="form-select" required>
+                                <select asp-for="Survey.Area" class="form-select" id="areaSelect" required>
                                     <option value="">-- Select Area --</option>
                                     <option value="Front">Front</option>
                                     <option value="Drive">Drive</option>
@@ -42,8 +42,31 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label asp-for="Survey.LeaderId" class="form-label">Leader</label>
-                                <select asp-for="Survey.LeaderId" asp-items="Model.LeaderSelectList" class="form-select" required>
+                                <div class="area-filter-buttons mb-2">
+                                    <div class="btn-group" role="group" aria-label="Area filters">
+                                        <button type="button" class="btn btn-sm area-filter" data-area="Front">
+                                            <span class="badge area-badge area-front">Front</span>
+                                        </button>
+                                        <button type="button" class="btn btn-sm area-filter" data-area="Drive">
+                                            <span class="badge area-badge area-drive">Drive</span>
+                                        </button>
+                                        <button type="button" class="btn btn-sm area-filter" data-area="Kitchen">
+                                            <span class="badge area-badge area-kitchen">Kitchen</span>
+                                        </button>
+                                        <button type="button" class="btn btn-sm area-filter" data-area="Hospitality">
+                                            <span class="badge area-badge area-hospitality">Hospitality</span>
+                                        </button>
+                                        <button type="button" class="btn btn-sm area-filter active" data-area="">
+                                            <span class="badge area-badge">All</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <select asp-for="Survey.LeaderId" id="leaderSelect" class="form-select" required>
                                     <option value="">-- Select Leader --</option>
+                                    @foreach (var leader in Model.Leaders)
+                                    {
+                                        <option value="@leader.Id" data-area="@leader.Area">@leader.Name</option>
+                                    }
                                 </select>
                                 <span asp-validation-for="Survey.LeaderId" class="text-danger"></span>
                             </div>
@@ -139,6 +162,108 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="~/js/newsurvey.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const areaSelect = document.getElementById('areaSelect');
+            const leaderSelect = document.getElementById('leaderSelect');
+            const areaFilterButtons = document.querySelectorAll('.area-filter');
+            
+            // Handle area filter button clicks
+            areaFilterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Update button states
+                    areaFilterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Get selected area and update filters
+                    const selectedArea = this.dataset.area;
+                    filterLeadersByArea(selectedArea);
+                    
+                    // Update main area select if it exists
+                    if (areaSelect) {
+                        areaSelect.value = selectedArea;
+                        areaSelect.dispatchEvent(new Event('change'));
+                    }
+                });
+            });
+
+            // Handle main area select changes
+            if (areaSelect) {
+                areaSelect.addEventListener('change', function() {
+                    filterLeadersByArea(this.value);
+                    
+                    // Update filter buttons
+                    areaFilterButtons.forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.area === this.value);
+                    });
+                });
+            }
+            
+            // Handle leader selection
+            leaderSelect.addEventListener('change', function() {
+                const selectedOption = leaderSelect.options[leaderSelect.selectedIndex];
+                if (selectedOption.value && areaSelect && !areaSelect.value) {
+                    const leaderArea = selectedOption.dataset.area;
+                    areaSelect.value = leaderArea;
+                    areaSelect.dispatchEvent(new Event('change'));
+                    
+                    // Update filter buttons
+                    areaFilterButtons.forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.area === leaderArea);
+                    });
+                }
+            });
+
+            function filterLeadersByArea(selectedArea) {
+                const options = leaderSelect.options;
+                
+                // Show/hide options based on area
+                Array.from(options).forEach(option => {
+                    if (option.value === "") return; // Skip placeholder option
+                    
+                    if (!selectedArea || option.dataset.area === selectedArea) {
+                        option.style.display = '';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                });
+                
+                // Clear selection if current selection is not in filtered list
+                if (leaderSelect.selectedIndex > 0) {
+                    const selectedOption = leaderSelect.options[leaderSelect.selectedIndex];
+                    if (selectedOption.style.display === 'none') {
+                        leaderSelect.value = '';
+                    }
+                }
+            }
+        });
+    </script>
+
+    <style>
+        .area-filter-buttons {
+            margin-bottom: 10px;
+        }
+        
+        .area-filter {
+            border: none;
+            background: none;
+            padding: 4px 8px;
+        }
+        
+        .area-filter.active {
+            background-color: #e9ecef;
+            border-radius: 4px;
+        }
+        
+        .area-badge {
+            font-size: 0.875rem;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        
+        .area-front { background-color: #28a745; color: white; }
+        .area-drive { background-color: #007bff; color: white; }
+        .area-kitchen { background-color: #dc3545; color: white; }
+        .area-hospitality { background-color: #6f42c1; color: white; }
+    </style>
 }
