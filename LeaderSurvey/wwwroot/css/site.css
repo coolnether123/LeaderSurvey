@@ -931,7 +931,11 @@ main.pb-3 {
 }
 
 .filter-group {
-    margin-bottom: 1rem;
+    min-width: 200px;
+}
+
+.gap-3 {
+    gap: 1rem;
 }
 
 .filter-group:last-child {

@@ -8,19 +8,28 @@
 <h2 class="page-title"><i class="bi bi-people-fill"></i> Leaders Management</h2>
 
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div class="filters-section">
-            <select id="areaFilter" class="form-select" aria-label="Filter by area">
-                <option value="">All Areas</option>
-                <option value="Drive">Drive</option>
-                <option value="Front">Front</option>
-                <option value="Kitchen">Kitchen</option>
-                <option value="Hospitality">Hospitality</option>
-            </select>
+    <div class="filters-section">
+        <div class="d-flex gap-3 align-items-center">
+            <div class="filter-group">
+                <select id="areaFilter" class="cfa-select" aria-label="Filter by area">
+                    <option value="">All Areas</option>
+                    <option value="Drive">Drive</option>
+                    <option value="Front">Front</option>
+                    <option value="Kitchen">Kitchen</option>
+                    <option value="Hospitality">Hospitality</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <button id="sortToggle" class="cfa-btn" onclick="toggleSort()">
+                    <i class="bi bi-sort-alpha-down"></i> Sort A-Z
+                </button>
+            </div>
+            <div class="ms-auto">
+                <button class="cfa-btn" onclick="showAddLeaderModal()">
+                    <i class="bi bi-person-plus-fill"></i> Add New Leader
+                </button>
+            </div>
         </div>
-        <button class="btn btn-primary" onclick="showAddLeaderModal()">
-            <i class="bi bi-person-plus-fill"></i> Add New Leader
-        </button>
     </div>
 
     <div class="table-responsive">
@@ -102,6 +111,7 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         let leaderModal;
+        let isAscending = true;
         
         document.addEventListener('DOMContentLoaded', function() {
             leaderModal = new bootstrap.Modal(document.getElementById('leaderModal'));
@@ -265,36 +275,61 @@
             const rows = document.querySelectorAll('#leadersTable tbody tr');
 
             areaFilter.addEventListener('change', function() {
-                const selectedArea = this.value.toLowerCase();
-                
-                rows.forEach(row => {
-                    const areaCell = row.querySelector('.area-badge');
-                    const rowArea = areaCell.textContent.toLowerCase();
-                    
-                    if (!selectedArea || rowArea === selectedArea) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
+                filterTable();
             });
         }
 
-        function createLeadersTable() {
-            const table = document.createElement('table');
-            table.id = 'leadersTable';
-            table.className = 'table table-cfa';
-            table.innerHTML = `
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Area</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            `;
-            return table;
+        function toggleSort() {
+            isAscending = !isAscending;
+            const button = document.getElementById('sortToggle');
+            button.innerHTML = isAscending ? 
+                '<i class="bi bi-sort-alpha-down"></i> Sort A-Z' : 
+                '<i class="bi bi-sort-alpha-up"></i> Sort Z-A';
+            
+            sortTable();
         }
+
+        function sortTable() {
+            const tbody = document.querySelector('#leadersTable tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+
+            rows.sort((a, b) => {
+                const nameA = a.querySelector('td').textContent.trim().toLowerCase();
+                const nameB = b.querySelector('td').textContent.trim().toLowerCase();
+                return isAscending ? 
+                    nameA.localeCompare(nameB) : 
+                    nameB.localeCompare(nameA);
+            });
+
+            // Clear the table body
+            tbody.innerHTML = '';
+            
+            // Add sorted rows back
+            rows.forEach(row => tbody.appendChild(row));
+            
+            // Apply current area filter after sorting
+            filterTable();
+        }
+
+        function filterTable() {
+            const selectedArea = document.getElementById('areaFilter').value.toLowerCase();
+            const rows = document.querySelectorAll('#leadersTable tbody tr');
+            
+            rows.forEach(row => {
+                const areaCell = row.querySelector('.area-badge');
+                const rowArea = areaCell.textContent.toLowerCase();
+                
+                if (!selectedArea || rowArea === selectedArea) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Initialize filters and sorting when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setupFilters();
+        });
     </script>
 }
