@@ -57,7 +57,7 @@
                                             <span class="badge area-badge area-hospitality">Hospitality</span>
                                         </button>
                                         <button type="button" class="btn btn-sm area-filter active" data-area="">
-                                            <span class="badge area-badge">All</span>
+                                            <span class="badge area-badge area-all">All</span>
                                         </button>
                                     </div>
                                 </div>
@@ -178,24 +178,15 @@
                     // Get selected area and update filters
                     const selectedArea = this.dataset.area;
                     filterLeadersByArea(selectedArea);
-                    
-                    // Update main area select if it exists
-                    if (areaSelect) {
-                        areaSelect.value = selectedArea;
-                        areaSelect.dispatchEvent(new Event('change'));
-                    }
                 });
             });
 
             // Handle main area select changes
             if (areaSelect) {
                 areaSelect.addEventListener('change', function() {
+                    // Clear any active filter buttons when area is manually selected
+                    areaFilterButtons.forEach(btn => btn.classList.remove('active'));
                     filterLeadersByArea(this.value);
-                    
-                    // Update filter buttons
-                    areaFilterButtons.forEach(btn => {
-                        btn.classList.toggle('active', btn.dataset.area === this.value);
-                    });
                 });
             }
             
@@ -205,12 +196,6 @@
                 if (selectedOption.value && areaSelect && !areaSelect.value) {
                     const leaderArea = selectedOption.dataset.area;
                     areaSelect.value = leaderArea;
-                    areaSelect.dispatchEvent(new Event('change'));
-                    
-                    // Update filter buttons
-                    areaFilterButtons.forEach(btn => {
-                        btn.classList.toggle('active', btn.dataset.area === leaderArea);
-                    });
                 }
             });
 
@@ -245,9 +230,16 @@
         }
         
         .area-filter {
-            border: none;
+            border: none !important;
             background: none;
             padding: 4px 8px;
+            box-shadow: none !important;
+            outline: none !important;
+        }
+        
+        .area-filter:focus {
+            box-shadow: none !important;
+            outline: none !important;
         }
         
         .area-filter.active {
@@ -265,5 +257,6 @@
         .area-drive { background-color: #007bff; color: white; }
         .area-kitchen { background-color: #dc3545; color: white; }
         .area-hospitality { background-color: #6f42c1; color: white; }
+        .area-all { background-color: #212529; color: white; }
     </style>
 }
