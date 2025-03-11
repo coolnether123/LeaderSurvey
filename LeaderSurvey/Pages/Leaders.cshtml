@@ -117,6 +117,7 @@
                 }
 
                 try {
+                    const leaderId = document.getElementById('leaderId').value;
                     const name = document.getElementById('Name').value.trim();
                     const area = document.getElementById('Area').value.trim();
 
@@ -125,18 +126,21 @@
                         return;
                     }
 
-                    console.log('Submitting form with:', { name, area });
-
                     const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
                     
-                    const response = await fetch('?handler=Post', {
+                    // Determine if this is an edit or a new leader
+                    const isEdit = leaderId !== '';
+                    const url = isEdit ? '?handler=Update' : '?handler=Post';
+                    
+                    const response = await fetch(url, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'RequestVerificationToken': token
                         },
                         body: JSON.stringify({
-                            newLeader: {
+                            leader: {
+                                id: isEdit ? parseInt(leaderId) : 0,
                                 name: name,
                                 area: area
                             }
@@ -147,50 +151,57 @@
                     console.log('Response data:', responseData);
 
                     if (responseData.success) {
-                        // Ensure table exists and has proper structure
-                        let table = document.getElementById('leadersTable');
-                        if (!table) {
-                            table = createLeadersTable();
-                            document.querySelector('.table-responsive').appendChild(table);
+                        if (isEdit) {
+                            // Update existing row
+                            const row = document.querySelector(`tr[data-id="${leaderId}"]`);
+                            row.innerHTML = `
+                                <td>${name}</td>
+                                <td><span class="badge area-badge area-${area.toLowerCase()}">${area}</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-sm btn-outline-primary me-2" onclick="editLeader(${leaderId})">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteLeader(${leaderId}, '${name}')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            `;
+                        } else {
+                            // Add new row
+                            const tbody = document.querySelector('#leadersTable tbody');
+                            const newRow = document.createElement('tr');
+                            newRow.dataset.id = responseData.id;
+                            newRow.innerHTML = `
+                                <td>${responseData.name}</td>
+                                <td><span class="badge area-badge area-${responseData.area.toLowerCase()}">${responseData.area}</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-sm btn-outline-primary me-2" onclick="editLeader(${responseData.id})">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteLeader(${responseData.id}, '${responseData.name}')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            `;
+                            tbody.appendChild(newRow);
                         }
-
-                        let tbody = table.querySelector('tbody');
-                        if (!tbody) {
-                            tbody = document.createElement('tbody');
-                            table.appendChild(tbody);
-                        }
-
-                        // Create and append the new row
-                        const newRow = document.createElement('tr');
-                        newRow.dataset.id = responseData.id;
-                        newRow.innerHTML = `
-                            <td>${responseData.name}</td>
-                            <td><span class="badge area-badge area-${responseData.area.toLowerCase()}">${responseData.area}</span></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn btn-sm btn-outline-primary me-2" onclick="editLeader(${responseData.id})">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteLeader(${responseData.id}, '${responseData.name}')">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        `;
-                        tbody.appendChild(newRow);
                         
                         // Reset form and close modal
                         form.reset();
                         form.classList.remove('was-validated');
                         leaderModal.hide();
                         
-                        showNotification('My Pleasure! Leader saved successfully', 'success');
+                        showNotification(`Leader ${isEdit ? 'updated' : 'added'} successfully`, 'success');
                     } else {
-                        showNotification(responseData.message || 'Failed to save leader', 'error');
+                        showNotification(responseData.message || `Failed to ${isEdit ? 'update' : 'save'} leader`, 'error');
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    showNotification('An error occurred while saving the leader', 'error');
+                    showNotification('An error occurred while processing the leader', 'error');
                 }
             });
         });
@@ -217,20 +228,35 @@
 
         function deleteLeader(id, name) {
             if (confirm(`Are you sure you want to delete ${name}?`)) {
-                fetch(`?handler=Delete&id=${id}`, {
-                    method: 'GET',
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                
+                fetch(`?handler=Delete`, {
+                    method: 'POST',
                     headers: {
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                    }
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ id: id })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         document.querySelector(`tr[data-id="${id}"]`).remove();
                         showNotification('Leader deleted successfully', 'success');
+                    } else {
+                        showNotification(data.message || 'Error deleting leader', 'error');
                     }
                 })
-                .catch(error => showNotification('Error deleting leader', 'danger'));
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Error deleting leader', 'error');
+                });
             }
         }
 

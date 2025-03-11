@@ -56,9 +56,9 @@ namespace LeaderSurvey.Pages
             try 
             {
                 // Extract the values from the JSON body
-                var newLeader = body.GetProperty("newLeader");
-                var name = newLeader.GetProperty("name").GetString()?.Trim();
-                var area = newLeader.GetProperty("area").GetString()?.Trim();
+                var leaderData = body.GetProperty("leader");  // Changed from "newLeader" to "leader"
+                var name = leaderData.GetProperty("name").GetString()?.Trim();
+                var area = leaderData.GetProperty("area").GetString()?.Trim();
 
                 // Clear existing ModelState errors
                 ModelState.Clear();
@@ -123,50 +123,105 @@ namespace LeaderSurvey.Pages
             }
         }
 
-        public async Task<IActionResult> OnPostDeleteAsync(int id)
+        public async Task<IActionResult> OnPostDeleteAsync([FromBody] JsonElement body)
         {
-            var leader = await _context.Leaders.FindAsync(id);
-            if (leader != null)
-            {
-                _context.Leaders.Remove(leader);
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToPage("./Leaders");
-        }
-
-        public async Task<IActionResult> OnPostUpdateAsync()
-        {
-            if (!ModelState.IsValid)
-            {
-                return Page();
-            }
-
-            var leaderToUpdate = await _context.Leaders.FindAsync(SelectedLeader.Id);
-            if (leaderToUpdate == null)
-            {
-                return NotFound();
-            }
-
-            leaderToUpdate.Name = SelectedLeader.Name;
-            leaderToUpdate.Area = SelectedLeader.Area;
-
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Leaders.Any(l => l.Id == SelectedLeader.Id))
+                var id = body.GetProperty("id").GetInt32();
+                var leader = await _context.Leaders.FindAsync(id);
+                
+                if (leader == null)
                 {
-                    return NotFound();
+                    return new JsonResult(new { 
+                        success = false, 
+                        message = "Leader not found" 
+                    });
                 }
-                else
-                {
-                    throw;
-                }
-            }
 
-            return RedirectToPage("./Leaders");
+                // Optional: Check if leader has any associated surveys
+                var hasAssociatedSurveys = await _context.Surveys.AnyAsync(s => s.LeaderId == id);
+                if (hasAssociatedSurveys)
+                {
+                    return new JsonResult(new { 
+                        success = false, 
+                        message = "Cannot delete leader with associated surveys" 
+                    });
+                }
+
+                _context.Leaders.Remove(leader);
+                await _context.SaveChangesAsync();
+
+                return new JsonResult(new { 
+                    success = true, 
+                    message = "Leader deleted successfully" 
+                });
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new { 
+                    success = false, 
+                    message = $"Error deleting leader: {ex.Message}" 
+                });
+            }
+        }
+
+        public async Task<IActionResult> OnPostUpdateAsync([FromBody] JsonElement body)
+        {
+            try 
+            {
+                var leaderData = body.GetProperty("leader");
+                var id = leaderData.GetProperty("id").GetInt32();
+                var name = leaderData.GetProperty("name").GetString()?.Trim();
+                var area = leaderData.GetProperty("area").GetString()?.Trim();
+
+                if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(area))
+                {
+                    return new JsonResult(new { 
+                        success = false, 
+                        message = "Name and Area are required" 
+                    });
+                }
+
+                var leaderToUpdate = await _context.Leaders.FindAsync(id);
+                if (leaderToUpdate == null)
+                {
+                    return new JsonResult(new { 
+                        success = false, 
+                        message = "Leader not found" 
+                    });
+                }
+
+                // Check if the new name conflicts with another leader (excluding the current leader)
+                var existingLeader = await _context.Leaders
+                    .FirstOrDefaultAsync(l => l.Id != id && l.Name.ToLower() == name.ToLower());
+                
+                if (existingLeader != null)
+                {
+                    return new JsonResult(new { 
+                        success = false, 
+                        message = "A leader with this name already exists" 
+                    });
+                }
+
+                leaderToUpdate.Name = name;
+                leaderToUpdate.Area = area;
+
+                await _context.SaveChangesAsync();
+
+                return new JsonResult(new { 
+                    success = true,
+                    id = leaderToUpdate.Id,
+                    name = leaderToUpdate.Name,
+                    area = leaderToUpdate.Area
+                });
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new { 
+                    success = false, 
+                    message = $"Failed to update leader: {ex.Message}" 
+                });
+            }
         }
     }
 }
