@@ -10,28 +10,23 @@
     </div>
 
     <div class="survey-editor-content">
-        <form method="post" id="surveyForm" class="needs-validation" novalidate>
-            <!-- Survey Details -->
+        <form id="surveyForm" method="post" class="needs-validation" novalidate>
+            @Html.AntiForgeryToken()
             <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">Survey Details</h5>
-                </div>
                 <div class="card-body">
                     <div class="row">
-                        <!-- Survey Name -->
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label asp-for="Survey.Name" class="form-label">Survey Name</label>
-                                <input asp-for="Survey.Name" class="form-control" required />
+                                <input type="text" name="Survey.Name" id="Survey_Name" class="form-control" required />
                                 <span asp-validation-for="Survey.Name" class="text-danger"></span>
                             </div>
                         </div>
-                        <!-- Area select (with id for JS hookup) -->
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label asp-for="Survey.Area" class="form-label">Area</label>
-                                <select asp-for="Survey.Area" class="form-select" id="areaSelect" required>
-                                    <option value="">-- Select Area --</option>
+                                <select name="Survey.Area" id="Survey_Area" class="form-select" required>
+                                    <option value="">Select Area</option>
                                     <option value="Front">Front</option>
                                     <option value="Drive">Drive</option>
                                     <option value="Kitchen">Kitchen</option>
@@ -42,31 +37,11 @@
                         </div>
                     </div>
                     <div class="row">
-                        <!-- Leader select with area filter buttons -->
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label asp-for="Survey.LeaderId" class="form-label">Leader</label>
-                                <div class="area-filter-buttons mb-2">
-                                    <div class="btn-group" role="group" aria-label="Area filters">
-                                        <button type="button" class="btn btn-sm area-filter" data-area="Front">
-                                            <span class="badge area-badge area-front">Front</span>
-                                        </button>
-                                        <button type="button" class="btn btn-sm area-filter" data-area="Drive">
-                                            <span class="badge area-badge area-drive">Drive</span>
-                                        </button>
-                                        <button type="button" class="btn btn-sm area-filter" data-area="Kitchen">
-                                            <span class="badge area-badge area-kitchen">Kitchen</span>
-                                        </button>
-                                        <button type="button" class="btn btn-sm area-filter" data-area="Hospitality">
-                                            <span class="badge area-badge area-hospitality">Hospitality</span>
-                                        </button>
-                                        <button type="button" class="btn btn-sm area-filter active" data-area="">
-                                            <span class="badge area-badge area-all">All</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                <select asp-for="Survey.LeaderId" id="leaderSelect" class="form-select" required>
-                                    <option value="">-- Select Leader --</option>
+                                <select name="Survey.LeaderId" id="Survey_LeaderId" class="form-select" required>
+                                    <option value="">Select Leader</option>
                                     @foreach (var leader in Model.Leaders)
                                     {
                                         <option value="@leader.Id" data-area="@leader.Area">@leader.Name</option>
@@ -75,27 +50,21 @@
                                 <span asp-validation-for="Survey.LeaderId" class="text-danger"></span>
                             </div>
                         </div>
-                        <!-- Month/Year -->
                         <div class="col-md-6">
-                            <div class="mb-3" style="margin-top: 32px;">
-                                <div class="d-flex align-items-center" style="height: 24px; margin-bottom: 8px;">
-                                    <label asp-for="Survey.MonthYear" class="form-label mb-0">Month/Year</label>
-                                </div>
-                                <div>
-                                    <input type="month" asp-for="Survey.MonthYear" class="form-control month-year-input" required />
-                                    <span asp-validation-for="Survey.MonthYear" class="text-danger"></span>
-                                </div>
+                            <div class="mb-3">
+                                <label asp-for="Survey.MonthYear" class="form-label">Month/Year</label>
+                                <input type="month" name="Survey.MonthYear" id="Survey_MonthYear" class="form-control" required />
+                                <span asp-validation-for="Survey.MonthYear" class="text-danger"></span>
                             </div>
                         </div>
                     </div>
-                    <!-- Description -->
                     <div class="mb-3">
                         <label asp-for="Survey.Description" class="form-label">Description</label>
-                        <textarea asp-for="Survey.Description" class="form-control" rows="3"></textarea>
+                        <textarea name="Survey.Description" id="Survey_Description" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Survey.Description" class="text-danger"></span>
                     </div>
                 </div>
             </div>
-
             <!-- Questions Section -->
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -263,7 +232,7 @@
             row.innerHTML = `
                 <td class="question-number">${index + 1}</td>
                 <td>${questionText}</td>
-                <td>${questionType === 'yesno' ? 'Yes/No' : 'Score 1-5'}</td>
+                <td>${questionType === 'yesno' ? 'Yes/No' : 'Score (0-10)'}</td>
                 <td>
                     <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-outline-primary" onclick="editQuestionRow(this)">
@@ -366,22 +335,23 @@
         }
 
         function updateQuestionsInput() {
-            // Append hidden inputs so questions post back with the form
             const form = document.getElementById('surveyForm');
-            // Remove any previously added hidden inputs to avoid duplicates
-            form.querySelectorAll('input[type="hidden"][name^="Survey.Questions"]').forEach(el => el.remove());
-            questions.forEach((q, index) => {
+            
+            // Remove any existing question inputs
+            form.querySelectorAll('input[name^="Survey.Questions"]').forEach(el => el.remove());
+            
+            // Add new hidden inputs for each question
+            questions.forEach((question, index) => {
                 const textInput = document.createElement('input');
                 textInput.type = 'hidden';
                 textInput.name = `Survey.Questions[${index}].Text`;
-                textInput.value = q.text;
+                textInput.value = question.text;
+                form.appendChild(textInput);
 
                 const typeInput = document.createElement('input');
                 typeInput.type = 'hidden';
                 typeInput.name = `Survey.Questions[${index}].QuestionType`;
-                typeInput.value = q.type;
-
-                form.appendChild(textInput);
+                typeInput.value = question.type;
                 form.appendChild(typeInput);
             });
         }
@@ -435,46 +405,156 @@
                 });
             }
         });
+
+        document.getElementById('surveyForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            // Debug: Check if elements exist and their values
+            console.log('Debugging form elements:');
+            console.log('Name field:', document.querySelector('[name="Survey.Name"]')?.value);
+            console.log('Area field:', document.querySelector('[name="Survey.Area"]')?.value);
+            console.log('MonthYear field:', document.querySelector('[name="Survey.MonthYear"]')?.value);
+            console.log('LeaderId field:', document.querySelector('[name="Survey.LeaderId"]')?.value);
+
+            // Create FormData and manually append fields
+            const formData = new FormData();
+            
+            // Add antiforgery token
+            const token = document.querySelector('[name="__RequestVerificationToken"]').value;
+            formData.append('__RequestVerificationToken', token);
+
+            // Add survey fields - with null checks
+            const nameField = document.querySelector('[name="Survey.Name"]');
+            const areaField = document.querySelector('[name="Survey.Area"]');
+            const monthYearField = document.querySelector('[name="Survey.MonthYear"]');
+            const leaderIdField = document.querySelector('[name="Survey.LeaderId"]');
+            const descriptionField = document.querySelector('[name="Survey.Description"]');
+
+            if (!nameField || !areaField || !monthYearField || !leaderIdField) {
+                console.error('Required form fields are missing:');
+                console.error('Name field exists:', !!nameField);
+                console.error('Area field exists:', !!areaField);
+                console.error('MonthYear field exists:', !!monthYearField);
+                console.error('LeaderId field exists:', !!leaderIdField);
+                alert('Form is missing required fields. Check console for details.');
+                return;
+            }
+
+            formData.append('Survey.Name', nameField.value);
+            formData.append('Survey.Area', areaField.value);
+            formData.append('Survey.MonthYear', monthYearField.value);
+            formData.append('Survey.LeaderId', leaderIdField.value);
+            formData.append('Survey.Description', descriptionField?.value || '');
+
+            // Add questions
+            questions.forEach((question, index) => {
+                formData.append(`Survey.Questions[${index}].Text`, question.text);
+                formData.append(`Survey.Questions[${index}].QuestionType`, question.type);
+            });
+
+            // Log all form data before submission
+            console.log('Final form data being submitted:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}: ${value}`);
+            }
+
+            try {
+                const response = await fetch('/NewSurvey', {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': token,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const contentType = response.headers.get("content-type");
+                    const responseData = contentType && contentType.includes("application/json") 
+                        ? await response.json() 
+                        : await response.text();
+
+                    console.error('Response status:', response.status);
+                    console.error('Response data:', responseData);
+                    
+                    if (responseData.errors) {
+                        console.error('Validation errors:');
+                        Object.entries(responseData.errors).forEach(([field, errors]) => {
+                            // Find the corresponding input field
+                            const inputField = document.querySelector(`[name="${field}"]`);
+                            if (inputField) {
+                                inputField.classList.add('is-invalid');
+                                // Find or create validation message element
+                                let validationMessage = inputField.parentElement.querySelector('.invalid-feedback');
+                                if (!validationMessage) {
+                                    validationMessage = document.createElement('div');
+                                    validationMessage.className = 'invalid-feedback';
+                                    inputField.parentElement.appendChild(validationMessage);
+                                }
+                                validationMessage.textContent = errors.join(', ');
+                            }
+                            console.error(`${field}:`, errors);
+                        });
+                        alert('Please check the form for errors and try again.');
+                    } else {
+                        alert('Server error occurred. Please try again.');
+                    }
+                    return;
+                }
+
+                const responseData = await response.json();
+                if (responseData.success) {
+                    window.location.href = responseData.redirectTo || '/Surveys';
+                } else {
+                    alert('Failed to save survey');
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('Error submitting form. Check console for details.');
+            }
+        });
     </script>
 
     <!-- Inline styles for area buttons and inputs -->
     <style>
+        .area-filter-container {
+            margin-bottom: 1rem;
+        }
+
         .area-filter-buttons {
-            margin-bottom: 10px;
-            height: 24px;
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
         }
-        
+
         .area-filter {
-            border: none !important;
+            padding: 0.25rem 0.75rem;
+            border: none;
             background: none;
-            padding: 4px 8px;
-            box-shadow: none !important;
-            outline: none !important;
+            color: #666;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 4px;
         }
-        
-        .area-filter:focus {
-            box-shadow: none !important;
-            outline: none !important;
+
+        .area-filter:hover {
+            background-color: #f8f9fa;
+            color: #e51636;
         }
-        
+
         .area-filter.active {
-            background-color: #e9ecef;
-            border-radius: 4px;
+            background-color: #e51636;
+            color: white;
         }
-        
-        .area-badge {
-            font-size: 0.875rem;
-            padding: 5px 10px;
-            border-radius: 4px;
+
+        .form-select {
+            border-color: #dee2e6;
         }
-        
-        .area-front { background-color: #28a745; color: white; }
-        .area-drive { background-color: #007bff; color: white; }
-        .area-kitchen { background-color: #dc3545; color: white; }
-        .area-hospitality { background-color: #6f42c1; color: white; }
-        .area-all { background-color: #212529; color: white; }
-        .month-year-input {
-            width: 180px !important;
+
+        .form-select:focus {
+            border-color: #e51636;
+            box-shadow: 0 0 0 0.25rem rgba(229, 22, 54, 0.25);
         }
     </style>
 }
