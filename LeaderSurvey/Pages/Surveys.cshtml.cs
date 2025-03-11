@@ -52,19 +52,28 @@ namespace LeaderSurvey.Pages
 
         public async Task OnGetAsync()
         {
-            Surveys = await _context.Surveys
+            // Load surveys with explicit UTC conversion
+            var rawSurveys = await _context.Surveys
                 .Include(s => s.Leader)
-                .OrderByDescending(s => s.MonthYear)  // Changed from Date to MonthYear
                 .ToListAsync();
+
+            // Ensure all dates are in UTC before sorting
+            Surveys = rawSurveys
+                .OrderByDescending(s => s.MonthYear.HasValue ? 
+                    DateTime.SpecifyKind(s.MonthYear.Value, DateTimeKind.Utc) : 
+                    DateTime.MinValue)
+                .ToList();
 
             Leaders = await _context.Leaders.ToListAsync();
             LeaderSelectList = new SelectList(Leaders, "Id", "Name");
 
-            AvailableDates = await _context.Surveys
-                .Select(s => s.MonthYear ?? DateTime.Now)  // Changed from Date to MonthYear with null check
+            // Get distinct dates with explicit UTC handling
+            AvailableDates = rawSurveys
+                .Where(s => s.MonthYear.HasValue)
+                .Select(s => DateTime.SpecifyKind(s.MonthYear!.Value, DateTimeKind.Utc))
                 .Distinct()
                 .OrderByDescending(d => d)
-                .ToListAsync();
+                .ToList();
         }
 
         public async Task<IActionResult> OnPostAsync()

@@ -150,7 +150,7 @@ namespace LeaderSurvey.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CompletionDate")
+                    b.Property<DateTimeOffset>("CompletionDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("LeaderId")

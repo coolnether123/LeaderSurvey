@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LeaderSurvey.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250311054301_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250311171943_UpdateDateTimeHandling")]
+    partial class UpdateDateTimeHandling
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -153,7 +153,7 @@ namespace LeaderSurvey.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CompletionDate")
+                    b.Property<DateTimeOffset>("CompletionDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("LeaderId")

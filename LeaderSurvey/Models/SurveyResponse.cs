@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LeaderSurvey.Models
@@ -9,13 +10,12 @@ namespace LeaderSurvey.Models
         public int SurveyId { get; set; }
         public int LeaderId { get; set; }
         
-        private DateTime _completionDate = DateTime.UtcNow;
+        private DateTimeOffset _completionDate = DateTimeOffset.UtcNow;
 
-        [Column(TypeName = "timestamp with time zone")]
-        public DateTime CompletionDate 
+        public DateTimeOffset CompletionDate 
         { 
             get => _completionDate;
-            set => _completionDate = DateTime.SpecifyKind(value, DateTimeKind.Utc);
+            set => _completionDate = value;
         }
         
         public Survey? Survey { get; set; }
@@ -23,7 +23,7 @@ namespace LeaderSurvey.Models
         public ICollection<Answer> Answers { get; set; } = new List<Answer>();
 
         [NotMapped]
-        public DateTime LocalCompletionDate 
+        public DateTimeOffset LocalCompletionDate 
         {
             get => CompletionDate.ToLocalTime();
             set => CompletionDate = value.ToUniversalTime();
