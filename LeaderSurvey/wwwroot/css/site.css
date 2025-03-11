@@ -1070,29 +1070,63 @@ main.pb-3 {
     border-color: #bd2130;
 }
 
-/* Area badge styles */
+/* Area filter badges */
 .area-badge {
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    color: white;
     font-size: 0.875rem;
     font-weight: 500;
-    color: white;
 }
 
+.area-filter-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.area-filter {
+    border: none;
+    background: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.area-filter:hover {
+    background-color: var(--light-red-bg);
+}
+
+.area-filter.active {
+    background-color: #f8f9fa;
+}
+
+.area-filter .area-badge {
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.area-filter:hover .area-badge,
+.area-filter.active .area-badge {
+    opacity: 1;
+}
+
+/* Area badge colors */
 .area-drive {
-    background-color: #2196F3; /* Blue for Drive */
+    background-color: #2196F3;
 }
 
 .area-front {
-    background-color: #4CAF50; /* Green for Front */
+    background-color: #4CAF50;
 }
 
 .area-kitchen {
-    background-color: #FF9800; /* Orange for Kitchen */
+    background-color: #FF9800;
 }
 
 .area-hospitality {
-    background-color: #9C27B0; /* Purple for Hospitality */
+    background-color: #9C27B0;
 }
 
 .notification-toast {
