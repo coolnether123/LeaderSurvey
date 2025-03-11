@@ -1,0 +1,96 @@
+﻿@page "{surveyId:int}"
+@model LeaderSurvey.Pages.QuestionsModel
+@{
+    ViewData["Title"] = "Survey Questions";
+}
+
+<div class="container mt-4">
+    <h2>Questions for Survey: @Model.Survey?.Name</h2>
+    <p class="text-muted">Area: @Model.Survey?.Area</p>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Current Questions (@Model.Questions.Count)</h5>
+        </div>
+        <div class="card-body">
+            @if (!Model.Questions.Any())
+            {
+                <div class="alert alert-info">
+                    No questions have been added to this survey yet.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Question</th>
+                                <th>Type</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var question in Model.Questions.OrderBy(q => q.QuestionOrder))
+                            {
+                                <tr>
+                                    <td>@question.QuestionOrder</td>
+                                    <td>@question.Text</td>
+                                    <td>@question.QuestionType</td>
+                                    <td>
+                                        <form method="post" asp-page-handler="Delete" 
+                                              asp-route-id="@question.Id" 
+                                              asp-route-surveyId="@Model.SurveyId" 
+                                              onsubmit="return confirm('Are you sure you want to delete this question?');">
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Add New Question</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" asp-route-surveyId="@Model.SurveyId">
+                <div class="mb-3">
+                    <label asp-for="NewQuestion.Text" class="form-label">Question Text</label>
+                    <input asp-for="NewQuestion.Text" class="form-control" required />
+                    <span asp-validation-for="NewQuestion.Text" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="NewQuestion.QuestionType" class="form-label">Question Type</label>
+                    <select asp-for="NewQuestion.QuestionType" class="form-select" required>
+                        <option value="YesNo">Yes/No</option>
+                        <option value="Scale0To10">Scale (0-10)</option>
+                        <option value="Text">Text Response</option>
+                    </select>
+                    <span asp-validation-for="NewQuestion.QuestionType" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Add Question</button>
+                    <a asp-page="./Surveys" class="btn btn-secondary">Back to Surveys</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts 
+{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

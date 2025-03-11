@@ -1,0 +1,223 @@
+﻿@page
+@model LeaderSurvey.Pages.LeadersModel
+@{
+    ViewData["Title"] = "Leaders";
+}
+
+<h2 class="page-title"><i class="bi bi-people-fill"></i> Leaders Management</h2>
+
+<div class="search-container">
+    <i class="bi bi-search search-icon"></i>
+    <input type="text" id="leaderSearch" class="search-input" placeholder="Search leaders by name or area..." onkeyup="filterLeaders()">
+</div>
+
+<div class="table-container">
+    <table class="table table-cfa" id="leadersTable">
+        <thead>
+            <tr>
+                <th>Full Name</th>
+                <th>Work Area</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var leader in Model.Leaders)
+            {
+                <tr>
+                    <td><i class="bi bi-person-circle me-2"></i>@leader.Name</td>
+                    <td>
+                        <span class="badge" style="background-color: var(--primary-color);">@leader.Area</span>
+                    </td>
+                    <td>
+                        <button class="cfa-btn cfa-btn-sm me-1" onclick="editLeader(@leader.Id)">
+                            <i class="bi bi-pencil-square"></i> Edit
+                        </button>
+                        <button class="cfa-btn cfa-btn-sm me-1" onclick="showLeaderDetails(@leader.Id)">
+                            <i class="bi bi-info-circle"></i> Details
+                        </button>
+                        <button class="cfa-btn cfa-btn-sm cfa-btn-outline" 
+                                onclick="deleteLeader(@leader.Id, '@leader.Name')"
+                                style="border-color: #dc3545; color: #dc3545 !important;">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (!Model.Leaders.Any())
+    {
+        <div class="alert alert-cfa alert-cfa-primary text-center p-4">
+            <i class="bi bi-info-circle me-2 fs-4"></i>
+            <p class="mb-0">No leaders found. Add a new leader to get started.</p>
+        </div>
+    }
+</div>
+
+<div class="card mt-4" id="leaderForm">
+    <div class="card-header">
+        <i class="bi bi-person-plus-fill me-1" id="formIcon"></i>
+        <span id="formTitle">Add New Leader</span>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            @Html.AntiForgeryToken()
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="NewLeader.Name"></label>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                            <input asp-for="NewLeader.Name" class="form-control" />
+                        </div>
+                        <span asp-validation-for="NewLeader.Name" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label asp-for="NewLeader.Area"></label>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text"><i class="bi bi-geo-alt-fill"></i></span>
+                            <select asp-for="NewLeader.Area" class="form-select">
+                                <option value="">-- Select Work Area --</option>
+                                <option value="Drive">Drive</option>
+                                <option value="Front">Front</option>
+                                <option value="Hospitality">Hospitality</option>
+                                <option value="Kitchen">Kitchen</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="NewLeader.Area" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    <div class="alert @(Model.StatusMessage.Contains("successfully") ? "alert-cfa-success" : "alert-cfa-danger") alert-dismissible fade show" role="alert">
+        <i class="bi @(Model.StatusMessage.Contains("successfully") ? "bi-check-circle" : "bi-exclamation-circle") me-2"></i>
+        @Model.StatusMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        function editLeader(id) {
+            // Set form for editing mode
+            document.getElementById('formTitle').innerText = 'Edit Leader';
+            document.getElementById('formIcon').className = 'bi bi-pencil-square me-1';
+            document.getElementById('saveText').innerText = 'Update Leader';
+            document.getElementById('leaderId').value = id;
+            
+            // Find the leader data from the table
+            const table = document.getElementById('leadersTable');
+            const rows = table.getElementsByTagName('tr');
+            
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                if (rows[i].getAttribute('data-id') == id || cells[2].innerHTML.includes('onclick="editLeader(' + id + ')"')) {
+                    // Extract name (remove the icon)
+                    const nameText = cells[0].innerText;
+                    document.getElementById('leaderName').value = nameText;
+                    
+                    // Extract area
+                    const areaText = cells[1].innerText.trim();
+                    document.getElementById('leaderArea').value = areaText;
+                    
+                    break;
+                }
+            }
+            
+            // Scroll to the form
+            document.getElementById('leaderForm').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function resetForm() {
+            document.getElementById('formTitle').innerText = 'Add New Leader';
+            document.getElementById('formIcon').className = 'bi bi-person-plus-fill me-1';
+            document.getElementById('saveText').innerText = 'Save New Leader';
+            document.getElementById('leaderId').value = '0';
+            document.getElementById('leaderName').value = '';
+            document.getElementById('leaderArea').value = '';
+        }
+        
+        function showLeaderDetails(id) {
+            // Find the leader in the table and show details
+            // This could be enhanced to show a modal with more details
+            alert('Details functionality will be implemented soon.');
+        }
+        
+        function deleteLeader(id, name) {
+            if (confirm('Are you sure you want to delete leader "' + name + '"? This action cannot be undone.')) {
+                window.location.href = '/Leaders?handler=Delete&id=' + id;
+            }
+        }
+        
+        function filterLeaders() {
+            const input = document.getElementById('leaderSearch');
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById('leadersTable');
+            const tr = table.getElementsByTagName('tr');
+            
+            for (let i = 1; i < tr.length; i++) {
+                const nameCol = tr[i].getElementsByTagName('td')[0];
+                const areaCol = tr[i].getElementsByTagName('td')[1];
+                
+                if (nameCol && areaCol) {
+                    const nameText = nameCol.textContent || nameCol.innerText;
+                    const areaText = areaCol.textContent || areaCol.innerText;
+                    
+                    if (nameText.toUpperCase().indexOf(filter) > -1 || areaText.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = '';
+                    } else {
+                        tr[i].style.display = 'none';
+                    }
+                }
+            }
+        }
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('resetBtn').addEventListener('click', resetForm);
+            
+            // Form validation
+            const form = document.querySelector('.needs-validation');
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                
+                form.classList.add('was-validated');
+                
+                // Check if leader with same name exists (for edit mode)
+                if (form.checkValidity()) {
+                    const leaderId = document.getElementById('leaderId').value;
+                    const leaderName = document.getElementById('leaderName').value;
+                    
+                    // Only check for duplicates in add mode
+                    if (leaderId === '0') {
+                        const table = document.getElementById('leadersTable');
+                        const rows = table.getElementsByTagName('tr');
+                        
+                        for (let i = 1; i < rows.length; i++) {
+                            const nameCell = rows[i].getElementsByTagName('td')[0];
+                            if (nameCell && nameCell.innerText.trim() === leaderName) {
+                                if (!confirm('A leader with the name "' + leaderName + '" already exists. Do you want to create another leader with the same name?')) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

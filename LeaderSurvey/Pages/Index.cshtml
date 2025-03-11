@@ -1,0 +1,74 @@
+@page
+@model LeaderSurvey.Pages.IndexModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="jumbotron mt-4 text-center">
+    <h1 class="display-4 mb-4">Welcome to the Leader Survey!</h1>
+    <p class="lead mb-4">Manage leaders, create surveys, and share feedback effectively.</p>
+    <hr class="my-4">
+    <p class="mb-4">Get started with one of these options:</p>
+    <div class="d-flex justify-content-center flex-wrap">
+        <a href="/Leaders" class="cfa-btn" onclick="navigateTo('/Leaders'); return false;">
+            <i class="bi bi-people-fill"></i> Manage Leaders
+        </a>
+        <a href="/Surveys" class="cfa-btn" onclick="navigateTo('/Surveys'); return false;">
+            <i class="bi bi-card-checklist"></i> Manage Surveys
+        </a>
+        <a href="/Surveys" class="cfa-btn" onclick="navigateTo('/Surveys'); return false;">
+            <i class="bi bi-check-circle-fill"></i> Take Survey
+        </a>
+    </div>
+</div>
+
+<section class="recent-surveys mt-5">
+    <div class="recent-surveys-header">
+        <h2 class="recent-surveys-title">
+            <i class="bi bi-calendar-check"></i> Recent Surveys
+        </h2>
+    </div>
+
+    @if (Model.DatabaseConnected)
+    {
+        @if (Model.RecentSurveys != null && Model.RecentSurveys.Any())
+        {
+            <div class="row">
+                @foreach (var survey in Model.RecentSurveys)
+                {
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="survey-card">
+                            <h3 class="survey-card-title">@survey.Name</h3>
+                            <div class="survey-card-area">
+                                <i class="bi bi-geo-alt-fill"></i> Area: @(string.IsNullOrEmpty(survey.Area) ? "Not specified" : survey.Area)
+                            </div>
+                            <div class="survey-card-date mt-2">
+                                <i class="bi bi-calendar"></i> @(survey.MonthYear.HasValue ? survey.MonthYear.Value.ToString("MMMM yyyy") : "No date specified")
+                            </div>
+                            <div class="survey-card-actions">
+                                <a href="/Surveys?id=@survey.Id" class="cfa-btn cfa-btn-sm">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+                                <a href="/TakeSurvey/@survey.Id" class="cfa-btn cfa-btn-sm">
+                                    <i class="bi bi-check-square"></i> Take
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-cfa alert-cfa-primary">
+                <i class="bi bi-info-circle me-2"></i> No recent surveys available. <a href="/Surveys" class="alert-link">Create a new survey</a> to get started.
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-cfa alert-cfa-danger">
+            <i class="bi bi-exclamation-triangle me-2"></i> No current database connected. Please check your database connection.
+        </div>
+    }
+</section>

@@ -1,0 +1,96 @@
+﻿@page "{surveyId:int}"
+@model LeaderSurvey.Pages.TakeSurveyModel
+@{
+    ViewData["Title"] = "Take Survey: " + Model.Survey?.Name;
+}
+
+<h2 class="page-title">
+    <i class="bi bi-check2-square"></i> Take Survey: <span class="text-primary">@Model.Survey?.Name</span>
+</h2>
+
+<div class="mb-3">
+    <a class="btn btn-outline-secondary" asp-page="./Surveys">
+        <i class="bi bi-arrow-left"></i> Back to Surveys
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="bi bi-clipboard-check me-1"></i> Survey Form
+    </div>
+    <div class="card-body">
+        <form method="post">
+            <input type="hidden" asp-for="SurveyId" />
+
+            <div class="form-group mb-4">
+                <label asp-for="SelectedLeaderId" class="form-label">Select Leader to Evaluate:</label>
+                <div class="input-group mb-3">
+                    <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                    <select asp-for="SelectedLeaderId" class="form-select" asp-items="Model.LeaderList">
+                        <option value="">-- Select Leader --</option>
+                    </select>
+                </div>
+                <span asp-validation-for="SelectedLeaderId" class="text-danger"></span>
+            </div>
+
+            @if (Model.Questions != null && Model.Questions.Any())
+            {
+                <h5 class="mb-3">Survey Questions</h5>
+                <div class="mb-4">
+                    @foreach (var question in Model.Questions)
+                    {
+                        <div class="card mb-3 border-light shadow-sm">
+                            <div class="card-header bg-light">
+                                <strong><i class="bi bi-question-circle me-2"></i>@question.Text</strong>
+                            </div>
+                            <div class="card-body">
+                                @switch (question.QuestionType)
+                                {
+                                    case "YesNo":
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="Answers[@question.Id]" id="yes_@question.Id" value="Yes" checked>
+                                            <label class="form-check-label" for="yes_@question.Id">Yes</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="Answers[@question.Id]" id="no_@question.Id" value="No">
+                                            <label class="form-check-label" for="no_@question.Id">No</label>
+                                        </div>
+                                        break;
+                                    case "Scale0To10":
+                                        <div class="range-container">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span>0</span>
+                                                <span>5</span>
+                                                <span>10</span>
+                                            </div>
+                                            <input type="range" class="form-range" name="Answers[@question.Id]" min="0" max="10" step="1" id="range_@question.Id" 
+                                                oninput="document.getElementById('rangeValue_@question.Id').innerText = this.value;">
+                                            <div class="text-center mt-2">
+                                                Selected value: <span id="rangeValue_@question.Id">5</span>
+                                            </div>
+                                        </div>
+                                        break;
+                                    case "Text":
+                                        <textarea name="Answers[@question.Id]" class="form-control" rows="3" placeholder="Enter your answer here..."></textarea>
+                                        break;
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-send"></i> Submit Survey
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> No questions are available for this survey.
+                </div>
+            }
+        </form>
+    </div>
+</div>
