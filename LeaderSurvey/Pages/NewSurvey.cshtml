@@ -74,7 +74,7 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label asp-for="Survey.MonthYear" class="form-label">Month/Year</label>
-                                <input type="month" asp-for="Survey.MonthYear" class="form-control" required />
+                                <input type="month" asp-for="Survey.MonthYear" class="form-control month-year-input" required />
                                 <span asp-validation-for="Survey.MonthYear" class="text-danger"></span>
                             </div>
                         </div>
@@ -258,5 +258,8 @@
         .area-kitchen { background-color: #dc3545; color: white; }
         .area-hospitality { background-color: #6f42c1; color: white; }
         .area-all { background-color: #212529; color: white; }
+        .month-year-input {
+            width: 180px !important;
+        }
     </style>
 }
