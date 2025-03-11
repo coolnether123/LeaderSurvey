@@ -1168,3 +1168,36 @@ main.pb-3 {
     color: var(--primary-color);
     border-bottom: 2px solid var(--primary-color);
 }
+
+/* Add these styles to your existing CSS */
+.sortable-ghost {
+    opacity: 0.5;
+    background-color: #f8f9fa;
+}
+
+.drag-handle {
+    color: #6c757d;
+    cursor: move;
+}
+
+.drag-handle:hover {
+    color: #495057;
+}
+
+.question-number {
+    font-weight: bold;
+    color: #495057;
+}
+
+.table-cfa td {
+    vertical-align: middle;
+}
+
+/* Question type badges */
+.badge.bg-primary {
+    background-color: #e51636 !important;
+}
+
+.badge.bg-success {
+    background-color: #00a6d6 !important;
+}

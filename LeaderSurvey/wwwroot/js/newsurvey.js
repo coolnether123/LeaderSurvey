@@ -1,115 +1,170 @@
-let questionCount = 0;
+// Global variables
+let questions = [];
+let questionModal = null;
 
-// Initialize form validation
+// Initialize everything when the document is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Prevent form submission if no questions
-    document.getElementById('surveyForm').addEventListener('submit', function(e) {
-        if (questionCount === 0) {
-            e.preventDefault();
-            showNotification('Please add at least one question to the survey.', 'warning');
-            return false;
-        }
-    });
+    // Initialize the Bootstrap modal
+    questionModal = new bootstrap.Modal(document.getElementById('questionModal'));
+    
+    // Initialize Sortable
+    if (document.getElementById('questionsContainer')) {
+        new Sortable(document.getElementById('questionsContainer'), {
+            animation: 150,
+            handle: '.drag-handle',
+            onEnd: updateQuestionNumbers
+        });
+    }
+
+    // Initialize form submission handling
+    const surveyForm = document.getElementById('surveyForm');
+    if (surveyForm) {
+        surveyForm.addEventListener('submit', function(e) {
+            if (questions.length === 0) {
+                e.preventDefault();
+                alert('Please add at least one question to the survey.');
+                return false;
+            }
+            return true;
+        });
+    }
 });
 
-function addQuestion() {
-    if (questionCount >= 10) {
-        showNotification('Maximum 10 questions allowed', 'warning');
+// Function to show the add question modal
+window.showAddQuestionModal = function() {
+    if (questions.length >= 10) {
+        alert('Maximum 10 questions allowed');
+        return;
+    }
+    
+    document.getElementById('questionModalLabel').textContent = 'Add New Question';
+    document.getElementById('questionForm').reset();
+    document.getElementById('questionIndex').value = '';
+    questionModal.show();
+};
+
+// Function to save the question
+window.saveQuestion = function() {
+    const form = document.getElementById('questionForm');
+    
+    if (!form.checkValidity()) {
+        form.classList.add('was-validated');
         return;
     }
 
-    questionCount++;
-    const questionItem = createQuestionElement(questionCount);
-    document.getElementById('questionsContainer').appendChild(questionItem);
-    updateQuestionCounter();
-}
+    const questionText = document.getElementById('questionText').value.trim();
+    const questionType = document.getElementById('questionType').value;
+    const questionIndex = document.getElementById('questionIndex').value;
 
-function createQuestionElement(number) {
-    const div = document.createElement('div');
-    div.className = 'question-item d-flex align-items-center mb-3';
-    div.innerHTML = `
-        <i class="bi bi-grip-vertical question-drag-handle"></i>
-        <div class="question-number">${number}</div>
-        <div class="flex-grow-1">
-            <input type="text" 
-                   name="Survey.Questions[${number-1}].Text" 
-                   class="form-control mb-2" 
-                   placeholder="Enter your question here..." 
-                   required>
-            <select name="Survey.Questions[${number-1}].QuestionType" 
-                    class="form-select question-type-select">
-                <option value="yesno">Yes/No</option>
-                <option value="score">Score (0-10)</option>
-            </select>
-        </div>
-        <button class="cfa-btn cfa-btn-sm cfa-btn-outline ms-3" onclick="deleteQuestion(this)">
-            <i class="bi bi-trash"></i>
-        </button>
-    `;
-
-    // Add animation class
-    div.classList.add('question-item-new');
-    setTimeout(() => div.classList.remove('question-item-new'), 300);
-
-    return div;
-}
-
-function deleteQuestion(button) {
-    if (confirm('Are you sure you want to delete this question?')) {
-        const questionItem = button.closest('.question-item');
-        questionItem.classList.add('deleting');
-        
-        setTimeout(() => {
-            questionItem.remove();
-            questionCount--;
-            updateQuestionCounter();
-            renumberQuestions();
-        }, 300);
+    if (questionIndex === '') {
+        // Add new question
+        addQuestionToTable({
+            text: questionText,
+            type: questionType
+        });
+    } else {
+        // Update existing question
+        updateQuestionInTable(parseInt(questionIndex), {
+            text: questionText,
+            type: questionType
+        });
     }
+
+    questionModal.hide();
+    form.classList.remove('was-validated');
+};
+
+function addQuestionToTable(question) {
+    const questionNumber = questions.length + 1;
+    questions.push(question);
+
+    const tbody = document.getElementById('questionsContainer');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td>${questionNumber}</td>
+        <td>${question.text}</td>
+        <td>${question.type === 'yesno' ? 'Yes/No' : 'Score (0-10)'}</td>
+        <td>
+            <button type="button" class="btn btn-sm btn-outline-primary me-2" onclick="editQuestion(${questions.length - 1})">
+                <i class="bi bi-pencil"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteQuestion(${questions.length - 1})">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+        <td>
+            <i class="bi bi-grip-vertical drag-handle"></i>
+        </td>
+    `;
+    tbody.appendChild(tr);
+    
+    updateQuestionCounter();
+    updateQuestionsInput();
+}
+
+window.editQuestion = function(index) {
+    const question = questions[index];
+    document.getElementById('questionModalLabel').textContent = 'Edit Question';
+    document.getElementById('questionText').value = question.text;
+    document.getElementById('questionType').value = question.type;
+    document.getElementById('questionIndex').value = index;
+    questionModal.show();
+};
+
+window.deleteQuestion = function(index) {
+    if (confirm('Are you sure you want to delete this question?')) {
+        questions.splice(index, 1);
+        updateQuestionTable();
+        updateQuestionCounter();
+        updateQuestionsInput();
+    }
+};
+
+function updateQuestionTable() {
+    const tbody = document.getElementById('questionsContainer');
+    tbody.innerHTML = '';
+    questions.forEach((question, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${question.text}</td>
+            <td>${question.type === 'yesno' ? 'Yes/No' : 'Score (0-10)'}</td>
+            <td>
+                <button type="button" class="btn btn-sm btn-outline-primary me-2" onclick="editQuestion(${index})">
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteQuestion(${index})">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+            <td>
+                <i class="bi bi-grip-vertical drag-handle"></i>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
 }
 
 function updateQuestionCounter() {
     const counter = document.getElementById('question-counter');
-    counter.textContent = `${questionCount}/10`;
-    
-    // Update add question button visibility
-    const addButton = document.querySelector('#add-question-btn');
-    if (addButton) {
-        addButton.style.display = questionCount >= 10 ? 'none' : 'block';
-    }
+    counter.textContent = `${questions.length}/10`;
 }
 
-function renumberQuestions() {
-    const questions = document.querySelectorAll('.question-item');
-    questions.forEach((question, index) => {
-        const number = index + 1;
-        question.querySelector('.question-number').textContent = number;
-        
-        // Update input names to maintain proper indexing
-        const textInput = question.querySelector('input[type="text"]');
-        const typeSelect = question.querySelector('select');
-        
-        textInput.name = `Survey.Questions[${index}].Text`;
-        typeSelect.name = `Survey.Questions[${index}].QuestionType`;
+function updateQuestionsInput() {
+    let questionsInput = document.getElementById('questionsInput');
+    if (!questionsInput) {
+        questionsInput = document.createElement('input');
+        questionsInput.type = 'hidden';
+        questionsInput.name = 'Survey.Questions';
+        questionsInput.id = 'questionsInput';
+        document.getElementById('surveyForm').appendChild(questionsInput);
+    }
+    questionsInput.value = JSON.stringify(questions);
+}
+
+function updateQuestionNumbers() {
+    const rows = document.querySelectorAll('#questionsContainer tr');
+    rows.forEach((row, index) => {
+        row.cells[0].textContent = (index + 1).toString();
     });
 }
-// Add some CSS animations
-const style = document.createElement('style');
-style.textContent = `
-    .question-item {
-        transition: all 0.3s ease;
-        opacity: 1;
-        transform: translateX(0);
-    }
-    
-    .question-item-new {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-    
-    .deleting {
-        opacity: 0;
-        transform: translateX(20px);
-    }
-`;
-document.head.appendChild(style);
