@@ -430,10 +430,38 @@ body.navigating {
     }
 
 .card-header {
+    width: 1354px;
+    height: 40.8px;
+    padding: 8px 16px;
+    margin: 0;
+    border-width: 0 0 0.8px 0;
+    box-sizing: border-box;
     background-color: var(--primary-color);
     color: white;
     border-radius: 0.5rem 0.5rem 0 0 !important;
     font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Ensure consistent sizing for both edit and new leader states */
+.card-header #formTitle {
+    font-size: 1rem;
+    min-width: 120px;
+    display: inline-block;
+}
+
+.card-header #formIcon {
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+}
+
+.card-header > div {
+    display: flex;
+    align-items: center;
+    min-width: 150px;
 }
 
 .table {
@@ -661,6 +689,23 @@ a {
 .cfa-btn-sm {
     padding: 8px 15px;
     font-size: 0.875rem;
+}
+
+/* Add this after the .cfa-btn styles */
+.card-body form button[type="submit"] {
+    float: right;
+    padding: 15px 35px;  /* Slightly bigger padding */
+    font-size: 1.1rem;   /* Slightly bigger font */
+    margin-right: 0;     /* Remove right margin */
+    margin-top: 1rem;    /* Add some top spacing */
+    border-radius: 30px; /* Match other CFA buttons */
+}
+
+/* Clear the float */
+.card-body form::after {
+    content: "";
+    display: table;
+    clear: both;
 }
 
 /* Search controls */
