@@ -376,56 +376,61 @@
         // AREA FILTER & LEADER SELECTION
         // -------------------------------
         document.addEventListener('DOMContentLoaded', function() {
-            const areaSelect = document.getElementById('areaSelect');
-            const leaderSelect = document.getElementById('leaderSelect');
+            const areaSelect = document.getElementById('Survey_Area');
+            const leaderSelect = document.getElementById('Survey_LeaderId');
             const areaFilterButtons = document.querySelectorAll('.area-filter');
-            
-            // Area filter button clicks
-            areaFilterButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    areaFilterButtons.forEach(btn => btn.classList.remove('active'));
-                    this.classList.add('active');
-                    filterLeadersByArea(this.dataset.area);
-                });
-            });
 
-            // When manually selecting an area, update the filter buttons
-            if (areaSelect) {
-                areaSelect.addEventListener('change', function() {
-                    // Clear the filter buttons
-                    areaFilterButtons.forEach(btn => btn.classList.remove('active'));
-                    // Find and activate the matching area button or "All" if none matches
-                    const matchingButton = document.querySelector(`.area-filter[data-area="${this.value}"]`) || 
-                                         document.querySelector('.area-filter[data-area=""]');
-                    if (matchingButton) matchingButton.classList.add('active');
-                    // Show all leaders
-                    filterLeadersByArea(this.value);
-                });
-            }
-            
-            // Auto-update area select when a leader is chosen
-            if (leaderSelect) {
-                leaderSelect.addEventListener('change', function() {
-                    const selectedOption = leaderSelect.options[leaderSelect.selectedIndex];
-                    if (selectedOption.value && areaSelect && !areaSelect.value) {
-                        areaSelect.value = selectedOption.dataset.area;
+            // Store original leaders for filtering
+            const originalOptions = Array.from(leaderSelect.options)
+                .filter(option => option.value !== "")
+                .sort((a, b) => a.text.localeCompare(b.text));
+
+            function filterLeadersByArea(selectedArea) {
+                // Keep the placeholder
+                const placeholder = leaderSelect.options[0];
+                
+                // Clear current options except placeholder
+                leaderSelect.innerHTML = '';
+                leaderSelect.appendChild(placeholder);
+
+                // Filter and add leaders
+                originalOptions.forEach(option => {
+                    if (!selectedArea || option.dataset.area === selectedArea) {
+                        leaderSelect.appendChild(option.cloneNode(true));
                     }
                 });
             }
 
-            function filterLeadersByArea(selectedArea) {
-                const leaderSelect = document.getElementById('leaderSelect');
-                if (!leaderSelect) return;
-                
-                Array.from(leaderSelect.options).forEach(option => {
-                    if (option.value === "") return; // skip placeholder
-                    option.style.display = (!selectedArea || option.dataset.area === selectedArea) ? '' : 'none';
+            // Handle area filter button clicks
+            areaFilterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    areaFilterButtons.forEach(btn => btn.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    const selectedArea = this.dataset.area;
+                    filterLeadersByArea(selectedArea);
                 });
+            });
 
-                // If current selection is hidden, reset to placeholder
-                if (leaderSelect.selectedOptions[0].style.display === 'none') {
-                    leaderSelect.value = '';
-                }
+            // Handle leader select changes
+            if (leaderSelect) {
+                leaderSelect.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    if (selectedOption.value && areaSelect && !areaSelect.value) {
+                        const leaderArea = selectedOption.dataset.area;
+                        areaSelect.value = leaderArea;
+                    }
+                });
+            }
+
+            // Handle area select changes
+            if (areaSelect) {
+                areaSelect.addEventListener('change', function() {
+                    // Do not update filter buttons when area select changes
+                    // Only update the leader list if needed based on selection
+                });
             }
         });
 
