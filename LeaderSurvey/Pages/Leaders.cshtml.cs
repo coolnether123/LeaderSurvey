@@ -36,6 +36,8 @@ namespace LeaderSurvey.Pages
         {
             [Required(ErrorMessage = "Leader name is required")]
             [Display(Name = "Full Name")]
+            [StringLength(100, MinimumLength = 2, ErrorMessage = "Name must be between 2 and 100 characters")]
+            [RegularExpression(@"^[a-zA-Z\s-']+$", ErrorMessage = "Name can only contain letters, spaces, hyphens and apostrophes")]
             public required string Name { get; set; }
             
             [Required(ErrorMessage = "Work area is required")]
@@ -64,29 +66,57 @@ namespace LeaderSurvey.Pages
         {
             try 
             {
-                if (!ModelState.IsValid)
+                // Debug line to check what's coming in
+                var isValid = ModelState.IsValid;
+                var modelStateErrors = string.Join("; ", ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage));
+
+                if (!isValid)
                 {
                     Leaders = await _context.Leaders.ToListAsync();
-                    StatusMessage = "It's our pleasure to inform you that some required fields need your attention.";
+                    StatusMessage = $"Validation errors: {modelStateErrors}";
+                    return Page();
+                }
+
+                // Sanitize input
+                var sanitizedName = NewLeader.Name?.Trim().Replace("  ", " ") ?? string.Empty;
+                var sanitizedArea = NewLeader.Area?.Trim() ?? string.Empty;
+
+                if (string.IsNullOrWhiteSpace(sanitizedName) || string.IsNullOrWhiteSpace(sanitizedArea))
+                {
+                    ModelState.AddModelError(string.Empty, "Name and Area are required");
+                    Leaders = await _context.Leaders.ToListAsync();
+                    return Page();
+                }
+
+                // Check if leader with same name already exists
+                var existingLeader = await _context.Leaders
+                    .FirstOrDefaultAsync(l => l.Name.ToLower() == sanitizedName.ToLower());
+                
+                if (existingLeader != null)
+                {
+                    ModelState.AddModelError("NewLeader.Name", "A leader with this name already exists");
+                    Leaders = await _context.Leaders.ToListAsync();
                     return Page();
                 }
 
                 var leader = new Leader 
                 { 
-                    Name = NewLeader.Name.Trim(),
-                    Area = NewLeader.Area.Trim()
+                    Name = sanitizedName,
+                    Area = sanitizedArea
                 };
 
                 _context.Leaders.Add(leader);
                 await _context.SaveChangesAsync();
                 
-                StatusMessage = "It's our pleasure to confirm that the leader was successfully added!";
+                StatusMessage = "Leader was successfully added!";
                 return RedirectToPage();
             }
-            catch (Exception) // Remove the 'ex' variable since it's not being used
+            catch (Exception ex) 
             {
                 Leaders = await _context.Leaders.ToListAsync();
-                StatusMessage = "We apologize, but we encountered an unexpected error. Please try again.";
+                StatusMessage = $"An error occurred: {ex.Message}";
                 return Page();
             }
         }
