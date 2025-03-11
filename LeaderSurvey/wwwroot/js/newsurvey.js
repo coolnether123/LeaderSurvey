@@ -1,6 +1,10 @@
 // Global variables
 let questions = [];
 
+function getAddQuestionButton() {
+    return document.querySelector('[data-role="add-question"]');
+}
+
 // Initialize everything when the document is ready
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize Sortable
@@ -40,7 +44,9 @@ document.addEventListener('DOMContentLoaded', function() {
     updateQuestionCounter();
 });
 
-window.addNewQuestionRow = function() {
+window.addNewQuestionRow = function(e) {
+    if (e) e.preventDefault();
+    
     if (questions.length >= 10) {
         alert('Maximum 10 questions allowed');
         return;
@@ -52,6 +58,7 @@ window.addNewQuestionRow = function() {
     const tr = document.createElement('tr');
     tr.dataset.isNew = 'true';
     tr.dataset.index = questions.length.toString();
+    
     tr.innerHTML = `
         <td>${questionNumber}</td>
         <td>
@@ -77,10 +84,11 @@ window.addNewQuestionRow = function() {
     `;
     
     tbody.appendChild(tr);
-    tr.querySelector('input').focus();
+    tr.querySelector('input').focus({preventScroll: true});
     
     // Disable the Add Question button while editing
-    document.getElementById('addQuestionBtn').disabled = true;
+    const addButton = getAddQuestionButton();
+    if (addButton) addButton.disabled = true;
     
     updateQuestionCounter();
 };
@@ -100,20 +108,17 @@ window.saveQuestionRow = function(button) {
     const index = parseInt(row.dataset.index);
     
     if (row.dataset.isNew === 'true') {
-        // Add new question
         questions.push({
             text: questionText,
             type: questionType
         });
     } else {
-        // Update existing question
         questions[index] = {
             text: questionText,
             type: questionType
         };
     }
 
-    // Convert row to static display
     row.innerHTML = `
         <td>${row.cells[0].textContent}</td>
         <td>${questionText}</td>
@@ -132,7 +137,8 @@ window.saveQuestionRow = function(button) {
     `;
 
     // Re-enable the Add Question button
-    document.getElementById('addQuestionBtn').disabled = false;
+    const addButton = getAddQuestionButton();
+    if (addButton) addButton.disabled = false;
     
     updateQuestionCounter();
     updateQuestionNumbers();
@@ -199,7 +205,11 @@ window.cancelEdit = function(button, index) {
 window.removeQuestionRow = function(button) {
     const row = button.closest('tr');
     row.remove();
-    document.getElementById('addQuestionBtn').disabled = false;
+    
+    // Re-enable the Add Question button
+    const addButton = getAddQuestionButton();
+    if (addButton) addButton.disabled = false;
+    
     updateQuestionCounter();
     updateQuestionNumbers();
 };
@@ -226,18 +236,24 @@ window.deleteQuestion = function(button) {
 function updateQuestionNumbers() {
     const rows = document.querySelectorAll('#questionsContainer tr');
     rows.forEach((row, index) => {
-        row.cells[0].textContent = (index + 1).toString();
+        const numberCell = row.cells[0];
+        if (numberCell) {
+            numberCell.textContent = (index + 1).toString();
+        }
+        // Update the data-index attribute to match the new order
+        row.dataset.index = index.toString();
     });
 }
 
 function updateQuestionCounter() {
     const counter = document.getElementById('question-counter');
-    counter.textContent = `${questions.length}/10`;
+    const currentCount = questions.length;
+    counter.textContent = `${currentCount}/10`;
     
     // Update Add Question button state
-    const addButton = document.getElementById('addQuestionBtn');
+    const addButton = getAddQuestionButton();
     if (addButton) {
-        addButton.disabled = questions.length >= 10 || addButton.disabled;
+        addButton.disabled = currentCount >= 10 || document.querySelector('#questionsContainer tr[data-is-new="true"]') !== null;
     }
 }
 
