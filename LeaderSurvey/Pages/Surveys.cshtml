@@ -4,344 +4,58 @@
     ViewData["Title"] = "Surveys";
 }
 
-<h2 class="page-title"><i class="bi bi-card-checklist"></i> Surveys Management</h2>
-
-@if (Model.IsFiltered && !string.IsNullOrEmpty(Model.FilteredLeaderName))
-{
-    <div class="alert alert-cfa alert-cfa-primary mb-4">
-        <i class="bi bi-filter-circle me-2"></i>
-        Showing surveys for leader: <strong>@Model.FilteredLeaderName</strong>
-        <a href="/Surveys" class="float-end text-decoration-none">
-            <i class="bi bi-x-circle"></i> Clear filter
-        </a>
+<div class="container">
+    <div class="filters-section">
+        <div class="filter-group">
+            <select id="dateFilter" class="cfa-select" onchange="applyFilters()">
+                <option value="">Select Month</option>
+                @foreach (var date in Model.AvailableDates)
+                {
+                    <option value="@date.ToString("yyyy-MM")">@date.ToString("MMMM yyyy")</option>
+                }
+            </select>
+        </div>
+        <!-- Other filters -->
     </div>
-}
 
-<div class="search-container">
-    <i class="bi bi-search search-icon"></i>
-    <input type="text" id="surveySearch" class="search-input" placeholder="Search surveys by name or area..." onkeyup="filterSurveys()">
-</div>
-
-<div class="table-container">
-    <table class="table table-cfa" id="surveysTable">
-        <thead>
-            <tr>
-                <th>Survey Name</th>
-                <th>Area</th>
-                <th>Leader</th>
-                <th>Month/Year</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var survey in Model.Surveys)
-            {
+    <div class="table-responsive">
+        <table id="surveysTable" class="table">
+            <thead>
                 <tr>
-                    <td><i class="bi bi-file-earmark-text me-2"></i>@survey.Name</td>
-                    <td>
-                        @if (!string.IsNullOrEmpty(survey.Area))
-                        {
-                            <span class="badge" style="background-color: var(--primary-color);">@survey.Area</span>
-                        }
-                        else
-                        {
-                            <span class="text-muted">Not specified</span>
-                        }
-                    </td>
-                    <td>
-                        @if (survey.Leader != null)
-                        {
-                            <i class="bi bi-person-circle me-1"></i>@survey.Leader.Name
-                        }
-                        else
-                        {
-                            <span class="text-muted">Not assigned</span>
-                        }
-                    </td>
-                    <td>
-                        @if (survey.MonthYear.HasValue)
-                        {
-                            @survey.MonthYear.Value.ToString("MMMM yyyy")
-                        }
-                        else
-                        {
-                            <span class="text-muted">Not specified</span>
-                        }
-                    </td>
-                    <td>
-                        <button class="cfa-btn cfa-btn-sm me-1" onclick="window.location.href='/Questions?surveyId=@survey.Id'">
-                            <i class="bi bi-list-check"></i> Questions
-                        </button>
-                        <button class="cfa-btn cfa-btn-sm me-1" onclick="editSurvey(@survey.Id)">
-                            <i class="bi bi-pencil-square"></i> Edit
-                        </button>
-                        <button class="cfa-btn cfa-btn-sm me-1" onclick="window.location.href='/TakeSurvey?surveyId=@survey.Id'">
-                            <i class="bi bi-check2-square"></i> Take
-                        </button>
-                        <button class="cfa-btn cfa-btn-sm cfa-btn-outline" 
-                                onclick="deleteSurvey(@survey.Id, '@survey.Name')"
-                                style="border-color: #dc3545; color: #dc3545 !important;">
-                            <i class="bi bi-trash"></i> Delete
-                        </button>
-                    </td>
+                    <th>Name</th>
+                    <th>Leader</th>
+                    <th>Area</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-
-    @if (!Model.Surveys.Any())
-    {
-        <div class="alert alert-cfa alert-cfa-primary text-center p-4">
-            <i class="bi bi-info-circle me-2 fs-4"></i>
-            <p class="mb-0">No surveys found. Add a new survey to get started.</p>
-        </div>
-    }
-</div>
-
-<div class="card mt-4" id="surveyForm">
-    <div class="card-header">
-        <i class="bi bi-plus-square-fill me-1" id="formIcon"></i>
-        <span id="formTitle">Add New Survey</span>
-    </div>
-    <div class="card-body">
-        <form method="post" class="needs-validation" novalidate>
-            <input type="hidden" id="surveyId" name="SurveyId" value="0" />
-            
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label asp-for="NewSurvey.Name">Survey Name</label>
-                        <div class="input-group mb-3">
-                            <span class="input-group-text"><i class="bi bi-tag-fill"></i></span>
-                            <input asp-for="NewSurvey.Name" id="surveyName" class="form-control" placeholder="Enter survey name" required />
-                        </div>
-                        <div class="invalid-feedback">Survey name is required.</div>
-                        <span asp-validation-for="NewSurvey.Name" class="text-danger"></span>
-                    </div>
-                </div>
-                
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="leaderSelect">Select Leader</label>
-                        <div class="form-field-with-button">
-                            <div class="input-group mb-3">
-                                <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                                <select id="leaderSelect" class="form-select" asp-for="NewSurvey.LeaderId" asp-items="Model.LeaderSelectList">
-                                    <option value="">-- Select Leader --</option>
-                                </select>
-                            </div>
-                            <button type="button" class="add-button" title="Need a new leader? Make one!" onclick="window.location.href='/Leaders'">
-                                <i class="bi bi-plus"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label asp-for="NewSurvey.Area">Area</label>
-                        <div class="input-group mb-3">
-                            <span class="input-group-text"><i class="bi bi-geo-alt-fill"></i></span>
-                            <input asp-for="NewSurvey.Area" id="areaInput" class="form-control" placeholder="Will default to leader's area if selected" />
-                        </div>
-                        <span asp-validation-for="NewSurvey.Area" class="text-danger"></span>
-                    </div>
-                </div>
-                
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="monthYearPicker">Month/Year</label>
-                        <div class="input-group mb-3">
-                            <span class="input-group-text"><i class="bi bi-calendar"></i></span>
-                            <input type="month" id="monthYearPicker" class="form-control" asp-for="NewSurvey.MonthYear" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label asp-for="NewSurvey.Description">Survey Description</label>
-                <div class="input-group mb-3">
-                    <span class="input-group-text"><i class="bi bi-card-text"></i></span>
-                    <textarea asp-for="NewSurvey.Description" id="surveyDescription" class="form-control" placeholder="Enter survey description" rows="3"></textarea>
-                </div>
-                <span asp-validation-for="NewSurvey.Description" class="text-danger"></span>
-            </div>
-            
-            <div class="d-flex justify-content-between mt-3">
-                <button type="button" id="resetBtn" class="cfa-btn cfa-btn-outline">
-                    <i class="bi bi-arrow-counterclockwise"></i> Reset Form
-                </button>
-                <button type="submit" id="saveBtn" class="cfa-btn">
-                    <i class="bi bi-save"></i> <span id="saveText">Save New Survey</span>
-                </button>
-            </div>
-        </form>
+            </thead>
+            <tbody>
+                @foreach (var survey in Model.Surveys)
+                {
+                    <tr data-leader="@survey.LeaderId" 
+                        data-area="@survey.Area" 
+                        data-date="@survey.MonthYear?.ToLocalTime().ToString("yyyy-MM")" 
+                        data-status="@survey.Status.ToLower()">
+                        <td>@survey.Name</td>
+                        <td>@survey.Leader?.Name</td>
+                        <td>@survey.Area</td>
+                        <td>@survey.LocalDate.ToString("g")</td>
+                        <td>
+                            <span class="status-badge status-@survey.Status.ToLower()">
+                                @survey.Status
+                            </span>
+                        </td>
+                        <td>
+                            <!-- Actions -->
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 </div>
-@if (Model.SelectedSurvey != null)
-{
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <i class="bi bi-pencil-square me-1"></i> Edit Survey
-            </div>
-            <div class="card-body">
-                <form method="post" asp-page-handler="Update">
-                    <input type="hidden" asp-for="SelectedSurvey.Id" />
-                    <div class="form-group">
-                        <label asp-for="SelectedSurvey.Name">Survey Name</label>
-                        <div class="input-group mb-3">
-                            <span class="input-group-text"><i class="bi bi-tag-fill"></i></span>
-                            <input asp-for="SelectedSurvey.Name" class="form-control" />
-                        </div>
-                        <span asp-validation-for="SelectedSurvey.Name" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="SelectedSurvey.Description">Survey Description</label>
-                        <div class="input-group mb-3">
-                            <span class="input-group-text"><i class="bi bi-card-text"></i></span>
-                            <textarea asp-for="SelectedSurvey.Description" class="form-control" rows="3"></textarea>
-                        </div>
-                        <span asp-validation-for="SelectedSurvey.Description" class="text-danger"></span>
-                    </div>
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-check-circle"></i> Update Survey
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-}
 
 @section Scripts {
-    <script>
-        function editSurvey(id) {
-            // Set form for editing mode
-            document.getElementById('formTitle').innerText = 'Edit Survey';
-            document.getElementById('formIcon').className = 'bi bi-pencil-square me-1';
-            document.getElementById('saveText').innerText = 'Update Survey';
-            document.getElementById('surveyId').value = id;
-            
-            // Find the survey data from the table
-            const table = document.getElementById('surveysTable');
-            const rows = table.getElementsByTagName('tr');
-            
-            for (let i = 1; i < rows.length; i++) {
-                const cells = rows[i].getElementsByTagName('td');
-                if (rows[i].getAttribute('data-id') == id || cells[4].innerHTML.includes('editSurvey(' + id + ')')) {
-                    // Extract name (remove the icon)
-                    const nameText = cells[0].innerText;
-                    document.getElementById('surveyName').value = nameText;
-                    
-                    // Extract area
-                    let areaText = cells[1].innerText.trim();
-                    if (areaText === 'Not specified') {
-                        areaText = '';
-                    }
-                    document.getElementById('areaInput').value = areaText;
-                    
-                    // Extract leader if present
-                    const leaderText = cells[2].innerText.trim();
-                    // Note: You would need to set the leader dropdown by ID which would require
-                    // the ID to be available in the table or through additional logic
-                    
-                    // Extract description
-                    // Note: Description might not be visible in the table, so it may need to be populated
-                    // through a server-side request or stored data attribute
-                    
-                    break;
-                }
-            }
-            
-            // Scroll to the form
-            document.getElementById('surveyForm').scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        function resetForm() {
-            document.getElementById('formTitle').innerText = 'Add New Survey';
-            document.getElementById('formIcon').className = 'bi bi-plus-square-fill me-1';
-            document.getElementById('saveText').innerText = 'Save New Survey';
-            document.getElementById('surveyId').value = '0';
-            document.getElementById('surveyName').value = '';
-            document.getElementById('areaInput').value = '';
-            document.getElementById('surveyDescription').value = '';
-            document.getElementById('leaderSelect').selectedIndex = 0;
-            document.getElementById('monthYearPicker').value = '';
-        }
-        
-        function deleteSurvey(id, name) {
-            if (confirm('Are you sure you want to delete survey "' + name + '"? This action cannot be undone.')) {
-                window.location.href = '/Surveys?handler=Delete&id=' + id;
-            }
-        }
-        
-        function filterSurveys() {
-            const input = document.getElementById('surveySearch');
-            const filter = input.value.toUpperCase();
-            const table = document.getElementById('surveysTable');
-            const tr = table.getElementsByTagName('tr');
-            
-            for (let i = 1; i < tr.length; i++) {
-                const nameCol = tr[i].getElementsByTagName('td')[0];
-                const areaCol = tr[i].getElementsByTagName('td')[1];
-                const leaderCol = tr[i].getElementsByTagName('td')[2];
-                
-                if (nameCol && areaCol && leaderCol) {
-                    const nameText = nameCol.textContent || nameCol.innerText;
-                    const areaText = areaCol.textContent || areaCol.innerText;
-                    const leaderText = leaderCol.textContent || leaderCol.innerText;
-                    
-                    if (nameText.toUpperCase().indexOf(filter) > -1 || 
-                        areaText.toUpperCase().indexOf(filter) > -1 ||
-                        leaderText.toUpperCase().indexOf(filter) > -1) {
-                        tr[i].style.display = '';
-                    } else {
-                        tr[i].style.display = 'none';
-                    }
-                }
-            }
-        }
-        
-        // Update area based on selected leader
-        function updateAreaFromLeader() {
-            const leaderSelect = document.getElementById('leaderSelect');
-            const areaInput = document.getElementById('areaInput');
-            
-            if (leaderSelect.value) {
-                // This would require the leader's area to be available
-                // You could use data attributes on the option elements
-                const selectedOption = leaderSelect.options[leaderSelect.selectedIndex];
-                const leaderArea = selectedOption.getAttribute('data-area');
-                
-                if (leaderArea) {
-                    areaInput.value = leaderArea;
-                }
-            }
-        }
-        
-        // Event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('resetBtn').addEventListener('click', resetForm);
-            
-            // Leader selection change
-            const leaderSelect = document.getElementById('leaderSelect');
-            if (leaderSelect) {
-                leaderSelect.addEventListener('change', updateAreaFromLeader);
-            }
-            
-            // Form validation
-            const form = document.querySelector('.needs-validation');
-            form.addEventListener('submit', function(event) {
-                if (!form.checkValidity()) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-                
-                form.classList.add('was-validated');
-            });
-        });
-    </script>
+    <script src="~/js/surveys.js"></script>
 }

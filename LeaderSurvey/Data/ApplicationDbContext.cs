@@ -8,6 +8,7 @@ namespace LeaderSurvey.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
+            // Remove the legacy timestamp behavior switch
         }
 
         public DbSet<Leader> Leaders => Set<Leader>();
@@ -20,7 +21,7 @@ namespace LeaderSurvey.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure DateTime properties to use timestamp with time zone
+            // Configure all DateTime properties to use timestamp with time zone
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
                 foreach (var property in entityType.GetProperties())
@@ -31,6 +32,13 @@ namespace LeaderSurvey.Data
                     }
                 }
             }
+
+            // Configure relationships
+            modelBuilder.Entity<Survey>()
+                .HasOne(s => s.Leader)
+                .WithMany(l => l.Surveys)
+                .HasForeignKey(s => s.LeaderId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<SurveyResponse>()
                 .HasOne(sr => sr.Survey)

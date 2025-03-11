@@ -83,7 +83,7 @@ namespace LeaderSurvey.Pages
                 StatusMessage = "It's our pleasure to confirm that the leader was successfully added!";
                 return RedirectToPage();
             }
-            catch (Exception ex)
+            catch (Exception) // Remove the 'ex' variable since it's not being used
             {
                 Leaders = await _context.Leaders.ToListAsync();
                 StatusMessage = "We apologize, but we encountered an unexpected error. Please try again.";

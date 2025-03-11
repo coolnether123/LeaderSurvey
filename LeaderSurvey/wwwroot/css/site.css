@@ -832,6 +832,9 @@ main.pb-3 {
 /* Question styles */
 .bg-cfa-red {
     background-color: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
 }
 
 .question-item {
@@ -911,4 +914,148 @@ main.pb-3 {
 .number-input {
     width: 80px;
     text-align: center;
+}
+
+/* Survey Page Specific Styles */
+.surveys-container {
+    padding: 1rem;
+    margin-top: 20px;
+}
+
+.filters-section {
+    background-color: var(--light-red-bg);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.filters-container {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.cfa-select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 2px solid var(--primary-color);
+    border-radius: 4px;
+    background-color: white;
+    color: var(--text-color);
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.cfa-select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(228, 0, 43, 0.1);
+}
+
+.active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    min-height: 38px;
+}
+
+.filter-tag {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    gap: 0.5rem;
+}
+
+.filter-tag i {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.filter-tag i:hover {
+    transform: scale(1.2);
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.status-badge.open {
+    background-color: #28a745;
+    color: white;
+}
+
+.status-badge.closed {
+    background-color: #dc3545;
+    color: white;
+}
+
+.survey-editor {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+}
+
+.questions-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #eee;
+}
+
+.questions-sortable {
+    min-height: 50px;
+    margin: 1rem 0;
+}
+
+.question-item {
+    background-color: var(--light-red-bg);
+    border: 1px solid rgba(228, 0, 43, 0.2);
+    border-radius: 4px;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    cursor: move;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.question-item:hover {
+    background-color: #FDE8EC;
+}
+
+.actions-cell {
+    white-space: nowrap;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.cfa-btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.cfa-btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
 }

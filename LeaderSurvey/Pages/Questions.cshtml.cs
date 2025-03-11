@@ -25,8 +25,12 @@ namespace LeaderSurvey.Pages
 
         public async Task<IActionResult> OnGetAsync(int surveyId)
         {
+            Questions = await _context.Questions
+                .Where(q => q.SurveyId == surveyId)
+                .OrderBy(q => q.QuestionOrder)
+                .ToListAsync();
+
             Survey = await _context.Surveys
-                .Include(s => s.Questions)
                 .FirstOrDefaultAsync(s => s.Id == surveyId);
             
             if (Survey == null)
@@ -35,7 +39,6 @@ namespace LeaderSurvey.Pages
             }
 
             SurveyId = surveyId;
-            Questions = Survey.Questions.OrderBy(q => q.QuestionOrder).ToList();
             return Page();
         }
 
@@ -46,17 +49,11 @@ namespace LeaderSurvey.Pages
                 return Page();
             }
 
-            var survey = await _context.Surveys
-                .Include(s => s.Questions)
-                .FirstOrDefaultAsync(s => s.Id == surveyId);
-
-            if (survey == null)
-            {
-                return NotFound();
-            }
+            var questionCount = await _context.Questions
+                .CountAsync(q => q.SurveyId == surveyId);
 
             NewQuestion.SurveyId = surveyId;
-            NewQuestion.QuestionOrder = survey.Questions.Count + 1;
+            NewQuestion.QuestionOrder = questionCount + 1;
 
             _context.Questions.Add(NewQuestion);
             await _context.SaveChangesAsync();

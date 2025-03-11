@@ -10,7 +10,9 @@ builder.Services.AddRazorPages();
 
 // Configure the DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+        x => x.SetPostgresVersion(9, 6)
+    ));
 
 // Add Swagger/OpenAPI (Optional, but useful for testing APIs)
 builder.Services.AddEndpointsApiExplorer();
@@ -41,50 +43,47 @@ app.MapRazorPages(); // Map Razor Pages endpoints
 app.Run();
 
 // Seed Data Method (FOR DEVELOPMENT ONLY)
-static void SeedData(IServiceProvider services)
+void SeedData(IServiceProvider services)
 {
     using var context = services.GetRequiredService<ApplicationDbContext>();
-    if (context.Leaders.Any())
+
+    // Check if data already exists
+    if (context.Leaders.Any()) return;
+
+    // Add sample leaders
+    var leaders = new[]
     {
-        return; // Data already seeded
-    }
-    
-    // Seed Leaders with required Area field
-    var frontLeader = new Leader { Name = "Alice Smith", Area = "Front" };
-    var kitchenLeader = new Leader { Name = "Bob Johnson", Area = "Kitchen" };
-    var driveLeader = new Leader { Name = "Charlie Williams", Area = "Drive" };
-    
-    context.Leaders.AddRange(frontLeader, kitchenLeader, driveLeader);
-    
-    // Seed Surveys with Area fields and UTC dates
+        new Leader { Name = "John Smith", Area = "Engineering" },
+        new Leader { Name = "Jane Doe", Area = "Marketing" },
+        new Leader { Name = "Bob Johnson", Area = "Sales" }
+    };
+    context.Leaders.AddRange(leaders);
+    context.SaveChanges();
+
+    // Add sample surveys with explicit UTC dates
     var surveys = new[]
     {
-        new Survey 
-        { 
-            Name = "Front Survey",
-            Description = "Survey for Front area",
-            Area = "Front",
-            CreatedDate = DateTime.UtcNow,
-            Leader = frontLeader
+        new Survey
+        {
+            Name = "Engineering Survey 2024",
+            Description = "Annual engineering team survey",
+            Area = "Engineering",
+            LeaderId = leaders[0].Id,
+            Date = DateTime.UtcNow,  // Already UTC
+            MonthYear = new DateTime(2024, 3, 1, 0, 0, 0, DateTimeKind.Utc),
+            Status = "Active"
         },
-        new Survey 
-        { 
-            Name = "Kitchen Survey",
-            Description = "Survey for Kitchen area",
-            Area = "Kitchen",
-            CreatedDate = DateTime.UtcNow,
-            Leader = kitchenLeader
+        new Survey
+        {
+            Name = "Marketing Goals Review",
+            Description = "Quarterly marketing review",
+            Area = "Marketing",
+            LeaderId = leaders[1].Id,
+            Date = DateTime.UtcNow,  // Already UTC
+            MonthYear = new DateTime(2024, 3, 1, 0, 0, 0, DateTimeKind.Utc),
+            Status = "Pending"
         }
     };
-
-    // If you need to set MonthYear or CompletedDate, use the helper methods
-    foreach (var survey in surveys)
-    {
-        // Set MonthYear to first day of current month in UTC
-        survey.MonthYear = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-        survey.CompletedDate = DateTime.UtcNow;
-    }
-
     context.Surveys.AddRange(surveys);
     context.SaveChanges();
 }
