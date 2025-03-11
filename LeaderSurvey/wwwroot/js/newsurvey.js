@@ -134,7 +134,7 @@ window.saveQuestionRow = function(button) {
             <button type="button" class="btn btn-sm btn-outline-primary me-2" onclick="editQuestionRow(this)">
                 <i class="bi bi-pencil"></i>
             </button>
-            <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteQuestion(this)">
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteQuestionRow(this)">
                 <i class="bi bi-trash"></i>
             </button>
         </td>
@@ -197,7 +197,7 @@ window.cancelEdit = function(button, index) {
             <button type="button" class="btn btn-sm btn-outline-primary me-2" onclick="editQuestionRow(this)">
                 <i class="bi bi-pencil"></i>
             </button>
-            <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteQuestion(this)">
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteQuestionRow(this)">
                 <i class="bi bi-trash"></i>
             </button>
         </td>
@@ -230,21 +230,26 @@ window.removeQuestionRow = function(button) {
     updateQuestionsInput(); // If you have this function to sync with hidden form fields
 };
 
-window.deleteQuestion = function(button) {
-    if (confirm('Are you sure you want to delete this question?')) {
-        const row = button.closest('tr');
-        const index = parseInt(row.dataset.index);
-        
-        // Remove from questions array
-        questions.splice(index, 1);
-        
-        row.remove();
-        
-        updateQuestionCounter();
-        updateQuestionNumbers();
-        updateQuestionsInput(); // If you have this function to sync with hidden form fields
-    }
+window.deleteQuestionRow = function(button) {
+    const row = button.closest('tr');
+    if (!row) return;
+
+    // Remove the row
+    row.remove();
+
+    // Update the question counter
+    updateQuestionCounter();
+
+    // Reorder remaining questions
+    reorderQuestions();
 };
+
+function reorderQuestions() {
+    const rows = document.querySelectorAll('#questionsContainer tr');
+    rows.forEach((row, index) => {
+        row.querySelector('td:first-child').textContent = (index + 1).toString();
+    });
+}
 
 function updateQuestionNumbers() {
     const rows = document.querySelectorAll('#questionsContainer tr');
@@ -259,46 +264,10 @@ function updateQuestionNumbers() {
 }
 
 function updateQuestionCounter() {
-    const counter = document.getElementById('question-counter');
-    const currentCount = questions.length;
-    const hasNewQuestion = document.querySelector('#questionsContainer tr[data-is-new="true"]') !== null;
-    
-    // Update the counter text
-    counter.textContent = `${currentCount}/10`;
-    
-    // Update Add Question button state and tooltip
-    const addButton = getAddQuestionButton();
-    if (addButton) {
-        // Only disable if we're at max questions or there's a question being edited
-        const isDisabled = currentCount >= 10 || hasNewQuestion;
-        addButton.disabled = isDisabled;
-        
-        // Update tooltip message based on the reason for being disabled
-        let tooltipMessage = '';
-        if (currentCount >= 10) {
-            tooltipMessage = 'Maximum of 10 questions reached';
-        } else if (hasNewQuestion) {
-            tooltipMessage = 'Please save or cancel the current question first';
-        }
-        
-        // Update tooltip
-        if (isDisabled) {
-            addButton.setAttribute('data-bs-toggle', 'tooltip');
-            addButton.setAttribute('data-bs-placement', 'top');
-            addButton.setAttribute('title', tooltipMessage);
-            
-            // Reinitialize tooltip
-            new bootstrap.Tooltip(addButton);
-        } else {
-            // Remove tooltip when button is enabled
-            const tooltip = bootstrap.Tooltip.getInstance(addButton);
-            if (tooltip) {
-                tooltip.dispose();
-            }
-            addButton.removeAttribute('data-bs-toggle');
-            addButton.removeAttribute('data-bs-placement');
-            addButton.removeAttribute('title');
-        }
+    const totalQuestions = document.querySelectorAll('#questionsContainer tr').length;
+    const counterElement = document.getElementById('question-counter');
+    if (counterElement) {
+        counterElement.textContent = `${totalQuestions}/10`;
     }
 }
 
