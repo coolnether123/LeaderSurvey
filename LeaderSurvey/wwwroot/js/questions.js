@@ -1,19 +1,26 @@
-let questionCount = 0;
+// Questions handling functions
+function initializeQuestions() {
+    if (typeof window.questionCount === 'undefined') {
+        window.questionCount = 0;
+    }
+    updateQuestionCounter();
+    initializeSortable();
+}
 
 function addQuestion() {
-    if (questionCount >= 10) {
-        alert("Maximum of 10 questions reached!");
+    if (window.questionCount >= 10) {
+        showNotification("Maximum of 10 questions reached!", "warning");
         return;
     }
 
-    questionCount++;
+    window.questionCount++;
     updateQuestionCounter();
 
     const questionItem = document.createElement('div');
     questionItem.className = 'question-item d-flex align-items-center';
     questionItem.innerHTML = `
         <i class="bi bi-grip-vertical question-drag-handle"></i>
-        <div class="question-number">${questionCount}</div>
+        <div class="question-number">${window.questionCount}</div>
         <div class="flex-grow-1">
             <input type="text" class="form-control mb-2" placeholder="Enter your question here..." required>
             <select class="question-type-select">
@@ -41,7 +48,7 @@ function deleteQuestion(button) {
         
         setTimeout(() => {
             questionItem.remove();
-            questionCount--;
+            window.questionCount--;
             updateQuestionCounter();
             renumberQuestions();
         }, 500);
@@ -49,7 +56,7 @@ function deleteQuestion(button) {
 }
 
 function updateQuestionCounter() {
-    document.getElementById('question-counter').textContent = `${questionCount}/10`;
+    document.getElementById('question-counter').textContent = `${window.questionCount}/10`;
 }
 
 function renumberQuestions() {
@@ -70,5 +77,5 @@ function initializeSortable() {
 
 // Initialize sortable when the page loads
 document.addEventListener('DOMContentLoaded', function() {
-    initializeSortable();
+    initializeQuestions();
 });

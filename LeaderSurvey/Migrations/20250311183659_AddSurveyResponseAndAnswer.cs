@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LeaderSurvey.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateDateTimeHandling : Migration
+    public partial class AddSurveyResponseAndAnswer : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -48,8 +48,7 @@ namespace LeaderSurvey.Migrations
                         name: "FK_Surveys_Leaders_LeaderId",
                         column: x => x.LeaderId,
                         principalTable: "Leaders",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -82,7 +81,7 @@ namespace LeaderSurvey.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
                     SurveyId = table.Column<int>(type: "integer", nullable: false),
                     LeaderId = table.Column<int>(type: "integer", nullable: false),
-                    CompletionDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                    CompletionDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -107,8 +106,8 @@ namespace LeaderSurvey.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
-                    SurveyResponseId = table.Column<int>(type: "integer", nullable: false),
                     QuestionId = table.Column<int>(type: "integer", nullable: false),
+                    SurveyResponseId = table.Column<int>(type: "integer", nullable: false),
                     Response = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>

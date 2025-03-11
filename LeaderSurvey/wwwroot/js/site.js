@@ -1,4 +1,23 @@
 // Site JavaScript
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show notification-toast`;
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    // Add to container or body
+    const container = document.getElementById('notification-container') || document.body;
+    container.appendChild(notification);
+
+    // Auto dismiss after 5 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 150);
+    }, 5000);
+}
+
 function navigateTo(url) {
     document.body.classList.add('navigating');
     window.location.href = url;

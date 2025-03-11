@@ -925,20 +925,17 @@ main.pb-3 {
 .filters-section {
     background-color: var(--light-red-bg);
     border-radius: 8px;
-    padding: 1rem;
+    padding: 1.5rem;
     margin-bottom: 2rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.filters-container {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
+.filter-group {
+    margin-bottom: 1rem;
 }
 
-.filter-group {
-    flex: 1;
-    min-width: 200px;
+.filter-group:last-child {
+    margin-bottom: 0;
 }
 
 .cfa-select {
@@ -986,20 +983,26 @@ main.pb-3 {
 }
 
 .status-badge {
-    padding: 0.25rem 0.75rem;
+    padding: 0.5rem 1rem;
     border-radius: 20px;
-    font-size: 0.85rem;
+    font-size: 0.875rem;
     font-weight: 500;
+    text-transform: capitalize;
 }
 
-.status-badge.open {
+.status-badge.status-pending {
+    background-color: #ffd700;
+    color: #000;
+}
+
+.status-badge.status-completed {
     background-color: #28a745;
-    color: white;
+    color: #fff;
 }
 
-.status-badge.closed {
-    background-color: #dc3545;
-    color: white;
+.status-badge.status-inprogress {
+    background-color: #17a2b8;
+    color: #fff;
 }
 
 .survey-editor {
@@ -1058,4 +1061,50 @@ main.pb-3 {
 .cfa-btn-danger:hover {
     background-color: #c82333;
     border-color: #bd2130;
+}
+
+/* Area badge styles */
+.area-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: white;
+}
+
+.area-drive {
+    background-color: #2196F3; /* Blue for Drive */
+}
+
+.area-front {
+    background-color: #4CAF50; /* Green for Front */
+}
+
+.area-kitchen {
+    background-color: #FF9800; /* Orange for Kitchen */
+}
+
+.area-hospitality {
+    background-color: #9C27B0; /* Purple for Hospitality */
+}
+
+.notification-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+    min-width: 250px;
+    max-width: 350px;
+    animation: slideIn 0.15s ease-in;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }

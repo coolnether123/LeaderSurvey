@@ -7,26 +7,16 @@ namespace LeaderSurvey.Models
     public class SurveyResponse
     {
         public int Id { get; set; }
+        
         public int SurveyId { get; set; }
+        public virtual Survey? Survey { get; set; }
+        
         public int LeaderId { get; set; }
+        public virtual Leader? Leader { get; set; }
         
-        private DateTimeOffset _completionDate = DateTimeOffset.UtcNow;
-
-        public DateTimeOffset CompletionDate 
-        { 
-            get => _completionDate;
-            set => _completionDate = value;
-        }
+        [Column(TypeName = "timestamp with time zone")]
+        public DateTime CompletionDate { get; set; }
         
-        public Survey? Survey { get; set; }
-        public Leader? Leader { get; set; }
-        public ICollection<Answer> Answers { get; set; } = new List<Answer>();
-
-        [NotMapped]
-        public DateTimeOffset LocalCompletionDate 
-        {
-            get => CompletionDate.ToLocalTime();
-            set => CompletionDate = value.ToUniversalTime();
-        }
+        public virtual ICollection<Answer> Answers { get; set; } = new List<Answer>();
     }
 }   

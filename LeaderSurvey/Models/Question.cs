@@ -15,6 +15,6 @@ namespace LeaderSurvey.Models
         public int QuestionOrder { get; set; }
         
         public int SurveyId { get; set; }
-        public Survey? Survey { get; set; }
+        public virtual Survey? Survey { get; set; }
     }
 }

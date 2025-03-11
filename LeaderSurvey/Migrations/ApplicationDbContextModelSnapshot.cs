@@ -150,7 +150,7 @@ namespace LeaderSurvey.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTimeOffset>("CompletionDate")
+                    b.Property<DateTime>("CompletionDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("LeaderId")
@@ -202,8 +202,7 @@ namespace LeaderSurvey.Migrations
                 {
                     b.HasOne("LeaderSurvey.Models.Leader", "Leader")
                         .WithMany("Surveys")
-                        .HasForeignKey("LeaderId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("LeaderId");
 
                     b.Navigation("Leader");
                 });

@@ -3,6 +3,9 @@
 @{
     ViewData["Title"] = "Surveys";
 }
+@Html.AntiForgeryToken()
+
+<h2 class="page-title"><i class="bi bi-card-checklist"></i> Surveys Management</h2>
 
 <div class="container">
     <div class="filters-section">
@@ -15,11 +18,20 @@
                 }
             </select>
         </div>
+        <div class="filter-group">
+            <select id="areaFilter" class="cfa-select" onchange="applyFilters()">
+                <option value="">Select Area</option>
+                <option value="Drive">Drive</option>
+                <option value="Front">Front</option>
+                <option value="Kitchen">Kitchen</option>
+                <option value="Hospitality">Hospitality</option>
+            </select>
+        </div>
         <!-- Other filters -->
     </div>
 
     <div class="table-responsive">
-        <table id="surveysTable" class="table">
+        <table id="surveysTable" class="table table-cfa">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -33,21 +45,30 @@
             <tbody>
                 @foreach (var survey in Model.Surveys)
                 {
-                    <tr data-leader="@survey.LeaderId" 
-                        data-area="@survey.Area" 
-                        data-date="@survey.MonthYear?.ToLocalTime().ToString("yyyy-MM")" 
-                        data-status="@survey.Status.ToLower()">
+                    <tr data-id="@survey.Id">
                         <td>@survey.Name</td>
                         <td>@survey.Leader?.Name</td>
-                        <td>@survey.Area</td>
-                        <td>@survey.LocalDate.ToString("g")</td>
+                        <td>
+                            <span class="badge area-badge area-@survey.Area.ToLower()">@survey.Area</span>
+                        </td>
+                        <td>@(survey.MonthYear.HasValue ? survey.MonthYear.Value.ToLocalTime().ToString("g") : "")</td>
                         <td>
                             <span class="status-badge status-@survey.Status.ToLower()">
                                 @survey.Status
                             </span>
                         </td>
                         <td>
-                            <!-- Actions -->
+                            <button class="cfa-btn cfa-btn-sm me-1" onclick="viewSurvey(@survey.Id)">
+                                <i class="bi bi-eye"></i> View
+                            </button>
+                            <button class="cfa-btn cfa-btn-sm me-1" onclick="editSurvey(@survey.Id)">
+                                <i class="bi bi-pencil-square"></i> Edit
+                            </button>
+                            <button class="cfa-btn cfa-btn-sm cfa-btn-outline" 
+                                    onclick="deleteSurvey(@survey.Id, '@survey.Name.Replace("'", "\'")')"
+                                    style="border-color: #dc3545; color: #dc3545 !important;">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
                         </td>
                     </tr>
                 }
@@ -58,4 +79,12 @@
 
 @section Scripts {
     <script src="~/js/surveys.js"></script>
+    <script>
+        // Ensure scripts are loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof deleteSurvey !== 'function') {
+                console.error('deleteSurvey function not loaded');
+            }
+        });
+    </script>
 }
