@@ -6,6 +6,17 @@
 
 <h2 class="page-title"><i class="bi bi-card-checklist"></i> Surveys Management</h2>
 
+@if (Model.IsFiltered && !string.IsNullOrEmpty(Model.FilteredLeaderName))
+{
+    <div class="alert alert-cfa alert-cfa-primary mb-4">
+        <i class="bi bi-filter-circle me-2"></i>
+        Showing surveys for leader: <strong>@Model.FilteredLeaderName</strong>
+        <a href="/Surveys" class="float-end text-decoration-none">
+            <i class="bi bi-x-circle"></i> Clear filter
+        </a>
+    </div>
+}
+
 <div class="search-container">
     <i class="bi bi-search search-icon"></i>
     <input type="text" id="surveySearch" class="search-input" placeholder="Search surveys by name or area..." onkeyup="filterSurveys()">

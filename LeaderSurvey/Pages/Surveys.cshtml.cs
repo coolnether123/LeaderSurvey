@@ -1,15 +1,13 @@
-// Pages/Surveys.cshtml.cs
-using LeaderSurvey.Data;
-using LeaderSurvey.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using LeaderSurvey.Data;
+using LeaderSurvey.Models;
 
 namespace LeaderSurvey.Pages
 {
@@ -24,7 +22,11 @@ namespace LeaderSurvey.Pages
 
         public IList<Survey> Surveys { get; set; } = new List<Survey>();
         public SelectList LeaderSelectList { get; set; } = new SelectList(Enumerable.Empty<Leader>(), "Id", "Name");
+        public List<Leader> Leaders { get; set; } = new();
         
+        public string? FilteredLeaderName { get; set; }
+        public bool IsFiltered => HttpContext.Request.Query.ContainsKey("leaderId");
+
         [BindProperty]
         public InputModel NewSurvey { get; set; } = new InputModel();
         
@@ -45,13 +47,24 @@ namespace LeaderSurvey.Pages
             public DateTime? MonthYear { get; set; }
         }
 
-        public async Task OnGetAsync(int? id)
+        public async Task OnGetAsync(int? id, int? leaderId)
         {
-            // Load surveys with leader information
-            Surveys = await _context.Surveys
-                .Include(s => s.Leader)
-                .ToListAsync();
-                
+            // Load all leaders first
+            Leaders = await _context.Leaders.ToListAsync();
+
+            // Create a query that includes leader information
+            IQueryable<Survey> query = _context.Surveys.Include(s => s.Leader);
+            
+            // Apply leader filter if provided
+            if (leaderId.HasValue)
+            {
+                query = query.Where(s => s.LeaderId == leaderId);
+                FilteredLeaderName = Leaders.FirstOrDefault(l => l.Id == leaderId)?.Name;
+            }
+            
+            // Execute query and store results
+            Surveys = await query.ToListAsync();
+            
             // Load leaders for dropdown
             await LoadLeaderSelectListAsync();
             

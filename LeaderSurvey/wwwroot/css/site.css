@@ -27,7 +27,7 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: var(--text-color);
     background-color: var(--light-bg);
-    padding-top: 60px;
+    padding-top: 20px; /* Adjusted for new header size */
 }
 
 /* Ensure the navbar stays fixed and doesn't jump */
@@ -59,19 +59,27 @@ body.menu-open .navbar,
 .navbar {
     background-color: var(--dark-bg) !important;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 1rem;
     position: fixed;
     width: 100%;
     top: 0;
     z-index: 1030;
     transition: all 0.3s ease-in-out;
-    height: 60px;
     display: flex;
     align-items: center;
 }
 
+/* Container with reduced padding */
+.container {
+    padding-left: 3px;    /* Reduced by 75% from 12px */
+    padding-right: 3px;   /* Reduced by 75% from 12px */
+    padding-top: 1rem;
+    transition: none;
+    margin-left: auto !important;
+}
+
 header {
-    height: 60px; /* Consistent height with navbar */
+    height: 20px; /* Consistent height with navbar */
 }
 
 /* Move Leader Survey brand to the right */
@@ -83,19 +91,20 @@ header {
     display: flex;
     align-items: center;
     height: 100%;
+    font-size: 0.9rem; /* Adjusted for smaller header */
 }
 /* Hamburger Menu Positioning*/
 .hamburger-menu {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 1.5rem; /* Adjusted for smaller header */
+    height: 1.5rem; /* Adjusted for smaller header */
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 4px;
     cursor: pointer;
-    padding: 0.35rem;
+    padding: 0.2rem; /* Adjusted for smaller header */
     margin-right: 0;
     z-index: 1050;
     position: relative;
@@ -104,7 +113,7 @@ header {
 /* Fixed hamburger menu that's always visible at the top left */
 .fixed-hamburger {
     position: fixed;
-    top: 12px;
+    top: 2px; /* Adjusted for smaller header */
     left: 12px;
     z-index: 1100;
 }
@@ -166,13 +175,6 @@ header {
 
 .nav-item i {
     font-size: 1.1rem;
-}
-
-/* Update container padding */
-.container {
-    padding-top: 1rem;
-    transition: none;
-    margin-left: auto !important;
 }
 
 /* Remove menu-related styles */
@@ -613,6 +615,7 @@ a {
 .page-title {
     color: var(--primary-color);
     margin-bottom: 1.5rem;
+    margin-top: 50px;    /* Decreased from 55px to 50px */
     font-weight: 700;
     border-bottom: 2px solid var(--primary-color);
     padding-bottom: 0.5rem;
@@ -773,4 +776,10 @@ input:checked + .toggle-slider {
 
 .toggle-label {
     font-weight: 500;
+}
+
+main.pb-3 {
+    width: calc(100% + 40px);  /* Makes it 20px wider on each side */
+    margin-left: -20px;        /* Offsets the extra width to keep it centered */
+    margin-right: -20px;
 }
