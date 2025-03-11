@@ -86,7 +86,7 @@ window.addNewQuestionRow = function(e) {
     tbody.appendChild(tr);
     tr.querySelector('input').focus({preventScroll: true});
     
-    // Disable the Add Question button while editing
+    // Only disable the Add Question button while editing
     const addButton = getAddQuestionButton();
     if (addButton) addButton.disabled = true;
     
@@ -112,6 +112,7 @@ window.saveQuestionRow = function(button) {
             text: questionText,
             type: questionType
         });
+        row.dataset.isNew = 'false';
     } else {
         questions[index] = {
             text: questionText,
@@ -136,7 +137,7 @@ window.saveQuestionRow = function(button) {
         </td>
     `;
 
-    // Re-enable the Add Question button
+    // Re-enable the Add Question button after saving
     const addButton = getAddQuestionButton();
     if (addButton) addButton.disabled = false;
     
@@ -204,6 +205,14 @@ window.cancelEdit = function(button, index) {
 
 window.removeQuestionRow = function(button) {
     const row = button.closest('tr');
+    
+    // If this is a saved question (not a new one being edited)
+    if (row.dataset.isNew !== 'true') {
+        // Remove the question from the questions array
+        const index = parseInt(row.dataset.index);
+        questions.splice(index, 1);
+    }
+    
     row.remove();
     
     // Re-enable the Add Question button
@@ -212,24 +221,22 @@ window.removeQuestionRow = function(button) {
     
     updateQuestionCounter();
     updateQuestionNumbers();
+    updateQuestionsInput(); // If you have this function to sync with hidden form fields
 };
 
 window.deleteQuestion = function(button) {
     if (confirm('Are you sure you want to delete this question?')) {
         const row = button.closest('tr');
         const index = parseInt(row.dataset.index);
+        
+        // Remove from questions array
         questions.splice(index, 1);
+        
         row.remove();
         
-        // Update indices for remaining rows
-        const rows = document.querySelectorAll('#questionsContainer tr');
-        rows.forEach((row, idx) => {
-            row.dataset.index = idx.toString();
-        });
-        
-        updateQuestionNumbers();
         updateQuestionCounter();
-        updateQuestionsInput();
+        updateQuestionNumbers();
+        updateQuestionsInput(); // If you have this function to sync with hidden form fields
     }
 };
 
@@ -248,12 +255,16 @@ function updateQuestionNumbers() {
 function updateQuestionCounter() {
     const counter = document.getElementById('question-counter');
     const currentCount = questions.length;
+    const hasNewQuestion = document.querySelector('#questionsContainer tr[data-is-new="true"]') !== null;
+    
+    // Update the counter text
     counter.textContent = `${currentCount}/10`;
     
     // Update Add Question button state
     const addButton = getAddQuestionButton();
     if (addButton) {
-        addButton.disabled = currentCount >= 10 || document.querySelector('#questionsContainer tr[data-is-new="true"]') !== null;
+        // Only disable if we're at max questions or there's a question being edited
+        addButton.disabled = currentCount >= 10 || hasNewQuestion;
     }
 }
 
