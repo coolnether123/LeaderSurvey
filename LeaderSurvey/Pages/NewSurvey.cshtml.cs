@@ -24,7 +24,7 @@ namespace LeaderSurvey.Pages
 
         [BindProperty]
         public InputModel Survey { get; set; } = new();
-        
+
         public SelectList LeaderSelectList { get; set; } = default!;
         public SelectList AreaSelectList { get; set; } = default!;
 
@@ -41,8 +41,13 @@ namespace LeaderSurvey.Pages
             // Valid areas: Front, Drive, Kitchen, Hospitality
             public string Area { get; set; } = string.Empty;
 
-            [Required(ErrorMessage = "Leader is required")]
+            [Required(ErrorMessage = "Leader being surveyed is required")]
+            [Display(Name = "Leader Being Surveyed")]
             public int LeaderId { get; set; }
+
+            [Required(ErrorMessage = "Leader taking the survey is required")]
+            [Display(Name = "Leader Taking Survey")]
+            public int EvaluatorLeaderId { get; set; }
 
             [Required(ErrorMessage = "Month/Year is required")]
             public DateTime? MonthYear { get; set; }
@@ -55,7 +60,7 @@ namespace LeaderSurvey.Pages
         {
             [Required(ErrorMessage = "Question text is required")]
             public string Text { get; set; } = string.Empty;
-            
+
             [Required(ErrorMessage = "Question type is required")]
             public string QuestionType { get; set; } = "yesno"; // yesno or score
         }
@@ -100,8 +105,9 @@ namespace LeaderSurvey.Pages
                     Description = Survey.Description?.Trim() ?? string.Empty, // Handle null Description
                     Area = Survey.Area,
                     LeaderId = Survey.LeaderId,
-                    MonthYear = Survey.MonthYear.HasValue 
-                        ? DateTime.SpecifyKind(Survey.MonthYear.Value, DateTimeKind.Utc) 
+                    EvaluatorLeaderId = Survey.EvaluatorLeaderId,
+                    MonthYear = Survey.MonthYear.HasValue
+                        ? DateTime.SpecifyKind(Survey.MonthYear.Value, DateTimeKind.Utc)
                         : null,
                     Date = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc),
                     Status = "Draft"
@@ -132,7 +138,7 @@ namespace LeaderSurvey.Pages
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating survey");
-                return BadRequest(new { 
+                return BadRequest(new {
                     errors = new Dictionary<string, List<string>> {
                         { "general", new List<string> { "An error occurred while saving the survey" } }
                     }

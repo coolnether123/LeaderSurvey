@@ -28,7 +28,7 @@
                         <i class="bi bi-plus-circle"></i> New Survey
                     </a>
                     <a href="/Surveys" class="nav-item @(ViewContext.RouteData.Values["Page"]?.ToString() == "/TakeSurvey" ? "active" : "")">
-                        <i class="bi bi-check-circle-fill"></i> Take Survey
+                        <i class="bi bi-check2-square"></i> Take Survey
                     </a>
                 </div>
                 <a class="navbar-brand" asp-area="" asp-page="/Index">
@@ -56,7 +56,7 @@
             </li>
             <li>
                 <a href="/Surveys" class="@(ViewContext.RouteData.Values["Page"]?.ToString() == "/TakeSurvey" ? "active" : "")">
-                    <i class="bi bi-check-circle-fill"></i> Take Survey
+                    <i class="bi bi-check2-square"></i> Take Survey
                 </a>
             </li>
         </ul>

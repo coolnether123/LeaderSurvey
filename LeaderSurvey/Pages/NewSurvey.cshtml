@@ -39,7 +39,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label asp-for="Survey.LeaderId" class="form-label">Leader</label>
+                                <label asp-for="Survey.LeaderId" class="form-label">Leader Being Surveyed</label>
                                 <!-- Add the area filter buttons container -->
                                 <div class="area-filter-buttons mb-2">
                                     <button type="button" class="area-filter active" data-area="">All</button>
@@ -57,7 +57,7 @@
                                     </button>
                                 </div>
                                 <select name="Survey.LeaderId" id="Survey_LeaderId" class="form-select" required>
-                                    <option value="">Select Leader</option>
+                                    <option value="">Select Leader Being Surveyed</option>
                                     @foreach (var leader in Model.Leaders)
                                     {
                                         <option value="@leader.Id" data-area="@leader.Area">@leader.Name</option>
@@ -66,6 +66,37 @@
                                 <span asp-validation-for="Survey.LeaderId" class="text-danger"></span>
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Survey.EvaluatorLeaderId" class="form-label">Leader Taking Survey</label>
+                                <!-- Add the area filter buttons container for evaluator -->
+                                <div class="area-filter-buttons mb-2" id="evaluator-area-filters">
+                                    <button type="button" class="evaluator-area-filter active" data-area="">All</button>
+                                    <button type="button" class="evaluator-area-filter" data-area="Front">
+                                        <span class="area-badge area-front">Front</span>
+                                    </button>
+                                    <button type="button" class="evaluator-area-filter" data-area="Drive">
+                                        <span class="area-badge area-drive">Drive</span>
+                                    </button>
+                                    <button type="button" class="evaluator-area-filter" data-area="Kitchen">
+                                        <span class="area-badge area-kitchen">Kitchen</span>
+                                    </button>
+                                    <button type="button" class="evaluator-area-filter" data-area="Hospitality">
+                                        <span class="area-badge area-hospitality">Hospitality</span>
+                                    </button>
+                                </div>
+                                <select name="Survey.EvaluatorLeaderId" id="Survey_EvaluatorLeaderId" class="form-select" required>
+                                    <option value="">Select Leader Taking Survey</option>
+                                    @foreach (var leader in Model.Leaders)
+                                    {
+                                        <option value="@leader.Id" data-area="@leader.Area">@leader.Name</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Survey.EvaluatorLeaderId" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label asp-for="Survey.MonthYear" class="form-label">Month/Year</label>
@@ -176,7 +207,7 @@
 
         window.addNewQuestionRow = function(event) {
             if (event) event.preventDefault();
-            
+
             if (questions.length >= 10) {
                 alert('Maximum of 10 questions allowed');
                 return;
@@ -186,7 +217,7 @@
             const tr = document.createElement('tr');
             tr.dataset.isNew = 'true';
             tr.dataset.index = questions.length.toString();
-            
+
             tr.innerHTML = `
                 <td>${questions.length + 1}</td>
                 <td>
@@ -213,11 +244,11 @@
 
             tbody.appendChild(tr);
             tr.querySelector('input').focus({preventScroll: true});
-            
+
             // Disable the Add Question button while editing
             const addButton = getAddQuestionButton();
             if (addButton) addButton.disabled = true;
-            
+
             updateQuestionCounter();
         };
 
@@ -275,26 +306,26 @@
         window.removeQuestionRow = function(button) {
             const row = button.closest('tr');
             const index = parseInt(row.dataset.index);
-            
+
             if (confirm('Are you sure you want to delete this question?')) {
                 // Remove from questions array if it's a saved question
                 if (row.dataset.isNew !== 'true') {
                     questions.splice(index, 1);
                 }
-                
+
                 // Remove the row
                 row.remove();
-                
+
                 // Update indices for remaining rows
                 document.querySelectorAll('#questionsContainer tr').forEach((row, idx) => {
                     row.dataset.index = idx.toString();
                     row.querySelector('td:first-child').textContent = (idx + 1).toString();
                 });
-                
+
                 // Update counter and form inputs
                 updateQuestionCounter();
                 updateQuestionsInput();
-                
+
                 // Re-enable add button if needed
                 const addButton = getAddQuestionButton();
                 if (addButton) addButton.disabled = false;
@@ -305,7 +336,7 @@
             const row = button.closest('tr');
             const index = parseInt(row.dataset.index);
             const question = questions[index];
-            
+
             row.innerHTML = `
                 <td>${row.cells[0].textContent}</td>
                 <td>
@@ -329,9 +360,9 @@
                     <i class="bi bi-grip-vertical drag-handle"></i>
                 </td>
             `;
-            
+
             row.querySelector('input').focus();
-            
+
             // Disable the Add Question button while editing
             const addButton = getAddQuestionButton();
             if (addButton) addButton.disabled = true;
@@ -341,7 +372,7 @@
             const counter = document.getElementById('question-counter');
             const currentCount = questions.length;
             const hasNewQuestion = document.querySelector('#questionsContainer tr[data-is-new="true"]') !== null;
-            
+
             counter.textContent = `${currentCount}/10`;
 
             const addButton = getAddQuestionButton();
@@ -352,10 +383,10 @@
 
         function updateQuestionsInput() {
             const form = document.getElementById('surveyForm');
-            
+
             // Remove any existing question inputs
             form.querySelectorAll('input[name^="Survey.Questions"]').forEach(el => el.remove());
-            
+
             // Add new hidden inputs for each question
             questions.forEach((question, index) => {
                 const textInput = document.createElement('input');
@@ -378,39 +409,59 @@
         document.addEventListener('DOMContentLoaded', function() {
             const areaSelect = document.getElementById('Survey_Area');
             const leaderSelect = document.getElementById('Survey_LeaderId');
+            const evaluatorLeaderSelect = document.getElementById('Survey_EvaluatorLeaderId');
             const areaFilterButtons = document.querySelectorAll('.area-filter');
+            const evaluatorAreaFilterButtons = document.querySelectorAll('.evaluator-area-filter');
 
             // Store original leaders for filtering
             const originalOptions = Array.from(leaderSelect.options)
                 .filter(option => option.value !== "")
                 .sort((a, b) => a.text.localeCompare(b.text));
 
-            function filterLeadersByArea(selectedArea) {
+            // Store original evaluator leaders for filtering
+            const originalEvaluatorOptions = Array.from(evaluatorLeaderSelect.options)
+                .filter(option => option.value !== "")
+                .sort((a, b) => a.text.localeCompare(b.text));
+
+            function filterLeadersByArea(selectElement, originalOpts, selectedArea) {
                 // Keep the placeholder
-                const placeholder = leaderSelect.options[0];
-                
+                const placeholder = selectElement.options[0];
+
                 // Clear current options except placeholder
-                leaderSelect.innerHTML = '';
-                leaderSelect.appendChild(placeholder);
+                selectElement.innerHTML = '';
+                selectElement.appendChild(placeholder);
 
                 // Filter and add leaders
-                originalOptions.forEach(option => {
+                originalOpts.forEach(option => {
                     if (!selectedArea || option.dataset.area === selectedArea) {
-                        leaderSelect.appendChild(option.cloneNode(true));
+                        selectElement.appendChild(option.cloneNode(true));
                     }
                 });
             }
 
-            // Handle area filter button clicks
+            // Handle area filter button clicks for leader being surveyed
             areaFilterButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     // Remove active class from all buttons
                     areaFilterButtons.forEach(btn => btn.classList.remove('active'));
                     // Add active class to clicked button
                     this.classList.add('active');
-                    
+
                     const selectedArea = this.dataset.area;
-                    filterLeadersByArea(selectedArea);
+                    filterLeadersByArea(leaderSelect, originalOptions, selectedArea);
+                });
+            });
+
+            // Handle area filter button clicks for evaluator leader
+            evaluatorAreaFilterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    evaluatorAreaFilterButtons.forEach(btn => btn.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
+
+                    const selectedArea = this.dataset.area;
+                    filterLeadersByArea(evaluatorLeaderSelect, originalEvaluatorOptions, selectedArea);
                 });
             });
 
@@ -422,6 +473,13 @@
                         const leaderArea = selectedOption.dataset.area;
                         areaSelect.value = leaderArea;
                     }
+                });
+            }
+
+            // Handle evaluator leader select changes
+            if (evaluatorLeaderSelect) {
+                evaluatorLeaderSelect.addEventListener('change', function() {
+                    // You can add specific logic for evaluator leader selection if needed
                 });
             }
 
@@ -443,10 +501,11 @@
             console.log('Area field:', document.querySelector('[name="Survey.Area"]')?.value);
             console.log('MonthYear field:', document.querySelector('[name="Survey.MonthYear"]')?.value);
             console.log('LeaderId field:', document.querySelector('[name="Survey.LeaderId"]')?.value);
+            console.log('EvaluatorLeaderId field:', document.querySelector('[name="Survey.EvaluatorLeaderId"]')?.value);
 
             // Create FormData and manually append fields
             const formData = new FormData();
-            
+
             // Add antiforgery token
             const token = document.querySelector('[name="__RequestVerificationToken"]').value;
             formData.append('__RequestVerificationToken', token);
@@ -456,14 +515,16 @@
             const areaField = document.querySelector('[name="Survey.Area"]');
             const monthYearField = document.querySelector('[name="Survey.MonthYear"]');
             const leaderIdField = document.querySelector('[name="Survey.LeaderId"]');
+            const evaluatorLeaderIdField = document.querySelector('[name="Survey.EvaluatorLeaderId"]');
             const descriptionField = document.querySelector('[name="Survey.Description"]');
 
-            if (!nameField || !areaField || !monthYearField || !leaderIdField) {
+            if (!nameField || !areaField || !monthYearField || !leaderIdField || !evaluatorLeaderIdField) {
                 console.error('Required form fields are missing:');
                 console.error('Name field exists:', !!nameField);
                 console.error('Area field exists:', !!areaField);
                 console.error('MonthYear field exists:', !!monthYearField);
                 console.error('LeaderId field exists:', !!leaderIdField);
+                console.error('EvaluatorLeaderId field exists:', !!evaluatorLeaderIdField);
                 alert('Form is missing required fields. Check console for details.');
                 return;
             }
@@ -472,6 +533,7 @@
             formData.append('Survey.Area', areaField.value);
             formData.append('Survey.MonthYear', monthYearField.value);
             formData.append('Survey.LeaderId', leaderIdField.value);
+            formData.append('Survey.EvaluatorLeaderId', evaluatorLeaderIdField.value);
             formData.append('Survey.Description', descriptionField?.value || '');
 
             // Add questions
@@ -498,13 +560,13 @@
 
                 if (!response.ok) {
                     const contentType = response.headers.get("content-type");
-                    const responseData = contentType && contentType.includes("application/json") 
-                        ? await response.json() 
+                    const responseData = contentType && contentType.includes("application/json")
+                        ? await response.json()
                         : await response.text();
 
                     console.error('Response status:', response.status);
                     console.error('Response data:', responseData);
-                    
+
                     if (responseData.errors) {
                         console.error('Validation errors:');
                         Object.entries(responseData.errors).forEach(([field, errors]) => {
@@ -555,7 +617,7 @@
             margin-bottom: 0.5rem;
         }
 
-        .area-filter {
+        .area-filter, .evaluator-area-filter {
             padding: 0.25rem 0.75rem;
             border: none;
             background: none;
@@ -566,12 +628,12 @@
             border-radius: 4px;
         }
 
-        .area-filter:hover {
+        .area-filter:hover, .evaluator-area-filter:hover {
             background-color: #f8f9fa;
             color: #e51636;
         }
 
-        .area-filter.active {
+        .area-filter.active, .evaluator-area-filter.active {
             background-color: #e51636;
             color: white;
         }

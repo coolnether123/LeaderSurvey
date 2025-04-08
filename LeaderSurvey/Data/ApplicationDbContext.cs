@@ -20,6 +20,22 @@ namespace LeaderSurvey.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // Configure Survey -> Leader (being surveyed) relationship
+            modelBuilder.Entity<Survey>()
+                .HasOne(s => s.Leader)
+                .WithMany(l => l.Surveys)
+                .HasForeignKey(s => s.LeaderId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Configure Survey -> EvaluatorLeader (taking the survey) relationship
+            modelBuilder.Entity<Survey>()
+                .HasOne(s => s.EvaluatorLeader)
+                .WithMany()
+                .HasForeignKey(s => s.EvaluatorLeaderId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
             modelBuilder.Entity<Question>()
                 .HasOne(q => q.Survey)
                 .WithMany(s => s.Questions)
@@ -34,6 +50,17 @@ namespace LeaderSurvey.Data
                 .HasOne(a => a.SurveyResponse)
                 .WithMany(sr => sr.Answers)
                 .HasForeignKey(a => a.SurveyResponseId);
+
+            // Configure SurveyResponse -> Leader relationship
+            modelBuilder.Entity<SurveyResponse>()
+                .HasOne(sr => sr.Leader)
+                .WithMany()
+                .HasForeignKey(sr => sr.LeaderId);
+
+            modelBuilder.Entity<SurveyResponse>()
+                .HasOne(sr => sr.Survey)
+                .WithMany()
+                .HasForeignKey(sr => sr.SurveyId);
         }
     }
 }

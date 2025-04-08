@@ -1114,19 +1114,19 @@ main.pb-3 {
 
 /* Area badge colors */
 .area-drive {
-    background-color: #2196F3;
+    background-color: #4CAF50; /* Green */
 }
 
 .area-front {
-    background-color: #4CAF50;
+    background-color: #FFEB3B; /* Yellow */
 }
 
 .area-kitchen {
-    background-color: #FF9800;
+    background-color: #9C27B0; /* Purple */
 }
 
 .area-hospitality {
-    background-color: #9C27B0;
+    background-color: #2196F3; /* Blue */
 }
 
 .notification-toast {
@@ -1234,4 +1234,144 @@ main.pb-3 {
 
 .badge.bg-success {
     background-color: #00a6d6 !important;
+}
+
+/* TakeSurvey page styles */
+.question-card {
+    transition: all 0.3s ease;
+}
+
+.question-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Score buttons styling */
+.score-buttons-container {
+    padding: 10px 15px;
+}
+
+.score-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+}
+
+.score-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+@media (max-width: 576px) {
+    .score-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+}
+
+.btn-check:checked + .score-btn {
+    transform: scale(1.15);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Additional notes section styling */
+.card-header .badge.bg-secondary {
+    font-size: 0.75rem;
+    font-weight: normal;
+    padding: 0.35em 0.65em;
+}
+
+.form-range::-webkit-slider-thumb {
+    background-color: var(--primary-color);
+}
+
+.form-range::-moz-range-thumb {
+    background-color: var(--primary-color);
+}
+
+.form-range::-ms-thumb {
+    background-color: var(--primary-color);
+}
+
+.btn-check:checked + .btn-outline-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.btn-check:checked + .btn-outline-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.area-badge {
+    padding: 0.5em 0.8em;
+    font-size: 0.8em;
+    font-weight: 600;
+    border-radius: 4px;
+}
+
+.area-front {
+    background-color: #FFEB3B; /* Yellow */
+    color: black; /* Changed to black for better contrast with yellow */
+}
+
+.area-drive {
+    background-color: #4CAF50; /* Green */
+    color: white;
+}
+
+.area-kitchen {
+    background-color: #9C27B0; /* Purple */
+    color: white;
+}
+
+.area-hospitality {
+    background-color: #2196F3; /* Blue */
+    color: white;
+}
+
+/* Question type badges */
+.question-type-badge .badge {
+    font-size: 0.75rem;
+    padding: 0.35em 0.65em;
+}
+
+.badge.bg-info {
+    background-color: #0dcaf0 !important;
+    color: #000;
+}
+
+.badge.bg-secondary {
+    background-color: #6c757d !important;
+}
+
+/* Instructions styling */
+.card-body .small.text-muted {
+    margin-bottom: 0.75rem;
+    font-style: italic;
+}
+
+/* Question card styling */
+.question-card .card-header {
+    background-color: #f8f9fa;
+    color: #000 !important;
+    font-weight: 500;
+}
+
+.question-card .card-header strong {
+    color: #000 !important;
+    font-size: 1.05rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 0.25rem;
 }

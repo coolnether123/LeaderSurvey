@@ -58,13 +58,16 @@
                             </span>
                         </td>
                         <td>
+                            <a href="/TakeSurvey?surveyId=@survey.Id" class="cfa-btn cfa-btn-sm me-1" style="background-color: #28a745; color: white;">
+                                <i class="bi bi-check2-square"></i> Take Survey
+                            </a>
                             <button class="cfa-btn cfa-btn-sm me-1" onclick="viewSurvey(@survey.Id)">
                                 <i class="bi bi-eye"></i> View
                             </button>
                             <button class="cfa-btn cfa-btn-sm me-1" onclick="editSurvey(@survey.Id)">
                                 <i class="bi bi-pencil-square"></i> Edit
                             </button>
-                            <button class="cfa-btn cfa-btn-sm cfa-btn-outline" 
+                            <button class="cfa-btn cfa-btn-sm cfa-btn-outline"
                                     onclick="deleteSurvey(@survey.Id, '@survey.Name.Replace("'", "\'")')"
                                     style="border-color: #dc3545; color: #dc3545 !important;">
                                 <i class="bi bi-trash"></i> Delete

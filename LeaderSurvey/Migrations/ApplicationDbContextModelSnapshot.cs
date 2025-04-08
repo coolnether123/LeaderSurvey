@@ -121,6 +121,9 @@ namespace LeaderSurvey.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("EvaluatorLeaderId")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("LeaderId")
                         .HasColumnType("integer");
 
@@ -137,6 +140,8 @@ namespace LeaderSurvey.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EvaluatorLeaderId");
+
                     b.HasIndex("LeaderId");
 
                     b.ToTable("Surveys");
@@ -149,6 +154,9 @@ namespace LeaderSurvey.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdditionalNotes")
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CompletionDate")
                         .HasColumnType("timestamp with time zone");
@@ -200,9 +208,17 @@ namespace LeaderSurvey.Migrations
 
             modelBuilder.Entity("LeaderSurvey.Models.Survey", b =>
                 {
+                    b.HasOne("LeaderSurvey.Models.Leader", "EvaluatorLeader")
+                        .WithMany()
+                        .HasForeignKey("EvaluatorLeaderId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("LeaderSurvey.Models.Leader", "Leader")
                         .WithMany("Surveys")
-                        .HasForeignKey("LeaderId");
+                        .HasForeignKey("LeaderId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("EvaluatorLeader");
 
                     b.Navigation("Leader");
                 });
