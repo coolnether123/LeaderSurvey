@@ -29,15 +29,22 @@ async function deleteSurvey(id, name) {
             }
         });
 
+        let responseData;
+        try {
+            responseData = await response.json();
+        } catch (e) {
+            // If response is not JSON, create a default message
+            responseData = { message: response.ok ? 'Survey deleted successfully' : 'Failed to delete survey' };
+        }
+
         if (response.ok) {
             const row = document.querySelector(`tr[data-id="${id}"]`);
             if (row) {
                 row.remove();
             }
-            showNotification('Survey deleted successfully', 'success');
+            showNotification(responseData.message || 'Survey deleted successfully', 'success');
         } else {
-            const errorData = await response.json();
-            showNotification(errorData.message || 'Failed to delete survey', 'error');
+            showNotification(responseData.message || 'Failed to delete survey', 'error');
         }
     } catch (error) {
         console.error('Error:', error);
@@ -50,7 +57,7 @@ function viewSurvey(id) {
     if (viewerTitle) {
         viewerTitle.textContent = 'View Survey';
     }
-    
+
     loadSurvey(id);
     showSurveyViewer();
 }
@@ -60,7 +67,7 @@ function editSurvey(id) {
     if (viewerTitle) {
         viewerTitle.textContent = 'Edit Survey';
     }
-    
+
     loadSurvey(id);
     showSurveyViewer();
 }
@@ -85,13 +92,13 @@ function switchTab(tabName) {
         tab.classList.remove('active');
     });
     document.getElementById(`${tabName}-tab`).classList.add('active');
-    
+
     // Update tab content
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.remove('active');
     });
     document.getElementById(`${tabName}Tab`).classList.add('active');
-    
+
     if (tabName === 'preview') {
         updatePreview();
     }
@@ -101,24 +108,24 @@ async function loadSurvey(id) {
     try {
         const response = await fetch(`/api/Surveys/${id}`);
         if (!response.ok) throw new Error('Failed to load survey');
-        
+
         currentSurvey = await response.json();
-        
+
         // Populate form fields
         document.getElementById('surveyId').value = currentSurvey.id;
         document.getElementById('surveyName').value = currentSurvey.name;
         document.getElementById('surveyArea').value = currentSurvey.area;
         document.getElementById('surveyMonthYear').value = currentSurvey.monthYear?.substring(0, 7) || '';
-        
+
         // Load questions
         const container = document.getElementById('questionsContainer');
         container.innerHTML = '';
         window.questionCount = currentSurvey.questions.length;
-        
+
         currentSurvey.questions.forEach((question, index) => {
             addExistingQuestion(question, index + 1);
         });
-        
+
         updateQuestionCounter();
         updatePreview();
     } catch (error) {
@@ -157,26 +164,26 @@ function createQuestionElement(number) {
 function updatePreview() {
     const previewTitle = document.getElementById('previewTitle');
     const previewQuestions = document.getElementById('previewQuestions');
-    
+
     if (!previewTitle || !previewQuestions) {
         console.error('Preview elements not found');
         return;
     }
-    
+
     const surveyNameInput = document.getElementById('surveyName');
     previewTitle.textContent = surveyNameInput ? surveyNameInput.value || 'Survey Preview' : 'Survey Preview';
-    
+
     const questionsContainer = document.getElementById('questionsContainer');
     if (!questionsContainer) {
         console.error('Questions container not found');
         return;
     }
-    
+
     const questions = Array.from(questionsContainer.children);
     previewQuestions.innerHTML = questions.map((q, i) => {
         const text = q.querySelector('input[type="text"]')?.value || '';
         const type = q.querySelector('select')?.value || 'yesno';
-        
+
         return `
             <div class="card mb-3 border-light shadow-sm">
                 <div class="card-header bg-light">
@@ -222,4 +229,39 @@ function initializePreviewTab() {
     if (previewTab) {
         previewTab.addEventListener('click', updatePreview);
     }
+}
+
+// Notification function
+function showNotification(message, type = 'info') {
+    // Create notification element if it doesn't exist
+    let notificationContainer = document.getElementById('notification-container');
+    if (!notificationContainer) {
+        notificationContainer = document.createElement('div');
+        notificationContainer.id = 'notification-container';
+        notificationContainer.style.position = 'fixed';
+        notificationContainer.style.top = '20px';
+        notificationContainer.style.right = '20px';
+        notificationContainer.style.zIndex = '9999';
+        document.body.appendChild(notificationContainer);
+    }
+
+    // Create the notification
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show`;
+    notification.role = 'alert';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    // Add to container
+    notificationContainer.appendChild(notification);
+
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 5000);
 }
