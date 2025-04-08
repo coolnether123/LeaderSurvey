@@ -52,24 +52,16 @@ async function deleteSurvey(id, name) {
     }
 }
 
+// These functions are no longer used - we now use direct links in the HTML
+// Keeping the function signatures for backward compatibility
 function viewSurvey(id) {
-    const viewerTitle = document.getElementById('viewerTitle');
-    if (viewerTitle) {
-        viewerTitle.textContent = 'View Survey';
-    }
-
-    loadSurvey(id);
-    showSurveyViewer();
+    console.log('viewSurvey is deprecated - using direct links now');
+    window.location.href = `/EditSurvey?id=${id}&viewMode=true`;
 }
 
 function editSurvey(id) {
-    const viewerTitle = document.getElementById('viewerTitle');
-    if (viewerTitle) {
-        viewerTitle.textContent = 'Edit Survey';
-    }
-
-    loadSurvey(id);
-    showSurveyViewer();
+    console.log('editSurvey is deprecated - using direct links now');
+    window.location.href = `/EditSurvey?id=${id}`;
 }
 
 function showSurveyViewer() {
@@ -104,33 +96,11 @@ function switchTab(tabName) {
     }
 }
 
+// This function is no longer used - we now load surveys directly in the EditSurvey page
 async function loadSurvey(id) {
-    try {
-        const response = await fetch(`/api/Surveys/${id}`);
-        if (!response.ok) throw new Error('Failed to load survey');
-
-        currentSurvey = await response.json();
-
-        // Populate form fields
-        document.getElementById('surveyId').value = currentSurvey.id;
-        document.getElementById('surveyName').value = currentSurvey.name;
-        document.getElementById('surveyArea').value = currentSurvey.area;
-        document.getElementById('surveyMonthYear').value = currentSurvey.monthYear?.substring(0, 7) || '';
-
-        // Load questions
-        const container = document.getElementById('questionsContainer');
-        container.innerHTML = '';
-        window.questionCount = currentSurvey.questions.length;
-
-        currentSurvey.questions.forEach((question, index) => {
-            addExistingQuestion(question, index + 1);
-        });
-
-        updateQuestionCounter();
-        updatePreview();
-    } catch (error) {
-        showNotification('Failed to load survey', 'error');
-    }
+    console.log('loadSurvey is deprecated - using direct page navigation now');
+    // Redirect to the EditSurvey page instead
+    window.location.href = `/EditSurvey?id=${id}`;
 }
 
 function addExistingQuestion(question, number) {
@@ -215,13 +185,12 @@ document.addEventListener('DOMContentLoaded', function() {
     initializePreviewTab();
 });
 
+// This function is kept for backward compatibility
+// We no longer use modals for survey editing
 function initializeModal() {
-    const modalElement = document.getElementById('surveyViewerModal');
-    if (!modalElement) {
-        console.error('Survey modal element not found');
-        return;
-    }
-    surveyModal = new bootstrap.Modal(modalElement);
+    // We're using the new approach with separate pages
+    console.log('Using new survey editing approach with separate pages');
+    return;
 }
 
 function initializePreviewTab() {

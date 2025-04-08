@@ -16,6 +16,73 @@ namespace LeaderSurvey.Controllers
             _context = context;
         }
 
+        // GET: api/Surveys/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<object>> GetSurvey(int id)
+        {
+            try
+            {
+                // First check if the survey exists
+                var surveyExists = await _context.Surveys.AnyAsync(s => s.Id == id);
+                if (!surveyExists)
+                {
+                    return NotFound(new { message = $"Survey with ID {id} not found" });
+                }
+
+                // Get the survey without includes first
+                var survey = await _context.Surveys.FindAsync(id);
+                if (survey == null)
+                {
+                    return NotFound(new { message = $"Survey with ID {id} not found after initial check" });
+                }
+
+                // Get questions separately
+                var questions = await _context.Questions
+                    .Where(q => q.SurveyId == id)
+                    .OrderBy(q => q.QuestionOrder)
+                    .ToListAsync();
+
+                // Get leader separately
+                var leader = survey.LeaderId.HasValue ?
+                    await _context.Leaders.FindAsync(survey.LeaderId.Value) : null;
+
+                // Get evaluator leader separately
+                var evaluatorLeader = survey.EvaluatorLeaderId.HasValue ?
+                    await _context.Leaders.FindAsync(survey.EvaluatorLeaderId.Value) : null;
+
+                // Create a simplified response object
+                var result = new
+                {
+                    survey.Id,
+                    survey.Name,
+                    survey.Description,
+                    survey.Area,
+                    survey.LeaderId,
+                    Leader = leader != null ? new { leader.Id, leader.Name, leader.Area } : null,
+                    survey.EvaluatorLeaderId,
+                    EvaluatorLeader = evaluatorLeader != null ? new { evaluatorLeader.Id, evaluatorLeader.Name, evaluatorLeader.Area } : null,
+                    survey.MonthYear,
+                    survey.Date,
+                    survey.Status,
+                    Questions = questions.Select(q => new { q.Id, q.Text, q.QuestionType, q.QuestionOrder })
+                };
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                // Log the full exception details
+                Console.Error.WriteLine($"Error retrieving survey {id}: {ex.Message}");
+                Console.Error.WriteLine($"Stack trace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    Console.Error.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+
+                return StatusCode(500, new { message = $"Error retrieving survey: {ex.Message}" });
+            }
+        }
+
         // DELETE: api/Surveys/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSurvey(int id)
