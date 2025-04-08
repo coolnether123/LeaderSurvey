@@ -31,6 +31,9 @@ namespace LeaderSurvey.Pages
         [BindProperty]
         public string QuestionsJson { get; set; } = string.Empty;
 
+        [BindProperty]
+        public string returnToEdit { get; set; } = "true";
+
         public SelectList LeaderSelectList { get; set; } = default!;
         public SelectList AreaSelectList { get; set; } = default!;
 
@@ -85,9 +88,10 @@ namespace LeaderSurvey.Pages
                     return RedirectToPage("/Surveys");
                 }
 
-                // Load questions separately
+                // Load questions separately - use AsNoTracking to ensure we get fresh data
                 _logger.LogInformation($"Loading questions for survey ID {id}");
                 var questions = await _context.Questions
+                    .AsNoTracking() // Ensure we get fresh data from the database
                     .Where(q => q.SurveyId == id)
                     .OrderBy(q => q.QuestionOrder)
                     .ToListAsync();
@@ -95,10 +99,64 @@ namespace LeaderSurvey.Pages
                 _logger.LogInformation($"Found {questions.Count} questions in the database for survey ID {id}");
                 foreach (var q in questions)
                 {
-                    _logger.LogInformation($"Database question - ID: {q.Id}, SurveyId: {q.SurveyId}, Text: {q.Text}, Type: {q.QuestionType}");
+                    _logger.LogInformation($"Database question - ID: {q.Id}, SurveyId: {q.SurveyId}, Text: {q.Text}, Type: {q.QuestionType}, Order: {q.QuestionOrder}");
                 }
 
-                survey.Questions = questions;
+                // Clear any existing questions and add the loaded ones
+                if (survey.Questions == null)
+                {
+                    survey.Questions = new List<Question>();
+                }
+                else
+                {
+                    survey.Questions.Clear();
+                }
+
+                foreach (var q in questions)
+                {
+                    survey.Questions.Add(q);
+                }
+
+                // Double-check that the questions are loaded correctly
+                _logger.LogInformation($"Survey has {survey.Questions.Count} questions after assignment");
+
+                // Verify using a direct SQL query
+                try
+                {
+                    var sql = $"SELECT \"Id\", \"SurveyId\", \"Text\", \"QuestionType\", \"QuestionOrder\" FROM \"Questions\" WHERE \"SurveyId\" = {id} ORDER BY \"QuestionOrder\"";
+                    _logger.LogInformation($"Executing SQL query on page load: {sql}");
+
+                    var connection = _context.Database.GetDbConnection();
+                    if (connection.State != System.Data.ConnectionState.Open)
+                    {
+                        await connection.OpenAsync();
+                    }
+
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = sql;
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            var count = 0;
+                            while (await reader.ReadAsync())
+                            {
+                                count++;
+                                var qId = reader.GetInt32(0);
+                                var surveyId = reader.GetInt32(1);
+                                var text = reader.GetString(2);
+                                var type = reader.GetString(3);
+                                var order = reader.GetInt32(4);
+
+                                _logger.LogInformation($"SQL query on page load found question - ID: {qId}, SurveyId: {surveyId}, Text: {text}, Type: {type}, Order: {order}");
+                            }
+                            _logger.LogInformation($"SQL query on page load found {count} questions for survey ID {id}");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error executing SQL query on page load");
+                }
 
                 // Load leader separately if needed
                 if (survey.LeaderId.HasValue)
@@ -290,6 +348,8 @@ namespace LeaderSurvey.Pages
                         {
                             // Add new question
                             _logger.LogInformation($"Adding new question: {q.Text} (Type: {q.QuestionType})");
+                            _logger.LogInformation($"Survey ID for new question: {survey.Id}");
+
                             var newQuestion = new Question
                             {
                                 SurveyId = survey.Id,
@@ -299,6 +359,23 @@ namespace LeaderSurvey.Pages
                             };
 
                             // Explicitly add the new question to the context
+                            _logger.LogInformation($"Adding new question to context: SurveyId={newQuestion.SurveyId}, Text={newQuestion.Text}, Type={newQuestion.QuestionType}");
+
+                            // Use a direct SQL command to insert the question
+                            var sql = $"INSERT INTO \"Questions\" (\"SurveyId\", \"Text\", \"QuestionType\", \"QuestionOrder\") VALUES ({newQuestion.SurveyId}, '{newQuestion.Text.Replace("'", "''")}', '{newQuestion.QuestionType}', {newQuestion.QuestionOrder}) RETURNING \"Id\"";
+                            _logger.LogInformation($"Executing SQL: {sql}");
+
+                            try
+                            {
+                                var newId = await _context.Database.ExecuteSqlRawAsync(sql);
+                                _logger.LogInformation($"SQL insert returned: {newId}");
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Error executing SQL insert");
+                            }
+
+                            // Also add to the context as a backup
                             _context.Questions.Add(newQuestion);
                             _logger.LogInformation($"Added new question to context: {newQuestion.Text}");
                         }
@@ -331,23 +408,111 @@ namespace LeaderSurvey.Pages
                     _logger.LogInformation("No existing questions to check for removal");
                 }
 
-                // Log the state before saving
-                _logger.LogInformation("State before saving:");
-                _logger.LogInformation($"Survey: ID={survey.Id}, Name={survey.Name}");
-                _logger.LogInformation($"Questions to keep: {string.Join(", ", questionIdsToKeep)}");
-                _logger.LogInformation($"Questions in context: {_context.Questions.Local.Count}");
-
-                foreach (var entry in _context.ChangeTracker.Entries())
+                // Check what's in the database before saving
+                _logger.LogInformation("Checking database before saving");
+                try
                 {
-                    _logger.LogInformation($"Entity: {entry.Entity.GetType().Name}, State: {entry.State}");
+                    var sql = $"SELECT \"Id\", \"SurveyId\", \"Text\", \"QuestionType\", \"QuestionOrder\" FROM \"Questions\" WHERE \"SurveyId\" = {survey.Id} ORDER BY \"QuestionOrder\"";
+                    _logger.LogInformation($"Executing SQL query: {sql}");
+
+                    var connection = _context.Database.GetDbConnection();
+                    if (connection.State != System.Data.ConnectionState.Open)
+                    {
+                        await connection.OpenAsync();
+                    }
+
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = sql;
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            var count = 0;
+                            while (await reader.ReadAsync())
+                            {
+                                count++;
+                                var id = reader.GetInt32(0);
+                                var surveyId = reader.GetInt32(1);
+                                var text = reader.GetString(2);
+                                var type = reader.GetString(3);
+                                var order = reader.GetInt32(4);
+
+                                _logger.LogInformation($"Before save: Found question - ID: {id}, SurveyId: {surveyId}, Text: {text}, Type: {type}, Order: {order}");
+                            }
+                            _logger.LogInformation($"Before save: Found {count} questions for survey ID {survey.Id}");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error checking database before saving");
                 }
 
                 // Save changes to the database
                 _logger.LogInformation("Saving changes to the database");
                 try
                 {
+                    // Force the context to detach all entities and reload from the database
+                    foreach (var entry in _context.ChangeTracker.Entries())
+                    {
+                        _logger.LogInformation($"Entity before save: {entry.Entity.GetType().Name}, State: {entry.State}");
+                    }
+
                     var result = await _context.SaveChangesAsync();
-                    _logger.LogInformation($"SaveChangesAsync returned: {result}");
+                    _logger.LogInformation($"SaveChangesAsync returned: {result} changes saved");
+
+                    // Clear the context to ensure we get fresh data
+                    _context.ChangeTracker.Clear();
+
+                    // Verify the questions were saved correctly using a direct SQL query
+                    var sql = $"SELECT \"Id\", \"SurveyId\", \"Text\", \"QuestionType\", \"QuestionOrder\" FROM \"Questions\" WHERE \"SurveyId\" = {survey.Id} ORDER BY \"QuestionOrder\"";
+                    _logger.LogInformation($"Executing SQL query: {sql}");
+
+                    try
+                    {
+                        var connection = _context.Database.GetDbConnection();
+                        if (connection.State != System.Data.ConnectionState.Open)
+                        {
+                            await connection.OpenAsync();
+                        }
+
+                        using (var command = connection.CreateCommand())
+                        {
+                            command.CommandText = sql;
+                            using (var reader = await command.ExecuteReaderAsync())
+                            {
+                                var count = 0;
+                                while (await reader.ReadAsync())
+                                {
+                                    count++;
+                                    var id = reader.GetInt32(0);
+                                    var surveyId = reader.GetInt32(1);
+                                    var text = reader.GetString(2);
+                                    var type = reader.GetString(3);
+                                    var order = reader.GetInt32(4);
+
+                                    _logger.LogInformation($"SQL query found question - ID: {id}, SurveyId: {surveyId}, Text: {text}, Type: {type}, Order: {order}");
+                                }
+                                _logger.LogInformation($"SQL query found {count} questions for survey ID {survey.Id}");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error executing SQL query");
+                    }
+
+                    // Also verify using EF Core
+                    var savedQuestions = await _context.Questions
+                        .AsNoTracking() // Ensure we get fresh data from the database
+                        .Where(q => q.SurveyId == survey.Id)
+                        .OrderBy(q => q.QuestionOrder)
+                        .ToListAsync();
+
+                    _logger.LogInformation($"After save: Found {savedQuestions.Count} questions in the database for survey ID {survey.Id}");
+                    foreach (var q in savedQuestions)
+                    {
+                        _logger.LogInformation($"Saved question - ID: {q.Id}, SurveyId: {q.SurveyId}, Text: {q.Text}, Type: {q.QuestionType}");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -355,23 +520,11 @@ namespace LeaderSurvey.Pages
                     throw; // Re-throw to handle it in the outer catch block
                 }
 
-                // Verify the questions were saved correctly
-                var savedQuestions = await _context.Questions
-                    .Where(q => q.SurveyId == survey.Id)
-                    .OrderBy(q => q.QuestionOrder)
-                    .ToListAsync();
-
-                _logger.LogInformation($"After save: Found {savedQuestions.Count} questions in the database for survey ID {survey.Id}");
-                foreach (var q in savedQuestions)
-                {
-                    _logger.LogInformation($"Saved question - ID: {q.Id}, SurveyId: {q.SurveyId}, Text: {q.Text}, Type: {q.QuestionType}");
-                }
-
                 // Add success message
                 TempData["SuccessMessage"] = "Survey updated successfully";
 
-                // Redirect back to the edit page to show the updated survey
-                if (Request.Query.ContainsKey("returnToEdit") && Request.Query["returnToEdit"] == "true")
+                // Check if we should return to the edit page or go back to the surveys list
+                if (returnToEdit.ToLower() == "true")
                 {
                     return RedirectToPage("/EditSurvey", new { id = survey.Id });
                 }
