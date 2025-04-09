@@ -99,6 +99,50 @@ namespace LeaderSurvey.Migrations
                     b.ToTable("Questions");
                 });
 
+            modelBuilder.Entity("LeaderSurvey.Models.QuestionCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("QuestionCategories");
+                });
+
+            modelBuilder.Entity("LeaderSurvey.Models.QuestionCategoryMapping", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseSerialColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("QuestionId");
+
+                    b.ToTable("QuestionCategoryMappings");
+                });
+
             modelBuilder.Entity("LeaderSurvey.Models.Survey", b =>
                 {
                     b.Property<int>("Id")
@@ -206,6 +250,25 @@ namespace LeaderSurvey.Migrations
                     b.Navigation("Survey");
                 });
 
+            modelBuilder.Entity("LeaderSurvey.Models.QuestionCategoryMapping", b =>
+                {
+                    b.HasOne("LeaderSurvey.Models.QuestionCategory", "Category")
+                        .WithMany("QuestionMappings")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LeaderSurvey.Models.Question", "Question")
+                        .WithMany("CategoryMappings")
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Question");
+                });
+
             modelBuilder.Entity("LeaderSurvey.Models.Survey", b =>
                 {
                     b.HasOne("LeaderSurvey.Models.Leader", "EvaluatorLeader")
@@ -245,6 +308,16 @@ namespace LeaderSurvey.Migrations
             modelBuilder.Entity("LeaderSurvey.Models.Leader", b =>
                 {
                     b.Navigation("Surveys");
+                });
+
+            modelBuilder.Entity("LeaderSurvey.Models.Question", b =>
+                {
+                    b.Navigation("CategoryMappings");
+                });
+
+            modelBuilder.Entity("LeaderSurvey.Models.QuestionCategory", b =>
+                {
+                    b.Navigation("QuestionMappings");
                 });
 
             modelBuilder.Entity("LeaderSurvey.Models.Survey", b =>

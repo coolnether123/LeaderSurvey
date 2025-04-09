@@ -25,12 +25,20 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// Initialize the database
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<ApplicationDbContext>();
+    await DbInitializer.InitializeAsync(context);
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    
+
     // TODO: REMOVE IN PRODUCTION - Development only admin access
     app.Use(async (context, next) =>
     {

@@ -223,6 +223,13 @@
         // Global array to track questions
         let questions = [];
 
+        // Global array to track categories
+        let categories = [];
+        @foreach (var category in Model.Categories)
+        {
+            <text>categories.push({ id: @category.Id, name: @Html.Raw(Json.Serialize(category.Name)) });</text>
+        }
+
         // Initialize questions from model data
         @if (Model.Survey.Questions != null)
         {
@@ -234,9 +241,10 @@
                 questions.push({
                     id: @question.Id,
                     text: @Html.Raw(Json.Serialize(question.Text)),
-                    type: @Html.Raw(Json.Serialize(question.QuestionType))
+                    type: @Html.Raw(Json.Serialize(question.QuestionType)),
+                    categoryIds: @Html.Raw(Json.Serialize(question.CategoryIds))
                 });
-                console.log('Added question to array - ID: @question.Id, Text: @Html.Raw(Json.Serialize(question.Text)), Type: @Html.Raw(Json.Serialize(question.QuestionType))');
+                console.log('Added question to array - ID: @question.Id, Text: @Html.Raw(Json.Serialize(question.Text)), Type: @Html.Raw(Json.Serialize(question.QuestionType)), Categories: @Html.Raw(Json.Serialize(question.CategoryIds))');
                 </text>
             }
             console.log('Initialized questions from model data:', JSON.stringify(questions));
@@ -272,6 +280,17 @@
                 <td>${questions.length + 1}</td>
                 <td>
                     <input type="text" class="form-control" placeholder="Enter question text" required>
+                    <div class="mt-2">
+                        <label class="form-label">Categories:</label>
+                        <div class="category-selection">
+                            ${categories.map(category => `
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" value="${category.id}" id="category-${category.id}-${questions.length}">
+                                    <label class="form-check-label" for="category-${category.id}-${questions.length}">${category.name}</label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
                 </td>
                 <td>
                     <select class="form-select">
@@ -304,9 +323,13 @@
 
         window.saveQuestionRow = function(button) {
             const row = button.closest('tr');
-            const questionText = row.querySelector('input').value.trim();
+            const questionText = row.querySelector('input[type="text"]').value.trim();
             const questionType = row.querySelector('select').value;
             const index = parseInt(row.dataset.index);
+
+            // Get selected categories
+            const categoryCheckboxes = row.querySelectorAll('input[type="checkbox"]:checked');
+            const categoryIds = Array.from(categoryCheckboxes).map(cb => parseInt(cb.value));
 
             if (!questionText) {
                 alert('Question text is required');
@@ -318,7 +341,8 @@
                 const newQuestion = {
                     id: 0, // Explicitly set ID to 0 for new questions
                     text: questionText,
-                    type: questionType
+                    type: questionType,
+                    categoryIds: categoryIds
                 };
                 questions.push(newQuestion);
                 row.dataset.isNew = 'false';
@@ -329,7 +353,8 @@
                 const updatedQuestion = {
                     id: existingId, // Keep the existing ID
                     text: questionText,
-                    type: questionType
+                    type: questionType,
+                    categoryIds: categoryIds
                 };
                 questions[index] = updatedQuestion;
                 console.log(`Updated question ${index} with ID ${existingId}:`, JSON.stringify(updatedQuestion));
@@ -421,6 +446,17 @@
                 <td>${row.cells[0].textContent}</td>
                 <td>
                     <input type="text" class="form-control" value="${question.text}" required>
+                    <div class="mt-2">
+                        <label class="form-label">Categories:</label>
+                        <div class="category-selection">
+                            ${categories.map(category => `
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" value="${category.id}" id="category-${category.id}-${index}" ${question.categoryIds && question.categoryIds.includes(category.id) ? 'checked' : ''}>
+                                    <label class="form-check-label" for="category-${category.id}-${index}">${category.name}</label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
                 </td>
                 <td>
                     <select class="form-select">
@@ -471,7 +507,8 @@
                 const formattedQuestions = questions.map(q => ({
                     Id: q.id,
                     Text: q.text,
-                    QuestionType: q.type
+                    QuestionType: q.type,
+                    CategoryIds: q.categoryIds || []
                 }));
                 questionsJson.value = JSON.stringify(formattedQuestions);
                 console.log('Questions JSON stored in textarea:', questionsJson.value);

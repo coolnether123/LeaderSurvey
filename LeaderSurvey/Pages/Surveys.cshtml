@@ -30,25 +30,85 @@
 
 <div class="container">
     <div class="filters-section">
-        <div class="filter-group">
-            <select id="dateFilter" class="cfa-select" onchange="applyFilters()">
-                <option value="">Select Month</option>
-                @foreach (var date in Model.AvailableDates)
-                {
-                    <option value="@date.ToString("yyyy-MM")">@date.ToString("MMMM yyyy")</option>
-                }
-            </select>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="filter-group">
+                    <label class="form-label">Date Range</label>
+                    <div class="date-range-buttons mb-2">
+                        <button type="button" class="date-range-btn active" data-range="all">All</button>
+                        <button type="button" class="date-range-btn" data-range="current-month">Current Month</button>
+                        <button type="button" class="date-range-btn" data-range="last-3-months">Last 3 Months</button>
+                        <button type="button" class="date-range-btn" data-range="custom">Custom</button>
+                    </div>
+                    <div id="customDateRange" class="row" style="display: none;">
+                        <div class="col-6">
+                            <input type="month" id="startDate" class="form-control" placeholder="Start Date">
+                        </div>
+                        <div class="col-6">
+                            <input type="month" id="endDate" class="form-control" placeholder="End Date">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="filter-group">
+                    <label class="form-label">Area</label>
+                    <select id="areaFilter" class="cfa-select" onchange="applyFilters()">
+                        <option value="">All Areas</option>
+                        <option value="Drive">Drive</option>
+                        <option value="Front">Front</option>
+                        <option value="Kitchen">Kitchen</option>
+                        <option value="Hospitality">Hospitality</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="filter-group">
+                    <label class="form-label">Leader</label>
+                    <select id="leaderFilter" class="cfa-select" onchange="applyFilters()">
+                        <option value="">All Leaders</option>
+                        @foreach (var leader in Model.Leaders)
+                        {
+                            <option value="@leader.Id">@leader.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
         </div>
-        <div class="filter-group">
-            <select id="areaFilter" class="cfa-select" onchange="applyFilters()">
-                <option value="">Select Area</option>
-                <option value="Drive">Drive</option>
-                <option value="Front">Front</option>
-                <option value="Kitchen">Kitchen</option>
-                <option value="Hospitality">Hospitality</option>
-            </select>
+    </div>
+
+    <div id="categoryStats" class="category-stats-container mb-4" style="display: none;">
+        <h4>Category Statistics</h4>
+        <div class="row">
+            @foreach (var category in Model.Categories)
+            {
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <div class="category-card" data-category-id="@category.Id">
+                        <div class="category-header">
+                            <h5 class="category-name">@category.Name</h5>
+                            <button class="btn btn-sm btn-link category-expand-btn">
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                        </div>
+                        <div class="category-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Yes/No Questions:</span>
+                                <span class="stat-value yesno-count">0</span>
+                                <span class="stat-percentage yesno-percentage">0%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Score Questions:</span>
+                                <span class="stat-value score-count">0</span>
+                                <span class="stat-average score-average">0.0</span>
+                            </div>
+                        </div>
+                        <div class="category-questions" style="display: none;">
+                            <!-- Questions will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
-        <!-- Other filters -->
     </div>
 
     <div class="table-responsive">
@@ -68,11 +128,11 @@
                 {
                     <tr data-id="@survey.Id">
                         <td>@survey.Name</td>
-                        <td>@survey.Leader?.Name</td>
+                        <td data-leader-id="@survey.Leader?.Id">@survey.Leader?.Name</td>
                         <td>
                             <span class="badge area-badge area-@survey.Area.ToLower()">@survey.Area</span>
                         </td>
-                        <td>@(survey.MonthYear.HasValue ? survey.MonthYear.Value.ToLocalTime().ToString("g") : "")</td>
+                        <td>@(survey.MonthYear.HasValue ? survey.MonthYear.Value.ToLocalTime().ToString("MMMM yyyy") : "")</td>
                         <td>
                             <span class="status-badge status-@survey.Status.ToLower()">
                                 @survey.Status
@@ -106,4 +166,8 @@
 @section Scripts {
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/surveys.js"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/survey-categories.css" />
 }

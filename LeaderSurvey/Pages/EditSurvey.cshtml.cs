@@ -36,6 +36,7 @@ namespace LeaderSurvey.Pages
 
         public SelectList LeaderSelectList { get; set; } = default!;
         public SelectList AreaSelectList { get; set; } = default!;
+        public List<QuestionCategory> Categories { get; set; } = new();
 
         public class InputModel
         {
@@ -72,6 +73,8 @@ namespace LeaderSurvey.Pages
 
             [Required(ErrorMessage = "Question type is required")]
             public string QuestionType { get; set; } = "yesno"; // yesno or score
+
+            public List<int> CategoryIds { get; set; } = new();
         }
 
         public async Task<IActionResult> OnGetAsync(int id, bool viewMode = false)
@@ -206,6 +209,30 @@ namespace LeaderSurvey.Pages
                 Leaders = await _context.Leaders
                     .OrderBy(l => l.Name)
                     .ToListAsync();
+
+                // Load categories
+                Categories = await _context.QuestionCategories
+                    .OrderBy(c => c.Name)
+                    .ToListAsync();
+
+                // Load question categories
+                var questionCategoryMappings = await _context.QuestionCategoryMappings
+                    .Where(qcm => survey.Questions.Select(q => q.Id).Contains(qcm.QuestionId))
+                    .ToListAsync();
+
+                // Assign categories to questions
+                foreach (var question in Survey.Questions)
+                {
+                    if (question.CategoryIds == null)
+                    {
+                        question.CategoryIds = new List<int>();
+                    }
+
+                    question.CategoryIds = questionCategoryMappings
+                        .Where(qcm => qcm.QuestionId == question.Id)
+                        .Select(qcm => qcm.CategoryId)
+                        .ToList();
+                }
 
                 // Define the four valid areas
                 var areas = new[] { "Front", "Drive", "Kitchen", "Hospitality" };
@@ -378,8 +405,27 @@ namespace LeaderSurvey.Pages
                             // Also add to the context as a backup
                             _context.Questions.Add(newQuestion);
                             _logger.LogInformation($"Added new question to context: {newQuestion.Text}");
+
+                            // Save changes to get the new question ID
+                            await _context.SaveChangesAsync();
+
+                            // Add category mappings for the new question
+                            if (q.CategoryIds != null && q.CategoryIds.Any())
+                            {
+                                foreach (var categoryId in q.CategoryIds)
+                                {
+                                    var mapping = new QuestionCategoryMapping
+                                    {
+                                        QuestionId = newQuestion.Id,
+                                        CategoryId = categoryId
+                                    };
+                                    _context.QuestionCategoryMappings.Add(mapping);
+                                }
+                            }
                         }
                     }
+
+                    // We'll handle category mappings in a separate step
                 }
                 else
                 {

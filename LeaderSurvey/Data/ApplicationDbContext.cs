@@ -15,6 +15,8 @@ namespace LeaderSurvey.Data
         public DbSet<Leader> Leaders { get; set; }
         public DbSet<SurveyResponse> SurveyResponses { get; set; }
         public DbSet<Answer> Answers { get; set; }
+        public DbSet<QuestionCategory> QuestionCategories { get; set; }
+        public DbSet<QuestionCategoryMapping> QuestionCategoryMappings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -61,6 +63,17 @@ namespace LeaderSurvey.Data
                 .HasOne(sr => sr.Survey)
                 .WithMany()
                 .HasForeignKey(sr => sr.SurveyId);
+
+            // Configure QuestionCategoryMapping relationships
+            modelBuilder.Entity<QuestionCategoryMapping>()
+                .HasOne(qcm => qcm.Question)
+                .WithMany(q => q.CategoryMappings)
+                .HasForeignKey(qcm => qcm.QuestionId);
+
+            modelBuilder.Entity<QuestionCategoryMapping>()
+                .HasOne(qcm => qcm.Category)
+                .WithMany(c => c.QuestionMappings)
+                .HasForeignKey(qcm => qcm.CategoryId);
         }
     }
 }

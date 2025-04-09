@@ -28,10 +28,11 @@ namespace LeaderSurvey.Pages
         public SelectList LeaderSelectList { get; set; }
         public List<Leader> Leaders { get; set; }
         public List<DateTime> AvailableDates { get; set; }
-        
+        public List<QuestionCategory> Categories { get; set; } = new();
+
         [BindProperty]
         public InputModel NewSurvey { get; set; }
-        
+
         [BindProperty]
         public Survey SelectedSurvey { get; set; }
 
@@ -39,14 +40,14 @@ namespace LeaderSurvey.Pages
         {
             [Required(ErrorMessage = "Name is required")]
             public string Name { get; set; } = string.Empty;
-            
+
             public string Description { get; set; } = string.Empty;
-            
+
             [Required(ErrorMessage = "Area is required")]
             public string Area { get; set; } = string.Empty;
-            
+
             public int? LeaderId { get; set; }
-            
+
             public DateTime? MonthYear { get; set; }
         }
 
@@ -59,13 +60,18 @@ namespace LeaderSurvey.Pages
 
             // Ensure all dates are in UTC before sorting
             Surveys = rawSurveys
-                .OrderByDescending(s => s.MonthYear.HasValue ? 
-                    DateTime.SpecifyKind(s.MonthYear.Value, DateTimeKind.Utc) : 
+                .OrderByDescending(s => s.MonthYear.HasValue ?
+                    DateTime.SpecifyKind(s.MonthYear.Value, DateTimeKind.Utc) :
                     DateTime.MinValue)
                 .ToList();
 
             Leaders = await _context.Leaders.ToListAsync();
             LeaderSelectList = new SelectList(Leaders, "Id", "Name");
+
+            // Load categories
+            Categories = await _context.QuestionCategories
+                .OrderBy(c => c.Name)
+                .ToListAsync();
 
             // Get distinct dates with explicit UTC handling
             AvailableDates = rawSurveys
@@ -90,8 +96,8 @@ namespace LeaderSurvey.Pages
                 Description = NewSurvey.Description,
                 Area = NewSurvey.Area,
                 LeaderId = NewSurvey.LeaderId,
-                MonthYear = NewSurvey.MonthYear.HasValue 
-                    ? DateTime.SpecifyKind(NewSurvey.MonthYear.Value, DateTimeKind.Utc) 
+                MonthYear = NewSurvey.MonthYear.HasValue
+                    ? DateTime.SpecifyKind(NewSurvey.MonthYear.Value, DateTimeKind.Utc)
                     : null,
                 Date = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc),
                 Status = "Pending"
