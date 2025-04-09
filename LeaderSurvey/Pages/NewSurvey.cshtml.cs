@@ -15,6 +15,7 @@ namespace LeaderSurvey.Pages
         private readonly ApplicationDbContext _context;
         private readonly ILogger<NewSurveyModel> _logger;
         public List<Leader> Leaders { get; set; } = new();
+        public List<QuestionCategory> Categories { get; set; } = new();
 
         public NewSurveyModel(ApplicationDbContext context, ILogger<NewSurveyModel> logger)
         {
@@ -63,6 +64,8 @@ namespace LeaderSurvey.Pages
 
             [Required(ErrorMessage = "Question type is required")]
             public string QuestionType { get; set; } = "yesno"; // yesno or score
+
+            public List<int> CategoryIds { get; set; } = new();
         }
 
         public async Task OnGetAsync()
@@ -70,6 +73,11 @@ namespace LeaderSurvey.Pages
             // Load leaders directly into the property
             Leaders = await _context.Leaders
                 .OrderBy(l => l.Name)
+                .ToListAsync();
+
+            // Load categories
+            Categories = await _context.QuestionCategories
+                .OrderBy(c => c.Name)
                 .ToListAsync();
 
             // Define the four valid areas
@@ -129,7 +137,33 @@ namespace LeaderSurvey.Pages
                             QuestionOrder = Survey.Questions.IndexOf(q) + 1
                         };
                         _context.Questions.Add(question);
+
+                        // Save the question to get its ID
+                        await _context.SaveChangesAsync();
+
+                        // Add category mappings if any
+                        if (q.CategoryIds != null && q.CategoryIds.Any())
+                        {
+                            _logger.LogInformation($"Adding {q.CategoryIds.Count} category mappings for question ID {question.Id}");
+
+                            foreach (var categoryId in q.CategoryIds)
+                            {
+                                var mapping = new QuestionCategoryMapping
+                                {
+                                    QuestionId = question.Id,
+                                    CategoryId = categoryId
+                                };
+                                _context.QuestionCategoryMappings.Add(mapping);
+                                _logger.LogInformation($"Added category mapping: QuestionId={question.Id}, CategoryId={categoryId}");
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogInformation($"No categories specified for question ID {question.Id}");
+                        }
                     }
+
+                    // Save all category mappings
                     await _context.SaveChangesAsync();
                 }
 

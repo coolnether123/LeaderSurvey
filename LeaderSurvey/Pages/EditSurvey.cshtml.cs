@@ -370,6 +370,38 @@ namespace LeaderSurvey.Pages
                             existingQuestion.QuestionType = q.QuestionType;
                             existingQuestion.QuestionOrder = questionOrder;
                             questionIdsToKeep.Add(existingQuestion.Id);
+
+                            // Update category mappings for existing question
+                            // First, remove all existing mappings
+                            var existingMappings = await _context.QuestionCategoryMappings
+                                .Where(qcm => qcm.QuestionId == existingQuestion.Id)
+                                .ToListAsync();
+
+                            if (existingMappings.Any())
+                            {
+                                _logger.LogInformation($"Removing {existingMappings.Count} existing category mappings for question ID: {existingQuestion.Id}");
+                                _context.QuestionCategoryMappings.RemoveRange(existingMappings);
+                            }
+
+                            // Then add new mappings based on the updated categories
+                            if (q.CategoryIds != null && q.CategoryIds.Any())
+                            {
+                                _logger.LogInformation($"Adding {q.CategoryIds.Count} new category mappings for question ID: {existingQuestion.Id}");
+                                foreach (var categoryId in q.CategoryIds)
+                                {
+                                    var mapping = new QuestionCategoryMapping
+                                    {
+                                        QuestionId = existingQuestion.Id,
+                                        CategoryId = categoryId
+                                    };
+                                    _context.QuestionCategoryMappings.Add(mapping);
+                                    _logger.LogInformation($"Added category mapping: QuestionId={existingQuestion.Id}, CategoryId={categoryId}");
+                                }
+                            }
+                            else
+                            {
+                                _logger.LogInformation($"No categories specified for existing question ID {existingQuestion.Id}");
+                            }
                         }
                         else
                         {
@@ -420,7 +452,12 @@ namespace LeaderSurvey.Pages
                                         CategoryId = categoryId
                                     };
                                     _context.QuestionCategoryMappings.Add(mapping);
+                                    _logger.LogInformation($"Added category mapping: QuestionId={newQuestion.Id}, CategoryId={categoryId}");
                                 }
+                            }
+                            else
+                            {
+                                _logger.LogInformation($"No categories specified for question ID {newQuestion.Id}");
                             }
                         }
                     }

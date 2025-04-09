@@ -201,6 +201,13 @@
         // Global array to track questions
         let questions = [];
 
+        // Global array to track categories
+        let categories = [];
+        @foreach (var category in Model.Categories)
+        {
+            <text>categories.push({ id: @category.Id, name: @Html.Raw(Json.Serialize(category.Name)) });</text>
+        }
+
         function getAddQuestionButton() {
             return document.querySelector('[data-role="add-question"]');
         }
@@ -222,6 +229,17 @@
                 <td>${questions.length + 1}</td>
                 <td>
                     <input type="text" class="form-control" placeholder="Enter question text" required>
+                    <div class="mt-2">
+                        <label class="form-label">Categories:</label>
+                        <div class="category-selection">
+                            ${categories.map(category => `
+                                <div class="form-check form-check-inline category-checkbox category-${category.name.toLowerCase()}">
+                                    <input class="form-check-input" type="checkbox" value="${category.id}" id="category-${category.id}-${questions.length}">
+                                    <label class="form-check-label" for="category-${category.id}-${questions.length}">${category.name}</label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
                 </td>
                 <td>
                     <select class="form-select">
@@ -254,9 +272,13 @@
 
         window.saveQuestionRow = function(button) {
             const row = button.closest('tr');
-            const questionText = row.querySelector('input').value.trim();
+            const questionText = row.querySelector('input[type="text"]').value.trim();
             const questionType = row.querySelector('select').value;
             const index = parseInt(row.dataset.index);
+
+            // Get selected categories
+            const categoryCheckboxes = row.querySelectorAll('input[type="checkbox"]:checked');
+            const categoryIds = Array.from(categoryCheckboxes).map(cb => parseInt(cb.value));
 
             if (!questionText) {
                 alert('Question text is required');
@@ -266,19 +288,35 @@
             if (row.dataset.isNew === 'true') {
                 questions.push({
                     text: questionText,
-                    type: questionType
+                    type: questionType,
+                    categoryIds: categoryIds
                 });
                 row.dataset.isNew = 'false';
             } else {
                 questions[index] = {
                     text: questionText,
-                    type: questionType
+                    type: questionType,
+                    categoryIds: categoryIds
                 };
             }
 
+            // Create category badges for display
+            const categoryBadges = categoryIds.length > 0
+                ? `<div class="mt-1">${categoryIds.map(id => {
+                    const category = categories.find(c => c.id === id);
+                    if (category) {
+                        return `<span class="badge category-badge category-${category.name.toLowerCase()}">${category.name}</span>`;
+                    }
+                    return '';
+                  }).join(' ')}</div>`
+                : '';
+
             row.innerHTML = `
                 <td class="question-number">${index + 1}</td>
-                <td>${questionText}</td>
+                <td>
+                    ${questionText}
+                    ${categoryBadges}
+                </td>
                 <td>${questionType === 'yesno' ? 'Yes/No' : 'Score (0-10)'}</td>
                 <td>
                     <div class="btn-group">
@@ -341,6 +379,17 @@
                 <td>${row.cells[0].textContent}</td>
                 <td>
                     <input type="text" class="form-control" value="${question.text}" required>
+                    <div class="mt-2">
+                        <label class="form-label">Categories:</label>
+                        <div class="category-selection">
+                            ${categories.map(category => `
+                                <div class="form-check form-check-inline category-checkbox category-${category.name.toLowerCase()}">
+                                    <input class="form-check-input" type="checkbox" value="${category.id}" id="category-${category.id}-${index}" ${question.categoryIds && question.categoryIds.includes(category.id) ? 'checked' : ''}>
+                                    <label class="form-check-label" for="category-${category.id}-${index}">${category.name}</label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
                 </td>
                 <td>
                     <select class="form-select">
@@ -400,6 +449,17 @@
                 typeInput.name = `Survey.Questions[${index}].QuestionType`;
                 typeInput.value = question.type;
                 form.appendChild(typeInput);
+
+                // Add category IDs
+                if (question.categoryIds && question.categoryIds.length > 0) {
+                    question.categoryIds.forEach((categoryId, catIndex) => {
+                        const categoryInput = document.createElement('input');
+                        categoryInput.type = 'hidden';
+                        categoryInput.name = `Survey.Questions[${index}].CategoryIds[${catIndex}]`;
+                        categoryInput.value = categoryId;
+                        form.appendChild(categoryInput);
+                    });
+                }
             });
         }
 
@@ -605,6 +665,7 @@
         });
     </script>
 
-    <!-- Link to external CSS file for survey editor styles -->
+    <!-- Link to external CSS files for survey editor styles -->
     <link rel="stylesheet" href="/css/survey-editor.css" />
+    <link rel="stylesheet" href="/css/survey-categories.css" />
 }

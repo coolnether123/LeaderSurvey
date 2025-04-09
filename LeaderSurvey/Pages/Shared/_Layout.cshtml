@@ -31,6 +31,9 @@
                     <a href="/Surveys" class="nav-item @(ViewContext.RouteData.Values["Page"]?.ToString() == "/TakeSurvey" ? "active" : "")">
                         <i class="bi bi-check2-square"></i> Take Survey
                     </a>
+                    <a href="/Categories" class="nav-item @(ViewContext.RouteData.Values["Page"]?.ToString() == "/Categories" ? "active" : "")">
+                        <i class="bi bi-tags"></i> Categories
+                    </a>
                 </div>
                 <a class="navbar-brand" asp-area="" asp-page="/Index">
                     <i class="bi bi-clipboard-data"></i> Leader Survey
@@ -58,6 +61,11 @@
             <li>
                 <a href="/Surveys" class="@(ViewContext.RouteData.Values["Page"]?.ToString() == "/TakeSurvey" ? "active" : "")">
                     <i class="bi bi-check2-square"></i> Take Survey
+                </a>
+            </li>
+            <li>
+                <a href="/Categories" class="@(ViewContext.RouteData.Values["Page"]?.ToString() == "/Categories" ? "active" : "")">
+                    <i class="bi bi-tags"></i> Categories
                 </a>
             </li>
         </ul>

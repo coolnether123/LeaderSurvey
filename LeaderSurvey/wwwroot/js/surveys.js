@@ -383,45 +383,101 @@ async function fetchCategoryData() {
     });
 }
 
-function updateCategoryStatistics() {
-    // This would be populated from an API call in a real application
-    // For now, we'll just show some dummy data
+async function updateCategoryStatistics() {
+    // Show loading state
     Object.values(categoryData).forEach(category => {
         const card = document.querySelector(`.category-card[data-category-id="${category.id}"]`);
         if (!card) return;
 
-        // Update Yes/No statistics
-        const yesnoCount = Math.floor(Math.random() * 10) + 1; // Random number between 1 and 10
-        const yesPercentage = Math.floor(Math.random() * 100); // Random percentage
-
-        card.querySelector('.yesno-count').textContent = yesnoCount;
-        card.querySelector('.yesno-percentage').textContent = `${yesPercentage}%`;
-
-        // Update Score statistics
-        const scoreCount = Math.floor(Math.random() * 10) + 1; // Random number between 1 and 10
-        const scoreAverage = (Math.random() * 10).toFixed(1); // Random score between 0 and 10
-
-        card.querySelector('.score-count').textContent = scoreCount;
-        card.querySelector('.score-average').textContent = scoreAverage;
-
-        // Populate questions (in a real app, these would come from the API)
-        const questionsContainer = card.querySelector('.category-questions');
-        questionsContainer.innerHTML = '';
-
-        // Add some dummy questions
-        for (let i = 1; i <= 3; i++) {
-            const questionType = Math.random() > 0.5 ? 'yesno' : 'score';
-            const questionItem = document.createElement('div');
-            questionItem.className = 'question-item';
-            questionItem.innerHTML = `
-                <span>Sample question ${i} for ${category.name}</span>
-                <span class="question-type-badge question-type-${questionType}">
-                    ${questionType === 'yesno' ? 'Yes/No' : 'Score'}
-                </span>
-            `;
-            questionsContainer.appendChild(questionItem);
-        }
+        card.querySelector('.yesno-count').textContent = '...';
+        card.querySelector('.yesno-percentage').textContent = '...';
+        card.querySelector('.score-count').textContent = '...';
+        card.querySelector('.score-average').textContent = '...';
     });
+
+    try {
+        // Build query parameters
+        const params = new URLSearchParams();
+        if (selectedLeaderId) {
+            params.append('leaderId', selectedLeaderId);
+        }
+        if (selectedArea) {
+            params.append('area', selectedArea);
+        }
+        if (startDate) {
+            params.append('startDate', startDate.toISOString());
+        }
+        if (endDate) {
+            params.append('endDate', endDate.toISOString());
+        }
+
+        // Fetch statistics from the API
+        const response = await fetch(`/api/Categories/Statistics?${params.toString()}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch category statistics');
+        }
+
+        const data = await response.json();
+        console.log('Category statistics:', data);
+
+        // Update the UI with the fetched data
+        data.statistics.forEach(stat => {
+            const category = stat.category;
+            const card = document.querySelector(`.category-card[data-category-id="${category.id}"]`);
+            if (!card) return;
+
+            // Update Yes/No statistics
+            card.querySelector('.yesno-count').textContent = stat.yesNoAnswers || 0;
+            card.querySelector('.yesno-percentage').textContent = `${stat.yesPercentage || 0}%`;
+
+            // Update Score statistics
+            card.querySelector('.score-count').textContent = stat.scoreAnswers || 0;
+            card.querySelector('.score-average').textContent = stat.averageScore || '0.0';
+
+            // Populate questions
+            const questionsContainer = card.querySelector('.category-questions');
+            questionsContainer.innerHTML = '';
+
+            // Add questions from the API response
+            if (stat.questions && stat.questions.length > 0) {
+                stat.questions.forEach(question => {
+                    const questionItem = document.createElement('div');
+                    questionItem.className = 'question-item';
+                    questionItem.innerHTML = `
+                        <span>${question.text}</span>
+                        <span class="question-type-badge question-type-${question.questionType}">
+                            ${question.questionType === 'yesno' ? 'Yes/No' : 'Score'}
+                        </span>
+                    `;
+                    questionsContainer.appendChild(questionItem);
+                });
+            } else {
+                // No questions found
+                const noQuestionsItem = document.createElement('div');
+                noQuestionsItem.className = 'question-item text-muted';
+                noQuestionsItem.textContent = 'No questions found for this category';
+                questionsContainer.appendChild(noQuestionsItem);
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching category statistics:', error);
+        showNotification('Error loading category statistics', 'error');
+
+        // Show error state in the UI
+        Object.values(categoryData).forEach(category => {
+            const card = document.querySelector(`.category-card[data-category-id="${category.id}"]`);
+            if (!card) return;
+
+            card.querySelector('.yesno-count').textContent = '0';
+            card.querySelector('.yesno-percentage').textContent = '0%';
+            card.querySelector('.score-count').textContent = '0';
+            card.querySelector('.score-average').textContent = '0.0';
+
+            // Show error message in questions container
+            const questionsContainer = card.querySelector('.category-questions');
+            questionsContainer.innerHTML = '<div class="text-danger">Failed to load statistics</div>';
+        });
+    }
 }
 
 function initializeDateRangeButtons() {

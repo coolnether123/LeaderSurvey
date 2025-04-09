@@ -192,6 +192,35 @@
     color: white;
 }
 
+/* Category card colors */
+.category-card-mechanical {
+    border-left: 4px solid #4caf50; /* Green */
+}
+
+.category-card-character {
+    border-left: 4px solid #2196f3; /* Blue */
+}
+
+.category-card-theory {
+    border-left: 4px solid #9c27b0; /* Purple */
+}
+
+/* Category checkbox styles */
+.category-checkbox.category-mechanical .form-check-input:checked {
+    background-color: #4caf50;
+    border-color: #4caf50;
+}
+
+.category-checkbox.category-character .form-check-input:checked {
+    background-color: #2196f3;
+    border-color: #2196f3;
+}
+
+.category-checkbox.category-theory .form-check-input:checked {
+    background-color: #9c27b0;
+    border-color: #9c27b0;
+}
+
 /* Category Selection in Question Form */
 .category-selection {
     display: flex;
@@ -207,4 +236,27 @@
 .form-check-input:checked {
     background-color: #e4002b;
     border-color: #e4002b;
+}
+
+/* Category badges */
+.badge.category-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    margin-right: 0.25rem;
+    border-radius: 4px;
+}
+
+.badge.category-mechanical {
+    background-color: #4caf50;
+    color: white;
+}
+
+.badge.category-character {
+    background-color: #2196f3;
+    color: white;
+}
+
+.badge.category-theory {
+    background-color: #9c27b0;
+    color: white;
 }

@@ -284,7 +284,7 @@
                         <label class="form-label">Categories:</label>
                         <div class="category-selection">
                             ${categories.map(category => `
-                                <div class="form-check form-check-inline">
+                                <div class="form-check form-check-inline category-checkbox category-${category.name.toLowerCase()}">
                                     <input class="form-check-input" type="checkbox" value="${category.id}" id="category-${category.id}-${questions.length}">
                                     <label class="form-check-label" for="category-${category.id}-${questions.length}">${category.name}</label>
                                 </div>
@@ -366,9 +366,23 @@
             // Update the row with the question ID as a data attribute
             row.setAttribute('data-question-id', questionId);
 
+            // Create category badges for display
+            const categoryBadges = categoryIds.length > 0
+                ? `<div class="mt-1">${categoryIds.map(id => {
+                    const category = categories.find(c => c.id === id);
+                    if (category) {
+                        return `<span class="badge category-badge category-${category.name.toLowerCase()}">${category.name}</span>`;
+                    }
+                    return '';
+                  }).join(' ')}</div>`
+                : '';
+
             row.innerHTML = `
                 <td class="question-number">${index + 1}</td>
-                <td>${questionText}</td>
+                <td>
+                    ${questionText}
+                    ${categoryBadges}
+                </td>
                 <td>${questionType === 'yesno' ? 'Yes/No' : 'Score (0-10)'}</td>
                 <td>
                     <div class="btn-group">
@@ -450,7 +464,7 @@
                         <label class="form-label">Categories:</label>
                         <div class="category-selection">
                             ${categories.map(category => `
-                                <div class="form-check form-check-inline">
+                                <div class="form-check form-check-inline category-checkbox category-${category.name.toLowerCase()}">
                                     <input class="form-check-input" type="checkbox" value="${category.id}" id="category-${category.id}-${index}" ${question.categoryIds && question.categoryIds.includes(category.id) ? 'checked' : ''}>
                                     <label class="form-check-label" for="category-${category.id}-${index}">${category.name}</label>
                                 </div>
@@ -701,7 +715,8 @@
                         const formattedQuestions = questions.map(q => ({
                             Id: q.id,
                             Text: q.text,
-                            QuestionType: q.type
+                            QuestionType: q.type,
+                            CategoryIds: q.categoryIds || []
                         }));
                         questionsJson.value = JSON.stringify(formattedQuestions);
                         console.log('Questions JSON set to:', questionsJson.value);
@@ -726,7 +741,8 @@
                 const formattedQuestions = questions.map(q => ({
                     Id: q.id,
                     Text: q.text,
-                    QuestionType: q.type
+                    QuestionType: q.type,
+                    CategoryIds: q.categoryIds || []
                 }));
                 questionsJson.value = JSON.stringify(formattedQuestions);
                 console.log('Initial questions JSON set to:', questionsJson.value);
