@@ -195,6 +195,13 @@ function applyFilters() {
     selectedLeaderId = leaderFilter.value;
     selectedArea = areaFilter.value;
 
+    console.log('Applying filters with:', {
+        leader: selectedLeaderId,
+        area: selectedArea,
+        startDate: startDate ? startDate.toISOString() : null,
+        endDate: endDate ? endDate.toISOString() : null
+    });
+
     // Add visual indication for active filters
     if (selectedLeaderId) {
         leaderFilter.classList.add('active');
@@ -221,7 +228,7 @@ function applyFilters() {
         }
 
         // Filter by date range
-        if (startDate && endDate) {
+        if (startDate || endDate) {
             if (!survey.monthYear) {
                 return false; // Skip surveys without a date
             }
@@ -234,13 +241,29 @@ function applyFilters() {
 
             // Set time to beginning of day for accurate comparison
             surveyDate.setHours(0, 0, 0, 0);
-            const startDateCopy = new Date(startDate);
-            startDateCopy.setHours(0, 0, 0, 0);
-            const endDateCopy = new Date(endDate);
-            endDateCopy.setHours(23, 59, 59, 999);
 
-            if (surveyDate < startDateCopy || surveyDate > endDateCopy) {
-                return false;
+            console.log(`Survey ${survey.id} date: ${surveyDate.toISOString()}`);
+
+            // Check start date if it exists
+            if (startDate) {
+                const startDateCopy = new Date(startDate);
+                startDateCopy.setHours(0, 0, 0, 0);
+
+                if (surveyDate < startDateCopy) {
+                    console.log(`Survey ${survey.id} filtered out by start date: ${surveyDate} < ${startDateCopy}`);
+                    return false;
+                }
+            }
+
+            // Check end date if it exists
+            if (endDate) {
+                const endDateCopy = new Date(endDate);
+                endDateCopy.setHours(23, 59, 59, 999);
+
+                if (surveyDate > endDateCopy) {
+                    console.log(`Survey ${survey.id} filtered out by end date: ${surveyDate} > ${endDateCopy}`);
+                    return false;
+                }
             }
         }
 
@@ -488,6 +511,12 @@ function initializeDateRangeButtons() {
     startDate = null;
     endDate = null;
 
+    // Set the 'all' button as active by default
+    const allButton = document.querySelector('.date-range-btn[data-range="all"]');
+    if (allButton) {
+        allButton.classList.add('active');
+    }
+
     dateRangeButtons.forEach(button => {
         button.addEventListener('click', function() {
             // Remove active class from all buttons
@@ -503,15 +532,27 @@ function initializeDateRangeButtons() {
             if (range === 'custom') {
                 customDateRange.style.display = 'flex';
 
-                // If custom inputs already have values, use them
+                // Get the date input elements
                 const startDateInput = document.getElementById('startDate');
                 const endDateInput = document.getElementById('endDate');
 
+                // If the inputs don't have values, set default values (first day of month to today)
+                if (!startDateInput.value) {
+                    startDateInput.value = firstDayOfMonth;
+                }
+
+                if (!endDateInput.value) {
+                    endDateInput.value = today;
+                }
+
+                // Use the input values to set the date range
                 if (startDateInput.value && endDateInput.value) {
                     startDate = new Date(startDateInput.value);
+                    startDate.setHours(0, 0, 0, 0); // Start of day
+
                     endDate = new Date(endDateInput.value);
-                    // Set the end date to the end of the month
-                    endDate.setMonth(endDate.getMonth() + 1, 0);
+                    endDate.setHours(23, 59, 59, 999); // End of day
+
                     applyFilters();
                 }
             } else {
@@ -525,17 +566,49 @@ function initializeDateRangeButtons() {
                 if (range === 'all') {
                     startDate = null;
                     endDate = null;
+
+                    // Clear the date inputs
+                    startDateInput.value = '';
+                    endDateInput.value = '';
                 } else if (range === 'current-month') {
                     // First day of current month
                     startDate = new Date(currentYear, currentMonth, 1);
-                    // Last day of current month
-                    endDate = new Date(currentYear, currentMonth + 1, 0);
+                    startDate.setHours(0, 0, 0, 0);
+
+                    // Current day of current month
+                    endDate = new Date();
+                    endDate.setHours(23, 59, 59, 999);
+
+                    // Update the date inputs to match
+                    const startMonth = (currentMonth + 1).toString().padStart(2, '0');
+                    const startDay = '01';
+                    startDateInput.value = `${currentYear}-${startMonth}-${startDay}`;
+
+                    const endMonth = (currentMonth + 1).toString().padStart(2, '0');
+                    const endDay = now.getDate().toString().padStart(2, '0');
+                    endDateInput.value = `${currentYear}-${endMonth}-${endDay}`;
+
                     console.log('Current month range:', startDate, 'to', endDate);
                 } else if (range === 'last-3-months') {
                     // First day of 2 months ago
-                    startDate = new Date(currentYear, currentMonth - 2, 1);
-                    // Last day of current month
-                    endDate = new Date(currentYear, currentMonth + 1, 0);
+                    const threeMonthsAgo = new Date(currentYear, currentMonth - 2, 1);
+                    startDate = threeMonthsAgo;
+                    startDate.setHours(0, 0, 0, 0);
+
+                    // Current day
+                    endDate = new Date();
+                    endDate.setHours(23, 59, 59, 999);
+
+                    // Update the date inputs to match
+                    const startYear = threeMonthsAgo.getFullYear();
+                    const startMonth = (threeMonthsAgo.getMonth() + 1).toString().padStart(2, '0');
+                    const startDay = '01';
+                    startDateInput.value = `${startYear}-${startMonth}-${startDay}`;
+
+                    const endMonth = (currentMonth + 1).toString().padStart(2, '0');
+                    const endDay = now.getDate().toString().padStart(2, '0');
+                    endDateInput.value = `${currentYear}-${endMonth}-${endDay}`;
+
                     console.log('Last 3 months range:', startDate, 'to', endDate);
                 }
 
@@ -549,32 +622,52 @@ function initializeDateRangeButtons() {
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
 
-    // Set initial values to current month
+    // Set initial values to current date range (but don't show them until custom is clicked)
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = (now.getMonth() + 1).toString().padStart(2, '0'); // +1 because months are 0-indexed
-    startDateInput.value = `${currentYear}-${currentMonth}`;
-    endDateInput.value = `${currentYear}-${currentMonth}`;
+    const currentDay = now.getDate().toString().padStart(2, '0');
+
+    // Prepare values but don't set them yet
+    const firstDayOfMonth = `${currentYear}-${currentMonth}-01`;
+    const today = `${currentYear}-${currentMonth}-${currentDay}`;
+
+    // We'll set these values when the custom button is clicked
+    // startDateInput.value = firstDayOfMonth;
+    // endDateInput.value = today;
 
     startDateInput.addEventListener('change', function() {
         if (this.value) {
-            const dateParts = this.value.split('-');
-            const year = parseInt(dateParts[0]);
-            const month = parseInt(dateParts[1]) - 1; // JavaScript months are 0-indexed
-            startDate = new Date(year, month, 1);
+            startDate = new Date(this.value);
+            // Set time to beginning of day
+            startDate.setHours(0, 0, 0, 0);
             console.log('Custom start date set to:', startDate);
+
+            // Make sure the active class is applied to the custom button
+            const customButton = document.querySelector('.date-range-btn[data-range="custom"]');
+            if (customButton) {
+                document.querySelectorAll('.date-range-btn').forEach(btn => btn.classList.remove('active'));
+                customButton.classList.add('active');
+            }
+
             applyFilters();
         }
     });
 
     endDateInput.addEventListener('change', function() {
         if (this.value) {
-            const dateParts = this.value.split('-');
-            const year = parseInt(dateParts[0]);
-            const month = parseInt(dateParts[1]) - 1; // JavaScript months are 0-indexed
-            // Set to last day of the selected month
-            endDate = new Date(year, month + 1, 0);
+            endDate = new Date(this.value);
+            // Set time to end of day
+            endDate.setHours(23, 59, 59, 999);
             console.log('Custom end date set to:', endDate);
+
+            // Make sure the active class is applied to the custom button
+            const customButton = document.querySelector('.date-range-btn[data-range="custom"]');
+            if (customButton) {
+                document.querySelectorAll('.date-range-btn').forEach(btn => btn.classList.remove('active'));
+                customButton.classList.add('active');
+            }
+
             applyFilters();
         }
     });

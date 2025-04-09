@@ -23,15 +23,24 @@ namespace LeaderSurvey.Pages
             _context = context;
             Leaders = new List<Leader>();
             NewLeader = new InputModel { Name = "", Area = "" };
+            Categories = new List<QuestionCategory>();
+            CategoryQuestionCounts = new Dictionary<int, int>();
         }
 
         public required List<Leader> Leaders { get; set; }
-        
+
         [BindProperty]
         public required InputModel NewLeader { get; set; }
 
         [BindProperty]
         public Leader SelectedLeader { get; set; } = default!;
+
+        public List<QuestionCategory> Categories { get; set; }
+        public Dictionary<int, int> CategoryQuestionCounts { get; set; }
+
+        // Active tab ("leaders" or "categories")
+        [BindProperty(SupportsGet = true)]
+        public string ActiveTab { get; set; } = "leaders";
 
         public class InputModel
         {
@@ -40,20 +49,48 @@ namespace LeaderSurvey.Pages
             [StringLength(100, MinimumLength = 2, ErrorMessage = "Name must be between 2 and 100 characters")]
             [RegularExpression(@"^[a-zA-Z\s-']+$", ErrorMessage = "Name can only contain letters, spaces, hyphens and apostrophes")]
             public string Name { get; set; } = string.Empty;
-            
+
             [Required(ErrorMessage = "Work area is required")]
             [Display(Name = "Work Area")]
             public string Area { get; set; } = string.Empty;
         }
 
-        public async Task OnGetAsync()
+        public async Task OnGetAsync(string? tab = null)
         {
+            // Set active tab if provided
+            if (!string.IsNullOrEmpty(tab))
+            {
+                ActiveTab = tab.ToLower();
+            }
+
+            // Load leaders
             Leaders = await _context.Leaders.OrderBy(l => l.Name).ToListAsync();
+
+            // Load categories if the categories tab is active or might be needed
+            if (ActiveTab == "categories" || string.IsNullOrEmpty(ActiveTab))
+            {
+                // Load categories
+                Categories = await _context.QuestionCategories
+                    .OrderBy(c => c.Name)
+                    .ToListAsync();
+
+                // Count questions per category
+                var categoryMappings = await _context.QuestionCategoryMappings
+                    .GroupBy(qcm => qcm.CategoryId)
+                    .Select(g => new { CategoryId = g.Key, Count = g.Count() })
+                    .ToListAsync();
+
+                // Create a dictionary of category ID to question count
+                CategoryQuestionCounts = categoryMappings.ToDictionary(
+                    x => x.CategoryId,
+                    x => x.Count
+                );
+            }
         }
 
         public async Task<IActionResult> OnPostAsync([FromBody] JsonElement body)
         {
-            try 
+            try
             {
                 // Extract the values from the JSON body
                 var leaderData = body.GetProperty("leader");  // Changed from "newLeader" to "leader"
@@ -79,27 +116,27 @@ namespace LeaderSurvey.Pages
                     var errors = string.Join(", ", ModelState.Values
                         .SelectMany(v => v.Errors)
                         .Select(e => e.ErrorMessage));
-                    return new JsonResult(new { 
-                        success = false, 
-                        message = errors 
+                    return new JsonResult(new {
+                        success = false,
+                        message = errors
                     });
                 }
 
                 // Check for existing leader
                 var existingLeader = await _context.Leaders
                     .FirstOrDefaultAsync(l => l.Name.ToLower() == name.ToLower());
-                
+
                 if (existingLeader != null)
                 {
-                    return new JsonResult(new { 
-                        success = false, 
-                        message = "A leader with this name already exists" 
+                    return new JsonResult(new {
+                        success = false,
+                        message = "A leader with this name already exists"
                     });
                 }
 
                 // Create and save the new leader
-                var leader = new Leader 
-                { 
+                var leader = new Leader
+                {
                     Name = name,
                     Area = area
                 };
@@ -107,18 +144,18 @@ namespace LeaderSurvey.Pages
                 _context.Leaders.Add(leader);
                 await _context.SaveChangesAsync();
 
-                return new JsonResult(new { 
-                    success = true, 
+                return new JsonResult(new {
+                    success = true,
                     id = leader.Id,
                     name = leader.Name,
                     area = leader.Area
                 });
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
-                return new JsonResult(new { 
-                    success = false, 
-                    message = $"Failed to save leader: {ex.Message}" 
+                return new JsonResult(new {
+                    success = false,
+                    message = $"Failed to save leader: {ex.Message}"
                 });
             }
         }
@@ -129,12 +166,12 @@ namespace LeaderSurvey.Pages
             {
                 var id = body.GetProperty("id").GetInt32();
                 var leader = await _context.Leaders.FindAsync(id);
-                
+
                 if (leader == null)
                 {
-                    return new JsonResult(new { 
-                        success = false, 
-                        message = "Leader not found" 
+                    return new JsonResult(new {
+                        success = false,
+                        message = "Leader not found"
                     });
                 }
 
@@ -142,32 +179,32 @@ namespace LeaderSurvey.Pages
                 var hasAssociatedSurveys = await _context.Surveys.AnyAsync(s => s.LeaderId == id);
                 if (hasAssociatedSurveys)
                 {
-                    return new JsonResult(new { 
-                        success = false, 
-                        message = "Cannot delete leader with associated surveys" 
+                    return new JsonResult(new {
+                        success = false,
+                        message = "Cannot delete leader with associated surveys"
                     });
                 }
 
                 _context.Leaders.Remove(leader);
                 await _context.SaveChangesAsync();
 
-                return new JsonResult(new { 
-                    success = true, 
-                    message = "Leader deleted successfully" 
+                return new JsonResult(new {
+                    success = true,
+                    message = "Leader deleted successfully"
                 });
             }
             catch (Exception ex)
             {
-                return new JsonResult(new { 
-                    success = false, 
-                    message = $"Error deleting leader: {ex.Message}" 
+                return new JsonResult(new {
+                    success = false,
+                    message = $"Error deleting leader: {ex.Message}"
                 });
             }
         }
 
         public async Task<IActionResult> OnPostUpdateAsync([FromBody] JsonElement body)
         {
-            try 
+            try
             {
                 var leaderData = body.GetProperty("leader");
                 var id = leaderData.GetProperty("id").GetInt32();
@@ -176,30 +213,30 @@ namespace LeaderSurvey.Pages
 
                 if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(area))
                 {
-                    return new JsonResult(new { 
-                        success = false, 
-                        message = "Name and Area are required" 
+                    return new JsonResult(new {
+                        success = false,
+                        message = "Name and Area are required"
                     });
                 }
 
                 var leaderToUpdate = await _context.Leaders.FindAsync(id);
                 if (leaderToUpdate == null)
                 {
-                    return new JsonResult(new { 
-                        success = false, 
-                        message = "Leader not found" 
+                    return new JsonResult(new {
+                        success = false,
+                        message = "Leader not found"
                     });
                 }
 
                 // Check if the new name conflicts with another leader (excluding the current leader)
                 var existingLeader = await _context.Leaders
                     .FirstOrDefaultAsync(l => l.Id != id && l.Name.ToLower() == name.ToLower());
-                
+
                 if (existingLeader != null)
                 {
-                    return new JsonResult(new { 
-                        success = false, 
-                        message = "A leader with this name already exists" 
+                    return new JsonResult(new {
+                        success = false,
+                        message = "A leader with this name already exists"
                     });
                 }
 
@@ -208,7 +245,7 @@ namespace LeaderSurvey.Pages
 
                 await _context.SaveChangesAsync();
 
-                return new JsonResult(new { 
+                return new JsonResult(new {
                     success = true,
                     id = leaderToUpdate.Id,
                     name = leaderToUpdate.Name,
@@ -217,9 +254,9 @@ namespace LeaderSurvey.Pages
             }
             catch (Exception ex)
             {
-                return new JsonResult(new { 
-                    success = false, 
-                    message = $"Failed to update leader: {ex.Message}" 
+                return new JsonResult(new {
+                    success = false,
+                    message = $"Failed to update leader: {ex.Message}"
                 });
             }
         }
