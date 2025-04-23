@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using LeaderSurvey.Data;
 using LeaderSurvey.Models;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace LeaderSurvey.Pages
@@ -82,21 +83,110 @@ namespace LeaderSurvey.Pages
 
         public async Task<IActionResult> OnPostAsync()
         {
-            // Validate that all questions have answers
-            var allQuestions = await _context.Questions
-                .Where(q => q.SurveyId == SurveyId)
-                .ToListAsync();
+            // Debug information
+            System.Diagnostics.Debug.WriteLine($"OnPostAsync called. SurveyId: {SurveyId}, SelectedLeaderId: {SelectedLeaderId}");
+            System.Diagnostics.Debug.WriteLine($"Answers count: {Answers?.Count ?? 0}, AdditionalNotes: {(string.IsNullOrEmpty(AdditionalNotes) ? "<none>" : AdditionalNotes)}");
 
-            foreach (var question in allQuestions)
+            try
             {
-                if (!Answers.TryGetValue(question.Id, out var answer) || string.IsNullOrWhiteSpace(answer))
+                // Validate that all questions have answers
+                var allQuestions = await _context.Questions
+                    .Where(q => q.SurveyId == SurveyId)
+                    .ToListAsync();
+
+                foreach (var question in allQuestions)
                 {
-                    ModelState.AddModelError($"Answers[{question.Id}]", $"Please provide an answer for question: {question.Text}");
+                    if (Answers == null || !Answers.TryGetValue(question.Id, out var answer) || string.IsNullOrWhiteSpace(answer))
+                    {
+                        ModelState.AddModelError($"Answers[{question.Id}]", $"Please provide an answer for question: {question.Text}");
+                    }
                 }
-            }
 
-            if (!ModelState.IsValid)
+                if (!ModelState.IsValid)
+                {
+                    var surveyResult = await _context.Surveys
+                        .Include(s => s.Questions)
+                        .Include(s => s.Leader)
+                        .Include(s => s.EvaluatorLeader)
+                        .FirstOrDefaultAsync(s => s.Id == SurveyId);
+
+                    if (surveyResult != null)
+                    {
+                        Survey = surveyResult;
+                        Questions = [.. Survey.Questions.OrderBy(q => q.QuestionOrder)];
+                    }
+
+                    // Only show the leader assigned to the survey
+                    if (Survey.LeaderId.HasValue && Survey.Leader != null)
+                    {
+                        var leadersList = new List<Leader> { Survey.Leader };
+                        LeaderList = new SelectList(leadersList, "Id", "Name");
+                        SelectedLeaderId = Survey.LeaderId.Value;
+                    }
+                    else
+                    {
+                        // Fallback to showing leaders in the same area if no leader is assigned
+                        var leaders = await _context.Leaders
+                            .Where(l => l.Area == Survey.Area)
+                            .OrderBy(l => l.Name)
+                            .ToListAsync();
+                        LeaderList = new SelectList(leaders, "Id", "Name");
+                    }
+                    return Page();
+                }
+
+                // Get the current time for completion timestamp
+                var completionTime = DateTime.UtcNow;
+
+                // Create the survey response
+                var surveyResponse = new SurveyResponse
+                {
+                    LeaderId = SelectedLeaderId,
+                    SurveyId = SurveyId,
+                    CompletionDate = completionTime,
+                    AdditionalNotes = AdditionalNotes
+                };
+
+                _context.SurveyResponses.Add(surveyResponse);
+                await _context.SaveChangesAsync();
+
+                // Add all answers
+                if (Answers != null)
+                {
+                    foreach (var answer in Answers)
+                    {
+                        _context.Answers.Add(new Answer
+                        {
+                            QuestionId = answer.Key,
+                            SurveyResponseId = surveyResponse.Id,
+                            Response = answer.Value
+                        });
+                    }
+                }
+
+                // Update the survey status to completed
+                var survey = await _context.Surveys.FindAsync(SurveyId);
+                if (survey != null)
+                {
+                    survey.Status = "Completed";
+                    survey.CompletedDate = completionTime;
+                    survey.LeaderId = SelectedLeaderId;
+                    _context.Surveys.Update(survey);
+                }
+
+                await _context.SaveChangesAsync();
+                StatusMessage = "Survey completed successfully. Thank you for your feedback!";
+                return Redirect("/Surveys");
+            }
+            catch (Exception ex)
             {
+                // Log the exception
+                System.Diagnostics.Debug.WriteLine($"Exception in OnPostAsync: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                ModelState.AddModelError(string.Empty, $"An error occurred while saving the survey: {ex.Message}");
+
+                // Reload the survey data for the page
                 var surveyResult = await _context.Surveys
                     .Include(s => s.Questions)
                     .Include(s => s.Leader)
@@ -125,45 +215,10 @@ namespace LeaderSurvey.Pages
                         .ToListAsync();
                     LeaderList = new SelectList(leaders, "Id", "Name");
                 }
+
+                // Return the page with validation errors
                 return Page();
             }
-
-            // Create the survey response
-            var surveyResponse = new SurveyResponse
-            {
-                LeaderId = SelectedLeaderId,
-                SurveyId = SurveyId,
-                CompletionDate = DateTime.UtcNow,
-                AdditionalNotes = AdditionalNotes
-            };
-
-            _context.SurveyResponses.Add(surveyResponse);
-            await _context.SaveChangesAsync();
-
-            // Add all answers
-            foreach (var answer in Answers)
-            {
-                _context.Answers.Add(new Answer
-                {
-                    QuestionId = answer.Key,
-                    SurveyResponseId = surveyResponse.Id,
-                    Response = answer.Value
-                });
-            }
-
-            // Update the survey status to completed
-            var survey = await _context.Surveys.FindAsync(SurveyId);
-            if (survey != null)
-            {
-                survey.Status = "Completed";
-                survey.CompletedDate = DateTime.UtcNow;
-                survey.LeaderId = SelectedLeaderId;
-                _context.Surveys.Update(survey);
-            }
-
-            await _context.SaveChangesAsync();
-            StatusMessage = "Survey completed successfully. Thank you for your feedback!";
-            return Redirect("/Surveys");
         }
     }
 }
