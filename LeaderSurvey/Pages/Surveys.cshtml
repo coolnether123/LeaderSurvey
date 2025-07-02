@@ -1,5 +1,6 @@
 @page
 @model LeaderSurvey.Pages.SurveysModel
+@using LeaderSurvey.Utilities
 @{
     ViewData["Title"] = "Surveys";
 }
@@ -103,6 +104,12 @@
                             <span class="status-badge status-@survey.Status.ToLower()">
                                 @survey.Status
                             </span>
+                            @if (survey.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase) && survey.CompletedDate.HasValue)
+                            {
+                                <div class="completion-date">
+                                    @TimeZoneHelper.FormatUtcAsCentralDate(survey.CompletedDate.Value)
+                                </div>
+                            }
                         </td>
                         <td>
                             <a href="/TakeSurvey?surveyId=@survey.Id" class="cfa-btn cfa-btn-sm me-1 @(survey.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase) ? "disabled" : "")" style="background-color: #28a745; color: white;" @(survey.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase) ? "aria-disabled='true'" : "")>

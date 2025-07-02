@@ -1009,6 +1009,13 @@ main.pb-3 {
     color: #fff;
 }
 
+.completion-date {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+    text-align: center;
+}
+
 .survey-editor {
     background: white;
     border-radius: 8px;

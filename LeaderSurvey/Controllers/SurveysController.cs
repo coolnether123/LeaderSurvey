@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using LeaderSurvey.Data;
 using LeaderSurvey.Models;
+using LeaderSurvey.Utilities;
 
 namespace LeaderSurvey.Controllers
 {
@@ -50,6 +51,9 @@ namespace LeaderSurvey.Controllers
                 var evaluatorLeader = survey.EvaluatorLeaderId.HasValue ?
                     await _context.Leaders.FindAsync(survey.EvaluatorLeaderId.Value) : null;
 
+                // Convert CompletedDate to CST if it exists
+                var completedDateCst = TimeZoneHelper.ConvertUtcToCentral(survey.CompletedDate);
+
                 // Create a simplified response object
                 var result = new
                 {
@@ -64,6 +68,7 @@ namespace LeaderSurvey.Controllers
                     survey.MonthYear,
                     survey.Date,
                     survey.Status,
+                    CompletedDate = completedDateCst,
                     Questions = questions.Select(q => new { q.Id, q.Text, q.QuestionType, q.QuestionOrder })
                 };
 

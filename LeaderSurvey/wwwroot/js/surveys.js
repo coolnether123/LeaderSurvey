@@ -325,6 +325,9 @@ function updateSurveyTable() {
                 <span class="status-badge status-${survey.status.toLowerCase()}">
                     ${survey.status}
                 </span>
+                ${survey.status.toLowerCase() === 'completed' && survey.completedDate ?
+                    `<div class="completion-date">${new Date(survey.completedDate).toLocaleDateString('en-US', { timeZone: 'America/Chicago' })}</div>` :
+                    ''}
             </td>
             <td>
                 <a href="/TakeSurvey?surveyId=${survey.id}" class="cfa-btn cfa-btn-sm me-1 ${survey.status.toLowerCase() === 'completed' ? 'disabled' : ''}" style="background-color: #28a745; color: white;" ${survey.status.toLowerCase() === 'completed' ? 'aria-disabled="true"' : ''}>
@@ -361,7 +364,13 @@ async function fetchSurveyData() {
             const leaderId = row.cells[1].dataset.leaderId || '';
             const area = row.cells[2].textContent.trim();
             const dateText = row.cells[3].textContent.trim();
-            const status = row.cells[4].textContent.trim();
+
+            // Extract status and completion date from status cell
+            const statusCell = row.cells[4];
+            const statusBadge = statusCell.querySelector('.status-badge');
+            const status = statusBadge ? statusBadge.textContent.trim() : '';
+            const completionDateElement = statusCell.querySelector('.completion-date');
+            const completedDate = completionDateElement ? completionDateElement.textContent.trim() : null;
 
             // Parse the date
             let monthYear = null;
@@ -380,7 +389,7 @@ async function fetchSurveyData() {
                 }
             }
 
-            return { id, name, leaderName, leaderId, area, monthYear, dateText, status };
+            return { id, name, leaderName, leaderId, area, monthYear, dateText, status, completedDate };
         });
 
         // Initialize filtered surveys with all surveys
