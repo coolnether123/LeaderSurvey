@@ -310,7 +310,7 @@ function updateSurveyTable() {
                 </span>
             </td>
             <td>
-                <a href="/TakeSurvey?surveyId=${survey.id}" class="cfa-btn cfa-btn-sm me-1" style="background-color: #28a745; color: white;">
+                <a href="/TakeSurvey?surveyId=${survey.id}" class="cfa-btn cfa-btn-sm me-1 ${survey.status.toLowerCase() === 'completed' ? 'disabled' : ''}" style="background-color: #28a745; color: white;" ${survey.status.toLowerCase() === 'completed' ? 'aria-disabled="true"' : ''}>
                     <i class="bi bi-check2-square"></i> Take Survey
                 </a>
                 <a href="/EditSurvey?id=${survey.id}&viewMode=true" class="cfa-btn cfa-btn-sm me-1">

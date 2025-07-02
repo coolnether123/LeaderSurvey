@@ -139,7 +139,7 @@
                             </span>
                         </td>
                         <td>
-                            <a href="/TakeSurvey?surveyId=@survey.Id" class="cfa-btn cfa-btn-sm me-1" style="background-color: #28a745; color: white;">
+                            <a href="/TakeSurvey?surveyId=@survey.Id" class="cfa-btn cfa-btn-sm me-1 @(survey.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase) ? "disabled" : "")" style="background-color: #28a745; color: white;" @(survey.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase) ? "aria-disabled='true'" : "")>
                                 <i class="bi bi-check2-square"></i> Take Survey
                             </a>
                             <a href="/EditSurvey?id=@survey.Id&viewMode=true" class="cfa-btn cfa-btn-sm me-1">

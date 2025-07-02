@@ -36,9 +36,9 @@
         <i class="bi bi-clipboard-check me-1"></i> <strong>Survey Form</strong>
     </div>
     <div class="card-body">
-        <!-- DEBUG: Added action attribute explicitly - REMOVE COMMENT AFTER DEBUGGING -->
-        <form method="post" id="surveyForm" asp-page="TakeSurvey" action="/TakeSurvey">
-            <input type="hidden" asp-for="SurveyId" />
+        <form method="post" id="surveyForm">
+            <input type="hidden" name="SurveyId" value="@Model.SurveyId" />
+            @Html.AntiForgeryToken()
 
             @if (!ViewData.ModelState.IsValid)
             {
@@ -100,14 +100,14 @@
                                         <i class="bi bi-info-circle me-2"></i> This survey is assigned to evaluate:
                                         <strong>@Model.Survey.Leader.Name</strong> <span class="badge area-badge area-@(Model.Survey.Leader.Area?.ToLower() ?? "")">@Model.Survey.Leader.Area</span>
                                     </div>
-                                    <input type="hidden" asp-for="SelectedLeaderId" value="@Model.Survey.LeaderId" />
+                                    <input type="hidden" name="SelectedLeaderId" value="@Model.Survey.LeaderId" />
                                 }
                                 else
                                 {
                                     <label asp-for="SelectedLeaderId" class="form-label">Select Leader to Evaluate:</label>
                                     <div class="input-group mb-3">
                                         <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
-                                        <select asp-for="SelectedLeaderId" class="form-select" asp-items="Model.LeaderList">
+                                        <select name="SelectedLeaderId" class="form-select" asp-items="Model.LeaderList">
                                             <option value="">-- Select Leader --</option>
                                         </select>
                                     </div>
@@ -215,25 +215,88 @@
                     <button type="button" class="cfa-btn cfa-btn-outline me-md-2" onclick="window.location.href='/Surveys'">
                         <i class="bi bi-x-circle"></i> Cancel
                     </button>
-                    <!-- DEBUG: Added inline script for direct submission - REMOVE COMMENT AFTER DEBUGGING -->
-                    <button type="button" class="cfa-btn cfa-btn-primary" id="submitSurvey" onclick="document.getElementById('surveyForm').submit();">
+                    <button type="submit" class="cfa-btn cfa-btn-primary" id="submitSurvey">
                         <i class="bi bi-send"></i> Submit Survey
                     </button>
                 </div>
                 <div class="mt-3 w-100" id="formErrorMessage"></div>
 
-                <!-- DEBUG: Direct form submission button as fallback - REMOVE AFTER DEBUGGING -->
-                <div class="mt-3 text-center" style="display: none;" id="debugFormActions">
-                    <p class="text-danger">If the regular submit button doesn't work, try this emergency submit button:</p>
-                    <button type="submit" class="btn btn-danger">Emergency Submit</button>
+                <!-- Hidden debug panel for developers -->
+                <div class="mt-3 text-center" id="debugFormActions" style="display: none;">
+                    <div class="small text-start bg-light p-2 rounded">
+                        <div>Form action: <span id="debugFormAction"></span></div>
+                        <div>Form method: <span id="debugFormMethod"></span></div>
+                        <div>SurveyId: <span id="debugSurveyId"></span></div>
+                        <div>SelectedLeaderId: <span id="debugSelectedLeaderId"></span></div>
+                        <div>Answers count: <span id="debugAnswersCount"></span></div>
+                        <div class="mt-2">
+                            <strong>Form Data:</strong>
+                            <pre id="debugFormData" class="mt-1 p-2 bg-dark text-light" style="max-height: 200px; overflow: auto;"></pre>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- DEBUG: Show debug controls after 5 seconds if needed - REMOVE AFTER DEBUGGING -->
                 <script>
+                    // Function to populate debug information
+                    function populateDebugInfo() {
+                        const debugFormActions = document.getElementById('debugFormActions');
+                        if (debugFormActions) {
+                            // Populate debug information
+                            const form = document.getElementById('surveyForm');
+                            if (form) {
+                                document.getElementById('debugFormAction').textContent = form.action;
+                                document.getElementById('debugFormMethod').textContent = form.method;
+
+                                // Collect all form data
+                                const formData = new FormData(form);
+                                let formDataText = '';
+                                for (let [key, value] of formData.entries()) {
+                                    formDataText += `${key}: ${value}\n`;
+                                }
+                                document.getElementById('debugFormData').textContent = formDataText || 'No form data found';
+                            }
+
+                            const surveyId = document.querySelector('input[name="SurveyId"]')?.value;
+                            if (surveyId) {
+                                document.getElementById('debugSurveyId').textContent = surveyId;
+                            } else {
+                                document.getElementById('debugSurveyId').textContent = 'NOT FOUND';
+                            }
+
+                            const selectedLeaderId = document.querySelector('input[name="SelectedLeaderId"]')?.value;
+                            if (selectedLeaderId) {
+                                document.getElementById('debugSelectedLeaderId').textContent = selectedLeaderId;
+                            } else {
+                                document.getElementById('debugSelectedLeaderId').textContent = 'NOT FOUND';
+                            }
+
+                            // Count answers
+                            const answerInputs = document.querySelectorAll('input[name^="Answers["], textarea[name^="Answers["]');
+                            const answersCount = answerInputs.length;
+                            document.getElementById('debugAnswersCount').textContent = answersCount;
+
+                            // Check if any answers are selected/filled
+                            let selectedAnswersCount = 0;
+                            answerInputs.forEach(input => {
+                                if ((input.type === 'radio' && input.checked) ||
+                                    (input.type === 'text' && input.value.trim() !== '') ||
+                                    (input.tagName.toLowerCase() === 'textarea' && input.value.trim() !== '')) {
+                                    selectedAnswersCount++;
+                                }
+                            });
+                            document.getElementById('debugAnswersCount').textContent += ` (${selectedAnswersCount} filled)`;
+                        }
+                    }
+
                     setTimeout(function() {
                         // Check if we've had errors
                         if (console.error.called || document.getElementById('formErrorMessage').textContent) {
-                            document.getElementById('debugFormActions').style.display = 'block';
+                            const debugFormActions = document.getElementById('debugFormActions');
+                            if (debugFormActions) {
+                                debugFormActions.style.display = 'block';
+                                populateDebugInfo();
+                            }
                         }
                     }, 5000);
                 </script>
@@ -247,6 +310,23 @@
         </form>
     </div>
 </div>
+
+@section Styles {
+    <style>
+        .form-disabled {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .form-disabled .card {
+            background-color: #f8f9fa;
+        }
+
+        .form-disabled .card-header {
+            background-color: #e9ecef !important;
+        }
+    </style>
+}
 
 @section Scripts {
     <!-- DEBUG: Check if script is loaded properly - REMOVE AFTER DEBUGGING -->
@@ -278,30 +358,12 @@
     <script src="~/js/takeSurvey.js"></script>
 
     <script>
-        // DEBUG: Check if functions are defined - REMOVE AFTER DEBUGGING
-        console.log('submitSurveyForm defined:', typeof submitSurveyForm !== 'undefined');
-        console.log('initializeSurveyForm defined:', typeof initializeSurveyForm !== 'undefined');
-
-        // Initialize the form validation when the document is ready
+        // Initialize the form when the document is ready
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOMContentLoaded event fired - REMOVE AFTER DEBUGGING');
+            console.log('DOMContentLoaded event fired');
             if (typeof initializeSurveyForm === 'function') {
                 initializeSurveyForm();
-            } else {
-                console.error('initializeSurveyForm is not defined - REMOVE AFTER DEBUGGING');
             }
         });
-
-        // DEBUG: Define a fallback function in case the main one isn't loaded - REMOVE AFTER DEBUGGING
-        function submitSurveyForm() {
-            console.log('Fallback submitSurveyForm called - REMOVE AFTER DEBUGGING');
-            alert('The survey submission function was not loaded properly. Please check the console for errors.');
-            const form = document.getElementById('surveyForm');
-            if (form) {
-                if (confirm('Do you want to try submitting the form anyway?')) {
-                    form.submit();
-                }
-            }
-        }
     </script>
 }

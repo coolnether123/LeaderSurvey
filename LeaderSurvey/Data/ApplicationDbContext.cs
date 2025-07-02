@@ -25,7 +25,7 @@ namespace LeaderSurvey.Data
             // Configure Survey -> Leader (being surveyed) relationship
             modelBuilder.Entity<Survey>()
                 .HasOne(s => s.Leader)
-                .WithMany(l => l.Surveys)
+                .WithMany(l => l.Surveys) // This is correct because Leader.cs has ICollection<Survey>
                 .HasForeignKey(s => s.LeaderId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
@@ -33,7 +33,7 @@ namespace LeaderSurvey.Data
             // Configure Survey -> EvaluatorLeader (taking the survey) relationship
             modelBuilder.Entity<Survey>()
                 .HasOne(s => s.EvaluatorLeader)
-                .WithMany()
+                .WithMany() // **FIX #1: Re-added .WithMany() with empty parameters**
                 .HasForeignKey(s => s.EvaluatorLeaderId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
@@ -41,28 +41,32 @@ namespace LeaderSurvey.Data
             modelBuilder.Entity<Question>()
                 .HasOne(q => q.Survey)
                 .WithMany(s => s.Questions)
-                .HasForeignKey(q => q.SurveyId);
+                .HasForeignKey(q => q.SurveyId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Answer>()
                 .HasOne(a => a.Question)
                 .WithMany()
-                .HasForeignKey(a => a.QuestionId);
+                .HasForeignKey(a => a.QuestionId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Answer>()
                 .HasOne(a => a.SurveyResponse)
                 .WithMany(sr => sr.Answers)
-                .HasForeignKey(a => a.SurveyResponseId);
+                .HasForeignKey(a => a.SurveyResponseId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Configure SurveyResponse -> Leader relationship
             modelBuilder.Entity<SurveyResponse>()
                 .HasOne(sr => sr.Leader)
-                .WithMany()
+                .WithMany() // **FIX #2: Re-added .WithMany() with empty parameters**
                 .HasForeignKey(sr => sr.LeaderId);
 
             modelBuilder.Entity<SurveyResponse>()
                 .HasOne(sr => sr.Survey)
-                .WithMany()
-                .HasForeignKey(sr => sr.SurveyId);
+                .WithMany() // This is also correct
+                .HasForeignKey(sr => sr.SurveyId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Configure QuestionCategoryMapping relationships
             modelBuilder.Entity<QuestionCategoryMapping>()
