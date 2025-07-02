@@ -33,7 +33,7 @@ namespace LeaderSurvey.Data
             // Configure Survey -> EvaluatorLeader (taking the survey) relationship
             modelBuilder.Entity<Survey>()
                 .HasOne(s => s.EvaluatorLeader)
-                .WithMany() // **FIX #1: Re-added .WithMany() with empty parameters**
+                .WithMany() 
                 .HasForeignKey(s => s.EvaluatorLeaderId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);

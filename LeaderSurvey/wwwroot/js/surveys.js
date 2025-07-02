@@ -7,6 +7,8 @@ let selectedLeaderId = '';
 let selectedArea = '';
 let startDate = null;
 let endDate = null;
+let currentSortColumn = '';
+let currentSortDirection = '';
 
 // Survey Editor Functions
 function createNewSurvey() {
@@ -272,6 +274,60 @@ function applyFilters() {
 
 
 
+    // Apply current sort if one is active
+    if (currentSortColumn && currentSortDirection) {
+        // Sort the filtered results
+        filteredSurveys.sort((a, b) => {
+            let valueA, valueB;
+
+            switch (currentSortColumn) {
+                case 'name':
+                    valueA = a.name.toLowerCase();
+                    valueB = b.name.toLowerCase();
+                    break;
+                case 'leader':
+                    valueA = (a.leaderName || '').toLowerCase();
+                    valueB = (b.leaderName || '').toLowerCase();
+                    break;
+                case 'area':
+                    valueA = a.area.toLowerCase();
+                    valueB = b.area.toLowerCase();
+                    break;
+                case 'date':
+                    valueA = a.monthYear ? new Date(a.monthYear + '-01') : new Date(0);
+                    valueB = b.monthYear ? new Date(b.monthYear + '-01') : new Date(0);
+                    break;
+                case 'status':
+                    valueA = a.status.toLowerCase();
+                    valueB = b.status.toLowerCase();
+
+                    // If both are completed, sort by completion date
+                    if (valueA === 'completed' && valueB === 'completed') {
+                        const dateA = a.completedDate ? new Date(a.completedDate) : new Date(0);
+                        const dateB = b.completedDate ? new Date(b.completedDate) : new Date(0);
+                        return currentSortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+                    }
+                    break;
+                default:
+                    return 0;
+            }
+
+            if (currentSortColumn === 'date') {
+                if (currentSortDirection === 'asc') {
+                    return valueA - valueB;
+                } else {
+                    return valueB - valueA;
+                }
+            }
+
+            if (currentSortDirection === 'asc') {
+                return valueA.localeCompare(valueB);
+            } else {
+                return valueB.localeCompare(valueA);
+            }
+        });
+    }
+
     // Update the table with filtered surveys
     updateSurveyTable();
 
@@ -349,6 +405,117 @@ function updateSurveyTable() {
 
         tableBody.appendChild(row);
     });
+}
+
+// Sorting Functions
+function cycleSortColumn(column) {
+    let direction;
+
+    // Determine next sort direction
+    if (currentSortColumn === column) {
+        // Same column - cycle through: none -> asc -> desc -> none
+        if (currentSortDirection === '') {
+            direction = 'asc';
+        } else if (currentSortDirection === 'asc') {
+            direction = 'desc';
+        } else {
+            direction = '';
+            currentSortColumn = '';
+        }
+    } else {
+        // Different column - start with ascending
+        direction = 'asc';
+    }
+
+    if (direction === '') {
+        // Reset to default sort (date desc)
+        sortTable('date', 'desc');
+    } else {
+        sortTable(column, direction);
+    }
+}
+
+function sortTable(column, direction) {
+    // Update visual indicators
+    updateSortIndicators(column, direction);
+
+    // Store current sort state
+    currentSortColumn = column;
+    currentSortDirection = direction;
+
+    // Sort the filtered surveys array
+    filteredSurveys.sort((a, b) => {
+        let valueA, valueB;
+
+        switch (column) {
+            case 'name':
+                valueA = a.name.toLowerCase();
+                valueB = b.name.toLowerCase();
+                break;
+            case 'leader':
+                valueA = (a.leaderName || '').toLowerCase();
+                valueB = (b.leaderName || '').toLowerCase();
+                break;
+            case 'area':
+                valueA = a.area.toLowerCase();
+                valueB = b.area.toLowerCase();
+                break;
+            case 'date':
+                // Parse the date for sorting
+                valueA = a.monthYear ? new Date(a.monthYear + '-01') : new Date(0);
+                valueB = b.monthYear ? new Date(b.monthYear + '-01') : new Date(0);
+                break;
+            case 'status':
+                // For status, we want to sort by status first, then by completion date for completed surveys
+                valueA = a.status.toLowerCase();
+                valueB = b.status.toLowerCase();
+
+                // If both are completed, sort by completion date
+                if (valueA === 'completed' && valueB === 'completed') {
+                    const dateA = a.completedDate ? new Date(a.completedDate) : new Date(0);
+                    const dateB = b.completedDate ? new Date(b.completedDate) : new Date(0);
+                    return direction === 'asc' ? dateA - dateB : dateB - dateA;
+                }
+                break;
+            default:
+                return 0;
+        }
+
+        // Handle date comparison
+        if (column === 'date') {
+            if (direction === 'asc') {
+                return valueA - valueB;
+            } else {
+                return valueB - valueA;
+            }
+        }
+
+        // Handle string comparison
+        if (direction === 'asc') {
+            return valueA.localeCompare(valueB);
+        } else {
+            return valueB.localeCompare(valueA);
+        }
+    });
+
+    // Update the table display
+    updateSurveyTable();
+}
+
+function updateSortIndicators(column, direction) {
+    // Reset all sort indicators
+    document.querySelectorAll('.sortable').forEach(header => {
+        header.classList.remove('sort-active', 'sort-asc', 'sort-desc');
+    });
+
+    // Set active sort indicator
+    if (column && direction) {
+        const columnHeader = document.querySelector(`th[data-column="${column}"]`);
+        if (columnHeader) {
+            columnHeader.classList.add('sort-active');
+            columnHeader.classList.add(`sort-${direction}`);
+        }
+    }
 }
 
 async function fetchSurveyData() {
@@ -730,6 +897,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     await fetchCategoryData();
     initializeDateRangeButtons();
     initializeCategoryCards();
+
+    // Set default sort by date (descending) to match server-side default
+    sortTable('date', 'desc');
 
     // Set up event listeners for filters
     document.getElementById('leaderFilter').addEventListener('change', applyFilters);

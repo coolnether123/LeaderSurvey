@@ -1016,6 +1016,115 @@ main.pb-3 {
     text-align: center;
 }
 
+/* Table sorting styles */
+.sortable {
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+}
+
+.sort-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.sort-text {
+    font-weight: 600;
+    color: #333;
+}
+
+.sort-icon {
+    font-size: 0.9rem;
+    color: #999;
+    transition: all 0.3s ease;
+    opacity: 0.6;
+}
+
+/* Hover effects */
+.sortable:hover {
+    background: linear-gradient(135deg, rgba(229, 22, 54, 0.15), rgba(229, 22, 54, 0.08));
+    box-shadow: 0 0 20px rgba(229, 22, 54, 0.3);
+    transform: translateY(-1px);
+}
+
+.sortable:hover .sort-text {
+    color: #e51636;
+}
+
+.sortable:hover .sort-icon {
+    color: #e51636;
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Active sort states */
+.sortable.sort-active {
+    background: linear-gradient(135deg, rgba(229, 22, 54, 0.2), rgba(229, 22, 54, 0.1));
+    box-shadow: 0 0 15px rgba(229, 22, 54, 0.4);
+}
+
+.sortable.sort-active .sort-text {
+    color: #e51636;
+    font-weight: 700;
+}
+
+.sortable.sort-active .sort-icon {
+    color: #e51636;
+    opacity: 1;
+}
+
+/* Sort direction indicators */
+.sortable.sort-asc .sort-icon {
+    transform: rotate(180deg);
+}
+
+.sortable.sort-desc .sort-icon {
+    transform: rotate(0deg);
+}
+
+.sortable.sort-active:hover .sort-icon {
+    transform: scale(1.1) rotate(0deg);
+}
+
+.sortable.sort-active.sort-asc:hover .sort-icon {
+    transform: scale(1.1) rotate(180deg);
+}
+
+/* Table header improvements */
+.table-cfa thead th {
+    border-bottom: 2px solid #e51636;
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    position: relative;
+    overflow: hidden;
+}
+
+.table-cfa thead th:not(.sortable) {
+    padding: 0.75rem 1rem;
+}
+
+/* Smooth transitions for all interactive elements */
+.sortable * {
+    transition: all 0.3s ease;
+}
+
+/* Add a subtle animation when sorting changes */
+@keyframes sortChange {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.sortable.sort-active {
+    animation: sortChange 0.4s ease-out;
+}
+
 .survey-editor {
     background: white;
     border-radius: 8px;

@@ -82,11 +82,36 @@
         <table id="surveysTable" class="table table-cfa">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Leader</th>
-                    <th>Area</th>
-                    <th>Date</th>
-                    <th>Status</th>
+                    <th class="sortable" data-column="name" onclick="cycleSortColumn('name')" title="Click to sort by Name">
+                        <span class="sort-header">
+                            <span class="sort-text">Name</span>
+                            <i class="bi bi-arrow-down-up sort-icon"></i>
+                        </span>
+                    </th>
+                    <th class="sortable" data-column="leader" onclick="cycleSortColumn('leader')" title="Click to sort by Leader">
+                        <span class="sort-header">
+                            <span class="sort-text">Leader</span>
+                            <i class="bi bi-arrow-down-up sort-icon"></i>
+                        </span>
+                    </th>
+                    <th class="sortable" data-column="area" onclick="cycleSortColumn('area')" title="Click to sort by Area">
+                        <span class="sort-header">
+                            <span class="sort-text">Area</span>
+                            <i class="bi bi-arrow-down-up sort-icon"></i>
+                        </span>
+                    </th>
+                    <th class="sortable" data-column="date" onclick="cycleSortColumn('date')" title="Click to sort by Date">
+                        <span class="sort-header">
+                            <span class="sort-text">Date</span>
+                            <i class="bi bi-arrow-down-up sort-icon"></i>
+                        </span>
+                    </th>
+                    <th class="sortable" data-column="status" onclick="cycleSortColumn('status')" title="Click to sort by Status">
+                        <span class="sort-header">
+                            <span class="sort-text">Status</span>
+                            <i class="bi bi-arrow-down-up sort-icon"></i>
+                        </span>
+                    </th>
                     <th>Actions</th>
                 </tr>
             </thead>
