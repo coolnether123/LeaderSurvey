@@ -299,7 +299,7 @@ namespace LeaderSurvey.Pages
                 survey.LeaderId = Survey.LeaderId;
                 survey.EvaluatorLeaderId = Survey.EvaluatorLeaderId;
                 survey.MonthYear = Survey.MonthYear.HasValue
-                    ? DateTime.SpecifyKind(Survey.MonthYear.Value, DateTimeKind.Utc)
+                    ? new DateTime(Survey.MonthYear.Value.Year, Survey.MonthYear.Value.Month, 1, 0, 0, 0, DateTimeKind.Utc)
                     : null;
 
                 // Parse the JSON data

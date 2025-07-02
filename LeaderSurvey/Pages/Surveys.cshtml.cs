@@ -58,11 +58,16 @@ namespace LeaderSurvey.Pages
                 .Include(s => s.Leader)
                 .ToListAsync();
 
-            // Ensure all dates are in UTC before sorting
+            // Ensure all dates are in UTC before sorting and fix timezone issues
             Surveys = rawSurveys
-                .OrderByDescending(s => s.MonthYear.HasValue ?
-                    DateTime.SpecifyKind(s.MonthYear.Value, DateTimeKind.Utc) :
-                    DateTime.MinValue)
+                .Select(s => {
+                    if (s.MonthYear.HasValue)
+                    {
+                        s.MonthYear = DateTime.SpecifyKind(s.MonthYear.Value, DateTimeKind.Utc);
+                    }
+                    return s;
+                })
+                .OrderByDescending(s => s.MonthYear ?? DateTime.MinValue)
                 .ToList();
 
             Leaders = await _context.Leaders.ToListAsync();
@@ -97,7 +102,7 @@ namespace LeaderSurvey.Pages
                 Area = NewSurvey.Area,
                 LeaderId = NewSurvey.LeaderId,
                 MonthYear = NewSurvey.MonthYear.HasValue
-                    ? DateTime.SpecifyKind(NewSurvey.MonthYear.Value, DateTimeKind.Utc)
+                    ? new DateTime(NewSurvey.MonthYear.Value.Year, NewSurvey.MonthYear.Value.Month, 1, 0, 0, 0, DateTimeKind.Utc)
                     : null,
                 Date = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc),
                 Status = "Pending"

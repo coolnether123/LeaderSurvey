@@ -115,7 +115,7 @@ namespace LeaderSurvey.Pages
                     LeaderId = Survey.LeaderId,
                     EvaluatorLeaderId = Survey.EvaluatorLeaderId,
                     MonthYear = Survey.MonthYear.HasValue
-                        ? DateTime.SpecifyKind(Survey.MonthYear.Value, DateTimeKind.Utc)
+                        ? new DateTime(Survey.MonthYear.Value.Year, Survey.MonthYear.Value.Month, 1, 0, 0, 0, DateTimeKind.Utc)
                         : null,
                     Date = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc),
                     Status = "Draft"

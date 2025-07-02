@@ -43,7 +43,7 @@
                                 <i class="bi bi-geo-alt-fill"></i> Area: @(string.IsNullOrEmpty(survey.Area) ? "Not specified" : survey.Area)
                             </div>
                             <div class="survey-card-date mt-2">
-                                <i class="bi bi-calendar"></i> @(survey.MonthYear.HasValue ? survey.MonthYear.Value.ToLocalTime().ToString("MMMM yyyy") : "No date specified")
+                                <i class="bi bi-calendar"></i> @(survey.MonthYear.HasValue ? survey.MonthYear.Value.ToString("MMMM yyyy") : "No date specified")
                             </div>
                             <div class="survey-card-actions">
                                 <a href="/Surveys?id=@survey.Id" class="cfa-btn cfa-btn-sm">

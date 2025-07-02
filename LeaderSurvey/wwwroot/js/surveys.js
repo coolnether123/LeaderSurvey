@@ -270,6 +270,8 @@ function applyFilters() {
         return true;
     });
 
+
+
     // Update the table with filtered surveys
     updateSurveyTable();
 
@@ -294,8 +296,23 @@ function updateSurveyTable() {
         const row = document.createElement('tr');
         row.dataset.id = survey.id;
 
-        // Format the date
-        const date = survey.monthYear ? new Date(survey.monthYear).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : '';
+        // Format the date properly without timezone issues
+        let date = '';
+        if (survey.monthYear) {
+            // Parse the YYYY-MM format and create date in UTC to avoid timezone shifts
+            const parts = survey.monthYear.split('-');
+            if (parts.length >= 2) {
+                const year = parseInt(parts[0]);
+                const month = parseInt(parts[1]); // Keep as 1-12, don't subtract 1 yet
+
+                // Create date string manually to avoid timezone conversion
+                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                                  'July', 'August', 'September', 'October', 'November', 'December'];
+                if (month >= 1 && month <= 12) {
+                    date = `${monthNames[month - 1]} ${year}`;
+                }
+            }
+        }
 
         row.innerHTML = `
             <td>${survey.name}</td>
@@ -363,7 +380,7 @@ async function fetchSurveyData() {
                 }
             }
 
-            return { id, name, leaderName, leaderId, area, monthYear, status };
+            return { id, name, leaderName, leaderId, area, monthYear, dateText, status };
         });
 
         // Initialize filtered surveys with all surveys

@@ -77,7 +77,56 @@
         </div>
     </div>
 
-    <div id="categoryStats" class="category-stats-container mb-4" style="display: none;">
+    <div class="table-responsive">
+        <table id="surveysTable" class="table table-cfa">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Leader</th>
+                    <th>Area</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var survey in Model.Surveys)
+                {
+                    <tr data-id="@survey.Id">
+                        <td>@survey.Name</td>
+                        <td data-leader-id="@survey.Leader?.Id">@survey.Leader?.Name</td>
+                        <td>
+                            <span class="badge area-badge area-@survey.Area.ToLower()">@survey.Area</span>
+                        </td>
+                        <td>@(survey.MonthYear.HasValue ? survey.MonthYear.Value.ToString("MMMM yyyy") : "")</td>
+                        <td>
+                            <span class="status-badge status-@survey.Status.ToLower()">
+                                @survey.Status
+                            </span>
+                        </td>
+                        <td>
+                            <a href="/TakeSurvey?surveyId=@survey.Id" class="cfa-btn cfa-btn-sm me-1 @(survey.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase) ? "disabled" : "")" style="background-color: #28a745; color: white;" @(survey.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase) ? "aria-disabled='true'" : "")>
+                                <i class="bi bi-check2-square"></i> Take Survey
+                            </a>
+                            <a href="/EditSurvey?id=@survey.Id&viewMode=true" class="cfa-btn cfa-btn-sm me-1">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                            <a href="/EditSurvey?id=@survey.Id" class="cfa-btn cfa-btn-sm me-1">
+                                <i class="bi bi-pencil-square"></i> Edit
+                            </a>
+                            <button class="cfa-btn cfa-btn-sm cfa-btn-outline"
+                                    onclick="deleteSurvey(@survey.Id, '@survey.Name.Replace("'", "\'")')"
+                                    style="border-color: #dc3545; color: #dc3545 !important;">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div id="categoryStats" class="category-stats-container mt-4" style="display: none;">
         <h4>Category Statistics</h4>
         <div class="row">
             @foreach (var category in Model.Categories)
@@ -109,55 +158,6 @@
                 </div>
             }
         </div>
-    </div>
-
-    <div class="table-responsive">
-        <table id="surveysTable" class="table table-cfa">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Leader</th>
-                    <th>Area</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var survey in Model.Surveys)
-                {
-                    <tr data-id="@survey.Id">
-                        <td>@survey.Name</td>
-                        <td data-leader-id="@survey.Leader?.Id">@survey.Leader?.Name</td>
-                        <td>
-                            <span class="badge area-badge area-@survey.Area.ToLower()">@survey.Area</span>
-                        </td>
-                        <td>@(survey.MonthYear.HasValue ? survey.MonthYear.Value.ToLocalTime().ToString("MMMM yyyy") : "")</td>
-                        <td>
-                            <span class="status-badge status-@survey.Status.ToLower()">
-                                @survey.Status
-                            </span>
-                        </td>
-                        <td>
-                            <a href="/TakeSurvey?surveyId=@survey.Id" class="cfa-btn cfa-btn-sm me-1 @(survey.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase) ? "disabled" : "")" style="background-color: #28a745; color: white;" @(survey.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase) ? "aria-disabled='true'" : "")>
-                                <i class="bi bi-check2-square"></i> Take Survey
-                            </a>
-                            <a href="/EditSurvey?id=@survey.Id&viewMode=true" class="cfa-btn cfa-btn-sm me-1">
-                                <i class="bi bi-eye"></i> View
-                            </a>
-                            <a href="/EditSurvey?id=@survey.Id" class="cfa-btn cfa-btn-sm me-1">
-                                <i class="bi bi-pencil-square"></i> Edit
-                            </a>
-                            <button class="cfa-btn cfa-btn-sm cfa-btn-outline"
-                                    onclick="deleteSurvey(@survey.Id, '@survey.Name.Replace("'", "\'")')"
-                                    style="border-color: #dc3545; color: #dc3545 !important;">
-                                <i class="bi bi-trash"></i> Delete
-                            </button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
     </div>
 </div>
 
