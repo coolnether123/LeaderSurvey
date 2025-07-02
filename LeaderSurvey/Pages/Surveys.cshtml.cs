@@ -5,9 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using LeaderSurvey.Data;
 using LeaderSurvey.Models;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LeaderSurvey.Pages
 {
+    [Authorize]
     public class SurveysModel : PageModel
     {
         private readonly ApplicationDbContext _context;

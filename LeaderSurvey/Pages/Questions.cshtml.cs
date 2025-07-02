@@ -1,12 +1,14 @@
 // Pages/Questions.cshtml.cs
-using LeaderSurvey.Data;
-using LeaderSurvey.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using LeaderSurvey.Data;
+using LeaderSurvey.Models;
 
 namespace LeaderSurvey.Pages
 {
+    [Authorize]
     public class QuestionsModel : PageModel
     {
         private readonly ApplicationDbContext _context;

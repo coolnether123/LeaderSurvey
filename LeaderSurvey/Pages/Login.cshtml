@@ -1,0 +1,381 @@
+@page
+@model LeaderSurvey.Pages.LoginModel
+@{
+    Layout = null; // This removes the layout
+    ViewData["Title"] = "Log in";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Leader Survey</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --cfa-red: #e51636;
+            --cfa-dark: #2c2c2c;
+            --cfa-light-gray: #f8f9fa;
+            --cfa-medium-gray: #6c757d;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e51636 0%, #c41230 50%, #a00e28 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated background elements */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
+            animation: float 20s infinite linear;
+            pointer-events: none;
+        }
+
+        @@keyframes float {
+            0% { transform: translateX(-50px) translateY(-50px); }
+            100% { transform: translateX(50px) translateY(50px); }
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            padding: 3rem 2.5rem;
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+            z-index: 1;
+            animation: slideIn 0.8s ease-out;
+        }
+
+        @@keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--cfa-red), #ff4757);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            box-shadow: 0 10px 20px rgba(229, 22, 54, 0.3);
+        }
+
+        .login-logo i {
+            font-size: 2.5rem;
+            color: white;
+        }
+
+        .login-title {
+            color: var(--cfa-dark);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            color: var(--cfa-medium-gray);
+            font-size: 1rem;
+            margin-bottom: 0;
+        }
+
+        .form-floating {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-floating input {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1rem 1rem 1rem 3rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .form-floating input:focus {
+            border-color: var(--cfa-red);
+            box-shadow: 0 0 0 0.2rem rgba(229, 22, 54, 0.25);
+            outline: none;
+        }
+
+        .form-floating label {
+            padding-left: 3rem;
+            color: var(--cfa-medium-gray);
+            font-weight: 500;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--cfa-medium-gray);
+            font-size: 1.2rem;
+            z-index: 5;
+        }
+
+        .form-floating input:focus + label,
+        .form-floating input:not(:placeholder-shown) + label {
+            color: var(--cfa-red);
+        }
+
+        .form-floating input:focus ~ .input-icon {
+            color: var(--cfa-red);
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 0.5rem;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 1.2rem;
+            height: 1.2rem;
+            accent-color: var(--cfa-red);
+        }
+
+        .remember-me label {
+            color: var(--cfa-medium-gray);
+            font-weight: 500;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, var(--cfa-red), #c41230);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 1rem 2rem;
+            width: 100%;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn:hover {
+            background: linear-gradient(135deg, #c41230, #a00e28);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(229, 22, 54, 0.4);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .login-btn:hover::before {
+            left: 100%;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .loading .login-btn {
+            background: #6c757d;
+        }
+
+        @@media (max-width: 576px) {
+            .login-container {
+                margin: 1rem;
+                padding: 2rem 1.5rem;
+            }
+
+            .login-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="login-logo">
+                <i class="bi bi-clipboard-data"></i>
+            </div>
+            <h1 class="login-title">Welcome Back</h1>
+            <p class="login-subtitle">Sign in to access Leader Survey</p>
+        </div>
+
+        @{
+            var env = ViewContext.HttpContext.RequestServices.GetService<IWebHostEnvironment>();
+            if (env?.IsDevelopment() == true)
+            {
+                var config = ViewContext.HttpContext.RequestServices.GetService<IConfiguration>();
+                var adminEmail = config?["AdminUser:Email"];
+                var adminPassword = config?["AdminUser:Password"];
+
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.8rem;">
+                    <strong>Debug Info (Development Only):</strong><br>
+                    Default Email: @adminEmail<br>
+                    Password Length: @(adminPassword?.Length ?? 0) characters
+                </div>
+            }
+        }
+
+        <form id="account" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="error-message" style="display: none;"></div>
+
+            @if (ViewData.ModelState.ErrorCount > 0)
+            {
+                <div class="error-message">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <div>@error.ErrorMessage</div>
+                    }
+                </div>
+            }
+
+            <div class="form-floating">
+                <i class="bi bi-envelope input-icon"></i>
+                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="Email" />
+                <label asp-for="Input.Email">Email Address</label>
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating">
+                <i class="bi bi-lock input-icon"></i>
+                <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Password" />
+                <label asp-for="Input.Password">Password</label>
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+
+            <div class="remember-me">
+                <input asp-for="Input.RememberMe" type="checkbox" id="rememberMe" />
+                <label asp-for="Input.RememberMe" for="rememberMe">@Html.DisplayNameFor(m => m.Input.RememberMe)</label>
+            </div>
+
+            <button id="login-submit" type="submit" class="login-btn">
+                <i class="bi bi-box-arrow-in-right me-2"></i>
+                Sign In
+            </button>
+        </form>
+
+        @if (ViewContext.HttpContext.RequestServices.GetService<IWebHostEnvironment>()?.IsDevelopment() == true)
+        {
+            <div class="mt-3 text-center">
+                <a href="/DebugAuth" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-bug"></i> Debug Auth Info
+                </a>
+                <button type="button" class="btn btn-outline-info btn-sm ms-2" onclick="fillDefaultCredentials()">
+                    <i class="bi bi-key"></i> Fill Default
+                </button>
+            </div>
+        }
+    </div>
+
+    @{
+        var configForJs = ViewContext.HttpContext.RequestServices.GetService<IConfiguration>();
+        var emailForJs = configForJs?["AdminUser:Email"];
+        var passwordForJs = configForJs?["AdminUser:Password"];
+    }
+
+    <script>
+        // Add loading state on form submission
+        document.getElementById('account').addEventListener('submit', function() {
+            document.body.classList.add('loading');
+            document.getElementById('login-submit').innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Signing in...';
+        });
+
+        // Show error messages with animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const errorDiv = document.querySelector('[asp-validation-summary]');
+            if (errorDiv && errorDiv.textContent.trim()) {
+                errorDiv.style.display = 'block';
+                errorDiv.style.animation = 'slideIn 0.5s ease-out';
+            }
+        });
+
+        // Add focus effects
+        document.querySelectorAll('.form-floating input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+            });
+        });
+
+        // Fill default credentials function
+        function fillDefaultCredentials() {
+            const emailInput = document.querySelector('input[name="Input.Email"]');
+            const passwordInput = document.querySelector('input[name="Input.Password"]');
+
+            if (emailInput && passwordInput) {
+                emailInput.value = @Json.Serialize(emailForJs);
+                passwordInput.value = @Json.Serialize(passwordForJs);
+
+                // Trigger events to update labels
+                emailInput.dispatchEvent(new Event('input'));
+                passwordInput.dispatchEvent(new Event('input'));
+            }
+        }
+    </script>
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+    }
+</body>
+</html>

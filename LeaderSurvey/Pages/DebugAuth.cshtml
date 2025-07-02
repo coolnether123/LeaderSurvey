@@ -1,0 +1,111 @@
+@page
+@model LeaderSurvey.Pages.DebugAuthModel
+@{
+    ViewData["Title"] = "Debug Authentication";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Debug Authentication</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Authentication Debug Information</h1>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <h3>Configuration</h3>
+                <table class="table table-striped">
+                    <tr>
+                        <td>Admin Email</td>
+                        <td>@Model.AdminEmail</td>
+                    </tr>
+                    <tr>
+                        <td>Password Length</td>
+                        <td>@Model.PasswordLength characters</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="col-md-6">
+                <h3>Database Status</h3>
+                <table class="table table-striped">
+                    <tr>
+                        <td>Total Users</td>
+                        <td>@Model.TotalUsers</td>
+                    </tr>
+                    <tr>
+                        <td>Admin User Exists</td>
+                        <td>@(Model.AdminUserExists ? "Yes" : "No")</td>
+                    </tr>
+                    <tr>
+                        <td>Admin Role Exists</td>
+                        <td>@(Model.AdminRoleExists ? "Yes" : "No")</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        @if (Model.AdminUser != null)
+        {
+            <div class="mt-4">
+                <h3>Admin User Details</h3>
+                <table class="table table-striped">
+                    <tr>
+                        <td>Email</td>
+                        <td>@Model.AdminUser.Email</td>
+                    </tr>
+                    <tr>
+                        <td>Username</td>
+                        <td>@Model.AdminUser.UserName</td>
+                    </tr>
+                    <tr>
+                        <td>Email Confirmed</td>
+                        <td>@Model.AdminUser.EmailConfirmed</td>
+                    </tr>
+                    <tr>
+                        <td>Is in Admin Role</td>
+                        <td>@Model.IsInAdminRole</td>
+                    </tr>
+                    <tr>
+                        <td>Password Valid</td>
+                        <td>@Model.PasswordValid</td>
+                    </tr>
+                </table>
+            </div>
+        }
+        
+        <div class="mt-4">
+            <h3>All Users</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Username</th>
+                        <th>Email Confirmed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model.AllUsers)
+                    {
+                        <tr>
+                            <td>@user.Email</td>
+                            <td>@user.UserName</td>
+                            <td>@user.EmailConfirmed</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-4">
+            <a href="/Login" class="btn btn-primary">Go to Login</a>
+        </div>
+    </div>
+</body>
+</html>

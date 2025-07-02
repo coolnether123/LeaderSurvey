@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LeaderSurvey.Pages
 {
+    [Authorize]
     public class NewSurveyModel : PageModel
     {
         private readonly ApplicationDbContext _context;

@@ -1125,6 +1125,40 @@ main.pb-3 {
     animation: sortChange 0.4s ease-out;
 }
 
+/* Logout button styling */
+.logout-btn, .logout-link {
+    color: #fff !important;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.logout-btn:hover, .logout-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #e51636 !important;
+    transform: translateY(-1px);
+}
+
+.logout-item {
+    margin-top: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 1rem;
+}
+
+.logout-item .logout-link {
+    color: #ff6b6b !important;
+    font-weight: 500;
+}
+
+.logout-item .logout-link:hover {
+    background-color: rgba(255, 107, 107, 0.1);
+    color: #ff4757 !important;
+}
+
 .survey-editor {
     background: white;
     border-radius: 8px;

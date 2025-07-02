@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using LeaderSurvey.Models;
 
 namespace LeaderSurvey.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -27,14 +28,6 @@ namespace LeaderSurvey.Data
                 .HasOne(s => s.Leader)
                 .WithMany(l => l.Surveys) // This is correct because Leader.cs has ICollection<Survey>
                 .HasForeignKey(s => s.LeaderId)
-                .IsRequired(false)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            // Configure Survey -> EvaluatorLeader (taking the survey) relationship
-            modelBuilder.Entity<Survey>()
-                .HasOne(s => s.EvaluatorLeader)
-                .WithMany() 
-                .HasForeignKey(s => s.EvaluatorLeaderId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 

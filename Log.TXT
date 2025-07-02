@@ -1,0 +1,224 @@
+WebAssembly is supported in this environment
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 WASM SDK loaded in 598ms
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 State version: 71
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Mv (to version 3) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Lm (to version 4) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Of (to version 5) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator wy (to version 6) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Iv (to version 7) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Tv (to version 8) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Ov (to version 9) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Gp (to version 10) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Yp (to version 11) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator ig (to version 12) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator ag (to version 13) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator lg (to version 14) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator dg (to version 15) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator gg (to version 16) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator yg (to version 17) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator wg (to version 18) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Ig (to version 19) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Eg (to version 20) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator _g (to version 21) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator zg (to version 22) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Og (to version 23) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Fg (to version 24) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Lg (to version 25) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Kg (to version 26) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Gg (to version 27) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Yg (to version 28) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Zg (to version 29) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator nm (to version 30) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator sm (to version 31) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator cm (to version 32) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator mm (to version 33) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator wm (to version 34) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Im (to version 35) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Em (to version 36) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator _m (to version 37) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Rm (to version 38) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Um (to version 39) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Wm (to version 40) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Xm (to version 41) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator tf (to version 42) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator af (to version 43) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator lf (to version 44) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator gf (to version 45) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator yf (to version 46) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Bf (to version 47) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator jf (to version 48) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Tf (to version 49) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Uf (to version 50) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator qf (to version 51) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Vf (to version 52) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Gf (to version 53) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Xf (to version 54) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator ny (to version 55) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator oy (to version 56) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator dy (to version 57) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator gy (to version 58) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator vy (to version 59) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Sy (to version 60) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator jy (to version 61) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Fy (to version 62) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Vy (to version 63) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Hy (to version 64) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator av (to version 65) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator dv (to version 66) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator gv (to version 67) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator yv (to version 68) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Av (to version 69) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator Ev (to version 70) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator _v (to version 71) should migrate: false - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator zv (to version 72) should migrate: true - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Removing user_798e56e4-528c-4638-8fd1-b18b011210ea_accountDeprovisioningBanner_showAccountDeprovisioningBanner
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator zv (to version 72) migrated - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Setting stateVersion
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Migrator zv (to version 72) updated version - up
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Self-host environment did not respond in time, emitting previous config.
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id root
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id copy-password
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id autofill-card
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id copy-password
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id autofill
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id root
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id copy-password
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879447968.
+write @ background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id root
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id autofill-card
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448004.
+write @ background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448011.
+write @ background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448017.
+write @ background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id root
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id autofill-card
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448028.
+write @ background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448035.
+write @ background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id root
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id copy-password
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id root
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id autofill-card
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id root
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id autofill-card
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id root
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id autofill-card
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id root
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id autofill-card
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id root
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id autofill-card
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id root
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id autofill-card
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448099.
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448103.
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448110.
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448120.
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448133.
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448144.
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448158.
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id root
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id copy-password
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id copy-username
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448175.
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448189.
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id root
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id copy-password
+write @ chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Using WebPush for notifications
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 [CipherService] Decrypting 404 ciphers took 104ms
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Retrieving application id
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 [SearchService] Building search index of 404 ciphers took 305ms
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id autofill-identity
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id autofill-card
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id copy-password
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 [CipherService] Decrypting 405 ciphers took 94ms
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 [SearchService] Building search index of 405 ciphers took 156ms
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Uncaught (in promise) Error: No tab with id: 1879448210.Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448244.
+write @ background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448262.
+write @ background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Using WebPush for notifications
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Retrieving application id
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error while processing message in RuntimeBackground 'triggerAutofillScriptInjection'. Error: Frame with ID 0 was removed.
+write @ background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448276.
+write @ background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id root
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id autofill
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id autofill-identity
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Cannot find menu item with id autofill-card
+write @ background.js:2Understand this warning
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448308.
+write @ background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448329.
+write @ background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448337.
+write @ background.js:2Understand this error
+chrome-extension://nngceckbapebfimnlniiiahkandclblb/background.js:2 Error: No tab with id: 1879448350.
+write @ background.js:2Understand this error
+content-scripts.js:1 CONTENT_SHELL: Page is excluded. Skipping shell protection.
+content-scripts.js:1 TSS: excluded result:  true
+content-scripts.js:1 SCHJK: Search Hijacking notification feature flag is enabled. true
+content-scripts.js:1 DFP: Breach notification feature flag is enabled. true
+content-scripts.js:1 Content Script Bridge: Unknown message type,  MSG_CHECK_DOMAIN_ALLOW_LIST_RESPONSE
+injection-tss-mv3.js:1 TSS: Domain is in allow list, skipping TSS setup.
+browserLink:18 CSS Hot Reload ignoring http://localhost:8427/lib/bootstrap/css/bootstrap.min.css because it was inaccessible or had more than 7000 rules.
+browserLink:18 CSS Hot Reload ignoring https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css because it was inaccessible or had more than 7000 rules.
+Navigated to http://localhost:8427/Login?ReturnUrl=%2F
+content-scripts.js:1 CONTENT_SHELL: Page is excluded. Skipping shell protection.
+content-scripts.js:1 TSS: excluded result:  true
+content-scripts.js:1 SCHJK: Search Hijacking notification feature flag is enabled. true
+content-scripts.js:1 DFP: Breach notification feature flag is enabled. true
+content-scripts.js:1 Content Script Bridge: Unknown message type,  MSG_CHECK_DOMAIN_ALLOW_LIST_RESPONSE
+injection-tss-mv3.js:1 TSS: Domain is in allow list, skipping TSS setup.
+browserLink:18 CSS Hot Reload ignoring http://localhost:8427/lib/bootstrap/css/bootstrap.min.css because it was inaccessible or had more than 7000 rules.
+browserLink:18 CSS Hot Reload ignoring https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css because it was inaccessible or had more than 7000 rules.

@@ -36,6 +36,14 @@
                 <a class="navbar-brand" asp-area="" asp-page="/Index">
                     <i class="bi bi-clipboard-data"></i> Leader Survey
                 </a>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <div class="navbar-nav ms-auto">
+                        <a href="/Logout" class="nav-item logout-btn" title="Logout">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
+                    </div>
+                }
             </div>
         </nav>
     </header>
@@ -61,7 +69,14 @@
                     <i class="bi bi-check2-square"></i> Take Survey
                 </a>
             </li>
-
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <li class="logout-item">
+                    <a href="/Logout" class="logout-link">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </li>
+            }
         </ul>
     </div>
 

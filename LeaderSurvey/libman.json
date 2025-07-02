@@ -13,6 +13,10 @@
     {
       "library": "jquery-validate@1.21.0",
       "destination": "wwwroot/lib/jquery-validation"
+    },
+    {
+      "library": "bootstrap@5.3.3",
+      "destination": "wwwroot/lib/bootstrap"
     }
   ]
 }
