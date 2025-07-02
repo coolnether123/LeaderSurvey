@@ -27,7 +27,7 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: var(--text-color);
     background-color: var(--light-bg);
-    padding-top: 60px;
+    padding-top: 20px; /* Adjusted for new header size */
 }
 
 /* Ensure the navbar stays fixed and doesn't jump */
@@ -59,19 +59,27 @@ body.menu-open .navbar,
 .navbar {
     background-color: var(--dark-bg) !important;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    padding: 0.75rem 1rem; /* Adjusted padding */
+    padding: 0.5rem 1rem;
     position: fixed;
     width: 100%;
     top: 0;
     z-index: 1030;
     transition: all 0.3s ease-in-out;
-    height: 60px; /* Ensure consistent height */
     display: flex;
     align-items: center;
 }
 
+/* Container with reduced padding */
+.container {
+    padding-left: 3px;    /* Reduced by 75% from 12px */
+    padding-right: 3px;   /* Reduced by 75% from 12px */
+    padding-top: 1rem;
+    transition: none;
+    margin-left: auto !important;
+}
+
 header {
-    height: 60px; /* Consistent height with navbar */
+    height: 20px; /* Consistent height with navbar */
 }
 
 /* Move Leader Survey brand to the right */
@@ -83,19 +91,20 @@ header {
     display: flex;
     align-items: center;
     height: 100%;
+    font-size: 0.9rem; /* Adjusted for smaller header */
 }
 /* Hamburger Menu Positioning*/
 .hamburger-menu {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 1.5rem; /* Adjusted for smaller header */
+    height: 1.5rem; /* Adjusted for smaller header */
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 4px;
     cursor: pointer;
-    padding: 0.35rem;
+    padding: 0.2rem; /* Adjusted for smaller header */
     margin-right: 0;
     z-index: 1050;
     position: relative;
@@ -104,7 +113,7 @@ header {
 /* Fixed hamburger menu that's always visible at the top left */
 .fixed-hamburger {
     position: fixed;
-    top: 12px;
+    top: 2px; /* Adjusted for smaller header */
     left: 12px;
     z-index: 1100;
 }
@@ -133,46 +142,48 @@ header {
     margin: 0.15rem 0;
 }
 
-/* Sidebar Menu - Start from left side and slide left/right */
-.sidebar-menu {
-    position: fixed;
-    top: 56px;
-    left: 0; /* Changed from right to left */
-    width: var(--menu-width);
-    height: 100vh;
-    background-color: var(--dark-bg);
-    padding-top: 5px;
-    transition: all 0.3s ease-in-out;
-    z-index: 1020;
-    overflow-y: auto;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2); /* Changed shadow direction */
-    transform: translateX(-100%); /* Changed to slide from left */
+/* Add new navigation styles */
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
-    .sidebar-menu.open {
-        transform: translateX(0); /* Reset transform to show menu */
-    }
+.nav-item {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
 
-    .sidebar-menu ul {
-        list-style: none;
-        padding: 0;
-    }
+.nav-item:hover {
+    background-color: var(--secondary-color);
+    color: white;
+    transform: translateY(-2px);
+}
 
-        .sidebar-menu ul li {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
+.nav-item.active {
+    background-color: var(--secondary-color);
+    color: white;
+    font-weight: 600;
+}
 
-            .sidebar-menu ul li a {
-                color: #333;
-                text-decoration: none;
-                display: block;
-            }
+.nav-item i {
+    font-size: 1.1rem;
+}
 
-                .sidebar-menu ul li a.active {
-                    background-color: #007bff;
-                    color: #fff;
-                }
+/* Remove menu-related styles */
+body.menu-open .container,
+body.menu-open .navbar {
+    margin-left: 0 !important;
+    transform: none !important;
+}
+
 /* Remove dimming overlay */
 .menu-overlay {
     position: fixed; /* Fixed positioning */
@@ -228,12 +239,29 @@ body.menu-open .navbar {
 /* Ensure container doesn't move */
 .container {
     position: relative;
-    transition: none !important;
+    transition: margin-left 0.3s ease-in-out;
+    margin-left: 0;
+}
+
+/* Add margin when menu is open */
+body.menu-open .container {
+    margin-left: var(--menu-width);
 }
 
 /* Ensure navbar doesn't move */
 .navbar {
-    transition: none !important;
+    transition: margin-left 0.3s ease-in-out;
+    margin-left: 0;
+}
+
+/* Add margin to navbar when menu is open */
+body.menu-open .navbar {
+    margin-left: var(--menu-width);
+}
+
+/* Remove the menu overlay since we're not overlapping content */
+.menu-overlay {
+    display: none !important;
 }
 
 /* ALL OTHER CSS BELOW IS UNCHANGED */
@@ -402,10 +430,38 @@ body.navigating {
     }
 
 .card-header {
+    width: 1354px;
+    height: 40.8px;
+    padding: 8px 16px;
+    margin: 0;
+    border-width: 0 0 0.8px 0;
+    box-sizing: border-box;
     background-color: var(--primary-color);
     color: white;
     border-radius: 0.5rem 0.5rem 0 0 !important;
     font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Ensure consistent sizing for both edit and new leader states */
+.card-header #formTitle {
+    font-size: 1rem;
+    min-width: 120px;
+    display: inline-block;
+}
+
+.card-header #formIcon {
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+}
+
+.card-header > div {
+    display: flex;
+    align-items: center;
+    min-width: 150px;
 }
 
 .table {
@@ -587,6 +643,7 @@ a {
 .page-title {
     color: var(--primary-color);
     margin-bottom: 1.5rem;
+    margin-top: 50px;    /* Decreased from 55px to 50px */
     font-weight: 700;
     border-bottom: 2px solid var(--primary-color);
     padding-bottom: 0.5rem;
@@ -632,6 +689,23 @@ a {
 .cfa-btn-sm {
     padding: 8px 15px;
     font-size: 0.875rem;
+}
+
+/* Add this after the .cfa-btn styles */
+.card-body form button[type="submit"] {
+    float: right;
+    padding: 15px 35px;  /* Slightly bigger padding */
+    font-size: 1.1rem;   /* Slightly bigger font */
+    margin-right: 0;     /* Remove right margin */
+    margin-top: 1rem;    /* Add some top spacing */
+    border-radius: 30px; /* Match other CFA buttons */
+}
+
+/* Clear the float */
+.card-body form::after {
+    content: "";
+    display: table;
+    clear: both;
 }
 
 /* Search controls */
@@ -747,4 +821,571 @@ input:checked + .toggle-slider {
 
 .toggle-label {
     font-weight: 500;
+}
+
+main.pb-3 {
+    width: calc(100% + 40px);  /* Makes it 20px wider on each side */
+    margin-left: -20px;        /* Offsets the extra width to keep it centered */
+    margin-right: -20px;
+}
+
+/* Question styles */
+.bg-cfa-red {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+.question-item {
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    cursor: move;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.question-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.question-number {
+    background-color: var(--primary-color);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 1rem;
+}
+
+.question-drag-handle {
+    cursor: move;
+    color: #ccc;
+    margin-right: 1rem;
+}
+
+.question-drag-handle:hover {
+    color: var(--primary-color);
+}
+
+.my-pleasure {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    color: var(--primary-color);
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.question-item.deleting {
+    animation: fadeOut 0.5s ease forwards;
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+}
+
+.questions-sortable .sortable-ghost {
+    opacity: 0.4;
+    background-color: var(--light-red-bg);
+}
+
+.question-type-select {
+    width: 150px;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+    padding: 0.5rem;
+}
+
+.number-input {
+    width: 80px;
+    text-align: center;
+}
+
+/* Survey Page Specific Styles */
+.surveys-container {
+    padding: 1rem;
+    margin-top: 20px;
+}
+
+.filters-section {
+    background-color: var(--light-red-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.filter-group {
+    min-width: 200px;
+}
+
+.gap-3 {
+    gap: 1rem;
+}
+
+.filter-group:last-child {
+    margin-bottom: 0;
+}
+
+.cfa-select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 2px solid var(--primary-color);
+    border-radius: 4px;
+    background-color: white;
+    color: var(--text-color);
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.cfa-select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(228, 0, 43, 0.1);
+}
+
+.active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    min-height: 38px;
+}
+
+.filter-tag {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    gap: 0.5rem;
+}
+
+.filter-tag i {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.filter-tag i:hover {
+    transform: scale(1.2);
+}
+
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.status-badge.status-pending {
+    background-color: #ffd700;
+    color: #000;
+}
+
+.status-badge.status-completed {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.status-badge.status-inprogress {
+    background-color: #17a2b8;
+    color: #fff;
+}
+
+.survey-editor {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.survey-editor-header {
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.survey-editor-content {
+    padding: 1rem;
+}
+
+.survey-editor-actions {
+    padding: 1rem;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.questions-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #eee;
+}
+
+.questions-sortable {
+    min-height: 50px;
+    margin: 1rem 0;
+}
+
+.question-item {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.question-item:hover {
+    background-color: #FDE8EC;
+}
+
+.actions-cell {
+    white-space: nowrap;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.cfa-btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.cfa-btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+/* Area filter badges */
+.area-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.area-filter-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.area-filter {
+    border: none;
+    background: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.area-filter:hover {
+    background-color: var(--light-red-bg);
+}
+
+.area-filter.active {
+    background-color: #f8f9fa;
+}
+
+.area-filter .area-badge {
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.area-filter:hover .area-badge,
+.area-filter.active .area-badge {
+    opacity: 1;
+}
+
+/* Area badge colors */
+.area-drive {
+    background-color: #4CAF50; /* Green */
+}
+
+.area-front {
+    background-color: #FFEB3B; /* Yellow */
+}
+
+.area-kitchen {
+    background-color: #9C27B0; /* Purple */
+}
+
+.area-hospitality {
+    background-color: #2196F3; /* Blue */
+}
+
+.notification-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+    min-width: 250px;
+    max-width: 350px;
+    animation: slideIn 0.15s ease-in;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Survey Viewer/Editor Modal Styles */
+.survey-viewer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.survey-viewer-content {
+    position: relative;
+    width: 90%;
+    max-width: 800px;
+    margin: 2rem auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.survey-viewer-header {
+    padding: 1rem;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.survey-viewer-body {
+    padding: 1rem;
+}
+
+.tab-content {
+    display: none;
+    padding: 1rem 0;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.nav-tabs .nav-link {
+    cursor: pointer;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+/* Add these styles to your existing CSS */
+.sortable-ghost {
+    opacity: 0.5;
+    background-color: #f8f9fa;
+}
+
+.drag-handle {
+    color: #6c757d;
+    cursor: move;
+}
+
+.drag-handle:hover {
+    color: #495057;
+}
+
+.question-number {
+    font-weight: bold;
+    color: #495057;
+}
+
+.table-cfa td {
+    vertical-align: middle;
+}
+
+/* Question type badges */
+.badge.bg-primary {
+    background-color: #e51636 !important;
+}
+
+.badge.bg-success {
+    background-color: #00a6d6 !important;
+}
+
+/* TakeSurvey page styles */
+.question-card {
+    transition: all 0.3s ease;
+}
+
+.question-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Disabled Take Survey button */
+.cfa-btn.disabled {
+    background-color: #6c757d !important;
+    opacity: 0.65;
+    cursor: not-allowed;
+    pointer-events: none;
+    box-shadow: none;
+}
+
+.cfa-btn.disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Score buttons styling */
+.score-buttons-container {
+    padding: 10px 15px;
+}
+
+.score-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+}
+
+.score-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+@media (max-width: 576px) {
+    .score-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+}
+
+.btn-check:checked + .score-btn {
+    transform: scale(1.15);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Additional notes section styling */
+.card-header .badge.bg-secondary {
+    font-size: 0.75rem;
+    font-weight: normal;
+    padding: 0.35em 0.65em;
+}
+
+.form-range::-webkit-slider-thumb {
+    background-color: var(--primary-color);
+}
+
+.form-range::-moz-range-thumb {
+    background-color: var(--primary-color);
+}
+
+.form-range::-ms-thumb {
+    background-color: var(--primary-color);
+}
+
+.btn-check:checked + .btn-outline-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.btn-check:checked + .btn-outline-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.area-badge {
+    padding: 0.5em 0.8em;
+    font-size: 0.8em;
+    font-weight: 600;
+    border-radius: 4px;
+}
+
+.area-front {
+    background-color: #FFEB3B; /* Yellow */
+    color: black; /* Changed to black for better contrast with yellow */
+}
+
+.area-drive {
+    background-color: #4CAF50; /* Green */
+    color: white;
+}
+
+.area-kitchen {
+    background-color: #9C27B0; /* Purple */
+    color: white;
+}
+
+.area-hospitality {
+    background-color: #2196F3; /* Blue */
+    color: white;
+}
+
+/* Question type badges */
+.question-type-badge .badge {
+    font-size: 0.75rem;
+    padding: 0.35em 0.65em;
+}
+
+.badge.bg-info {
+    background-color: #0dcaf0 !important;
+    color: #000;
+}
+
+.badge.bg-secondary {
+    background-color: #6c757d !important;
+}
+
+/* Instructions styling */
+.card-body .small.text-muted {
+    margin-bottom: 0.75rem;
+    font-style: italic;
+}
+
+/* Question card styling */
+.question-card .card-header {
+    background-color: #f8f9fa;
+    color: #000 !important;
+    font-weight: 500;
+}
+
+.question-card .card-header strong {
+    color: #000 !important;
+    font-size: 1.05rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 0.25rem;
 }

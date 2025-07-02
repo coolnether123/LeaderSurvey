@@ -1,14 +1,9 @@
-// Pages/Surveys.cshtml.cs
-using LeaderSurvey.Data;
-using LeaderSurvey.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using LeaderSurvey.Data;
+using LeaderSurvey.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace LeaderSurvey.Pages
@@ -20,131 +15,118 @@ namespace LeaderSurvey.Pages
         public SurveysModel(ApplicationDbContext context)
         {
             _context = context;
+            // Initialize all properties
+            Surveys = new List<Survey>();
+            Leaders = new List<Leader>();
+            AvailableDates = new List<DateTime>();
+            LeaderSelectList = new SelectList(Enumerable.Empty<Leader>());
+            NewSurvey = new InputModel();
+            SelectedSurvey = new Survey();
         }
 
-        public IList<Survey> Surveys { get; set; } = new List<Survey>();
-        public SelectList LeaderSelectList { get; set; } = new SelectList(Enumerable.Empty<Leader>(), "Id", "Name");
-        
+        public IList<Survey> Surveys { get; set; }
+        public SelectList LeaderSelectList { get; set; }
+        public List<Leader> Leaders { get; set; }
+        public List<DateTime> AvailableDates { get; set; }
+        public List<QuestionCategory> Categories { get; set; } = new();
+
         [BindProperty]
-        public InputModel NewSurvey { get; set; } = new InputModel();
-        
+        public InputModel NewSurvey { get; set; }
+
         [BindProperty]
-        public Survey SelectedSurvey { get; set; } = new Survey { Name = "", Description = "", Area = "" };
+        public Survey SelectedSurvey { get; set; }
 
         public class InputModel
         {
-            [Required]
-            public string Name { get; set; }
+            [Required(ErrorMessage = "Name is required")]
+            public string Name { get; set; } = string.Empty;
 
-            public string Description { get; set; }
-            
-            public string Area { get; set; }
-            
+            public string Description { get; set; } = string.Empty;
+
+            [Required(ErrorMessage = "Area is required")]
+            public string Area { get; set; } = string.Empty;
+
             public int? LeaderId { get; set; }
-            
+
             public DateTime? MonthYear { get; set; }
         }
 
-        public async Task OnGetAsync(int? id)
+        public async Task OnGetAsync()
         {
-            // Load surveys with leader information
-            Surveys = await _context.Surveys
+            // Load surveys with explicit UTC conversion
+            var rawSurveys = await _context.Surveys
                 .Include(s => s.Leader)
                 .ToListAsync();
-                
-            // Load leaders for dropdown
-            await LoadLeaderSelectListAsync();
-            
-            // Initialize properties to avoid null reference when binding
-            NewSurvey = new InputModel();
-            
-            if (id.HasValue)
-            {
-                SelectedSurvey = await _context.Surveys.FirstOrDefaultAsync(m => m.Id == id) 
-                    ?? new Survey { Name = "", Description = "", Area = "" };
-            }
-            else
-            {
-                SelectedSurvey = new Survey { Name = "", Description = "", Area = "" };
-            }
-        }
-        
-        private async Task LoadLeaderSelectListAsync()
-        {
-            var leaders = await _context.Leaders.OrderBy(l => l.Name).ToListAsync();
-            LeaderSelectList = new SelectList(leaders, "Id", "Name");
+
+            // Ensure all dates are in UTC before sorting
+            Surveys = rawSurveys
+                .OrderByDescending(s => s.MonthYear.HasValue ?
+                    DateTime.SpecifyKind(s.MonthYear.Value, DateTimeKind.Utc) :
+                    DateTime.MinValue)
+                .ToList();
+
+            Leaders = await _context.Leaders.ToListAsync();
+            LeaderSelectList = new SelectList(Leaders, "Id", "Name");
+
+            // Load categories
+            Categories = await _context.QuestionCategories
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+
+            // Get distinct dates with explicit UTC handling
+            AvailableDates = rawSurveys
+                .Where(s => s.MonthYear.HasValue)
+                .Select(s => DateTime.SpecifyKind(s.MonthYear!.Value, DateTimeKind.Utc))
+                .Distinct()
+                .OrderByDescending(d => d)
+                .ToList();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
             {
-                Surveys = await _context.Surveys.Include(s => s.Leader).ToListAsync();
-                await LoadLeaderSelectListAsync();
+                await OnGetAsync();
                 return Page();
             }
 
-            // Create new survey with all properties
-            var survey = new Survey 
-            { 
-                Name = NewSurvey.Name, 
+            var survey = new Survey
+            {
+                Name = NewSurvey.Name,
                 Description = NewSurvey.Description,
                 Area = NewSurvey.Area,
                 LeaderId = NewSurvey.LeaderId,
-                MonthYear = NewSurvey.MonthYear
+                MonthYear = NewSurvey.MonthYear.HasValue
+                    ? DateTime.SpecifyKind(NewSurvey.MonthYear.Value, DateTimeKind.Utc)
+                    : null,
+                Date = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc),
+                Status = "Pending"
             };
-            
-            // If no area is provided but a leader is selected, use the leader's area
-            if (string.IsNullOrEmpty(survey.Area) && survey.LeaderId.HasValue)
-            {
-                var leader = await _context.Leaders.FindAsync(survey.LeaderId.Value);
-                if (leader != null)
-                {
-                    survey.Area = leader.Area;
-                }
-            }
-            
+
             _context.Surveys.Add(survey);
             await _context.SaveChangesAsync();
-            return RedirectToPage("./Surveys");
+            return RedirectToPage();
         }
-        public async Task<IActionResult> OnPostDeleteAsync(int id)
-        {
-            var survey = await _context.Surveys.FindAsync(id);
-            if (survey != null)
-            {
-                //This deletes all questions attached to it.
-                var questions = _context.Questions.Where(c => c.SurveyId == id);
-                foreach (var question in questions)
-                {
-                    _context.Questions.Remove(question);
-                }
-                _context.Surveys.Remove(survey);
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToPage("./Surveys");
-        }
+
         public async Task<IActionResult> OnPostUpdateAsync()
         {
             if (!ModelState.IsValid)
             {
-                // If model state is invalid, return to the page with validation errors
-                Surveys = await _context.Surveys.Include(s => s.Leader).ToListAsync();
-                await LoadLeaderSelectListAsync();
+                await OnGetAsync();
                 return Page();
             }
 
-            // If no area is provided but a leader is selected, use the leader's area
-            if (string.IsNullOrEmpty(SelectedSurvey.Area) && SelectedSurvey.LeaderId.HasValue)
+            var survey = await _context.Surveys.FindAsync(SelectedSurvey.Id);
+            if (survey == null)
             {
-                var leader = await _context.Leaders.FindAsync(SelectedSurvey.LeaderId.Value);
-                if (leader != null)
-                {
-                    SelectedSurvey.Area = leader.Area;
-                }
+                return NotFound();
             }
 
-            _context.Attach(SelectedSurvey).State = EntityState.Modified;
+            survey.Name = SelectedSurvey.Name;
+            survey.Description = SelectedSurvey.Description;
+            survey.Area = SelectedSurvey.Area;
+            survey.LeaderId = SelectedSurvey.LeaderId;
+            survey.MonthYear = SelectedSurvey.MonthYear;
 
             try
             {
@@ -152,17 +134,25 @@ namespace LeaderSurvey.Pages
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!_context.Surveys.Any(l => l.Id == SelectedSurvey.Id))
+                if (!_context.Surveys.Any(s => s.Id == SelectedSurvey.Id))
                 {
                     return NotFound();
                 }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
 
-            return RedirectToPage("./Surveys");
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostDeleteAsync(int id)
+        {
+            var survey = await _context.Surveys.FindAsync(id);
+            if (survey != null)
+            {
+                _context.Surveys.Remove(survey);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToPage();
         }
     }
 }

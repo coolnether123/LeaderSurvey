@@ -1,4 +1,4 @@
-﻿@page "{surveyId:int}"
+@page
 @model LeaderSurvey.Pages.TakeSurveyModel
 @{
     ViewData["Title"] = "Take Survey: " + Model.Survey?.Name;
@@ -9,81 +9,297 @@
 </h2>
 
 <div class="mb-3">
-    <a class="btn btn-outline-secondary" asp-page="./Surveys">
+    <a class="btn btn-outline-secondary" href="/Surveys">
         <i class="bi bi-arrow-left"></i> Back to Surveys
     </a>
 </div>
 
-<div class="card">
-    <div class="card-header">
-        <i class="bi bi-clipboard-check me-1"></i> Survey Form
+@if (TempData["StatusMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> @TempData["StatusMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (!ModelState.IsValid)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> <strong>Error:</strong> Please correct the errors below.
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-light">
+        <i class="bi bi-clipboard-check me-1"></i> <strong>Survey Form</strong>
     </div>
     <div class="card-body">
-        <form method="post">
-            <input type="hidden" asp-for="SurveyId" />
+        <form method="post" id="surveyForm">
+            <input type="hidden" name="SurveyId" value="@Model.SurveyId" />
+            @Html.AntiForgeryToken()
 
-            <div class="form-group mb-4">
-                <label asp-for="SelectedLeaderId" class="form-label">Select Leader to Evaluate:</label>
-                <div class="input-group mb-3">
-                    <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
-                    <select asp-for="SelectedLeaderId" class="form-select" asp-items="Model.LeaderList">
-                        <option value="">-- Select Leader --</option>
-                    </select>
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger mb-4">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> <strong>Please correct the following errors:</strong>
+                    <div asp-validation-summary="All" class="mt-2 mb-0"></div>
                 </div>
-                <span asp-validation-for="SelectedLeaderId" class="text-danger"></span>
+            }
+
+            <div class="alert alert-primary mb-4">
+                <h5><i class="bi bi-info-circle-fill me-2"></i>About This Survey</h5>
+                <p>This survey is designed to collect feedback about a leader in the @Model.Survey?.Area area.</p>
+                <p><strong>Instructions:</strong> @(Model.Survey?.EvaluatorLeader?.Name ?? "You") will be taking this survey to evaluate @(Model.Survey?.Leader?.Name ?? "the leader"). Please answer the questions based on your observations. Your responses will be reviewed by Sean and used for leadership development.</p>
+                <p class="mb-0"><strong>Note:</strong> The optional notes section at the bottom is for providing additional context that may be helpful for leadership review.</p>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card border-light h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-info-circle me-2"></i>Survey Information</h5>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Survey Name:</label>
+                                <p>@Model.Survey?.Name</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Area:</label>
+                                <p><span class="badge area-badge area-@(Model.Survey?.Area?.ToLower() ?? "")">@(Model.Survey?.Area ?? "Not specified")</span></p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Month/Year:</label>
+                                <p>@(Model.Survey?.MonthYear != null ? Model.Survey.MonthYear.Value.ToString("MMMM yyyy") : "Not specified")</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-light h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-people me-2"></i>Survey Participants</h5>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold"><i class="bi bi-person-check me-1"></i> Leader Taking Survey:</label>
+                                @if (Model.Survey?.EvaluatorLeaderId.HasValue == true && Model.Survey?.EvaluatorLeader != null)
+                                {
+                                    <p class="mb-2"><strong>@Model.Survey.EvaluatorLeader.Name</strong> <span class="badge area-badge area-@(Model.Survey.EvaluatorLeader.Area?.ToLower() ?? "")">@Model.Survey.EvaluatorLeader.Area</span></p>
+                                }
+                                else
+                                {
+                                    <p class="text-muted">No evaluator assigned</p>
+                                }
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label fw-bold"><i class="bi bi-person-badge me-1"></i> Leader Being Evaluated:</label>
+                                @if (Model.Survey?.LeaderId.HasValue == true && Model.Survey?.Leader != null)
+                                {
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle me-2"></i> This survey is assigned to evaluate:
+                                        <strong>@Model.Survey.Leader.Name</strong> <span class="badge area-badge area-@(Model.Survey.Leader.Area?.ToLower() ?? "")">@Model.Survey.Leader.Area</span>
+                                    </div>
+                                    <input type="hidden" name="SelectedLeaderId" value="@Model.Survey.LeaderId" />
+                                }
+                                else
+                                {
+                                    <label asp-for="SelectedLeaderId" class="form-label">Select Leader to Evaluate:</label>
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                                        <select name="SelectedLeaderId" class="form-select" asp-items="Model.LeaderList">
+                                            <option value="">-- Select Leader --</option>
+                                        </select>
+                                    </div>
+                                    <span asp-validation-for="SelectedLeaderId" class="text-danger"></span>
+                                    <div class="form-text">Please select the leader you want to evaluate in this survey.</div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             @if (Model.Questions != null && Model.Questions.Any())
             {
-                <h5 class="mb-3">Survey Questions</h5>
-                <div class="mb-4">
+                <h5 class="mb-3"><i class="bi bi-list-check me-2"></i>Survey Questions</h5>
+                <div class="mb-4" id="questionsContainer">
                     @foreach (var question in Model.Questions)
                     {
-                        <div class="card mb-3 border-light shadow-sm">
-                            <div class="card-header bg-light">
-                                <strong><i class="bi bi-question-circle me-2"></i>@question.Text</strong>
+                        <div class="card mb-3 border-light shadow-sm question-card" data-question-id="@question.Id" data-question-type="@(question.QuestionType?.ToLower() ?? "text")">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-start flex-wrap">
+                                    <strong class="me-2"><i class="bi bi-question-circle me-2"></i>@question.Text</strong>
+                                    <span class="question-type-badge">
+                                        @switch (question.QuestionType?.ToLower() ?? "text")
+                                        {
+                                            case "yesno":
+                                                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Yes/No Question</span>
+                                                break;
+                                            case "score":
+                                                <span class="badge bg-primary"><i class="bi bi-star-half me-1"></i>Score (0-10)</span>
+                                                break;
+                                            case "text":
+                                                <span class="badge bg-info"><i class="bi bi-pencil me-1"></i>Text Response</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-secondary"><i class="bi bi-question-circle me-1"></i>@question.QuestionType</span>
+                                                break;
+                                        }
+                                    </span>
+                                </div>
                             </div>
                             <div class="card-body">
-                                @switch (question.QuestionType)
+                                @switch (question.QuestionType?.ToLower() ?? "text")
                                 {
-                                    case "YesNo":
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="Answers[@question.Id]" id="yes_@question.Id" value="Yes" checked>
-                                            <label class="form-check-label" for="yes_@question.Id">Yes</label>
-                                        </div>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="Answers[@question.Id]" id="no_@question.Id" value="No">
-                                            <label class="form-check-label" for="no_@question.Id">No</label>
-                                        </div>
-                                        break;
-                                    case "Scale0To10":
-                                        <div class="range-container">
-                                            <div class="d-flex justify-content-between mb-2">
-                                                <span>0</span>
-                                                <span>5</span>
-                                                <span>10</span>
-                                            </div>
-                                            <input type="range" class="form-range" name="Answers[@question.Id]" min="0" max="10" step="1" id="range_@question.Id" 
-                                                oninput="document.getElementById('rangeValue_@question.Id').innerText = this.value;">
-                                            <div class="text-center mt-2">
-                                                Selected value: <span id="rangeValue_@question.Id">5</span>
-                                            </div>
+                                    case "yesno":
+                                        <div class="mb-2 small text-muted"><i class="bi bi-info-circle me-1"></i> Select Yes or No for this question</div>
+                                        <div class="btn-group w-100" role="group">
+                                            <input type="radio" class="btn-check" name="Answers[@question.Id]" id="yes_@question.Id" value="Yes" autocomplete="off" checked>
+                                            <label class="btn btn-outline-success" for="yes_@question.Id">Yes</label>
+
+                                            <input type="radio" class="btn-check" name="Answers[@question.Id]" id="no_@question.Id" value="No" autocomplete="off">
+                                            <label class="btn btn-outline-danger" for="no_@question.Id">No</label>
                                         </div>
                                         break;
-                                    case "Text":
+                                    case "score":
+                                        <div class="mb-2 small text-muted"><i class="bi bi-info-circle me-1"></i> Select a rating from 0 (lowest) to 10 (highest)</div>
+                                        <div class="score-buttons-container">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="text-muted">Low</span>
+                                                <span class="badge bg-primary px-3 py-2" id="scoreValue_@question.Id">5</span>
+                                                <span class="text-muted">High</span>
+                                            </div>
+                                            <div class="score-buttons">
+                                                @for (int i = 0; i <= 10; i++)
+                                                {
+                                                    <input type="radio" class="btn-check" name="Answers[@question.Id]" id="score_@(question.Id)_@i" value="@i" autocomplete="off" @(i == 5 ? "checked" : "")>
+                                                    <label class="btn score-btn @(i <= 3 ? "btn-outline-danger" : i <= 7 ? "btn-outline-primary" : "btn-outline-success")"
+                                                           for="score_@(question.Id)_@i" onclick="updateScoreValue(@question.Id, @i)">
+                                                        @i
+                                                    </label>
+                                                }
+                                            </div>
+                                        </div>
+                                        break;
+                                    case "text":
+                                        <div class="mb-2 small text-muted"><i class="bi bi-info-circle me-1"></i> Please provide a detailed written response</div>
+                                        <textarea name="Answers[@question.Id]" class="form-control" rows="3" placeholder="Enter your answer here..."></textarea>
+                                        break;
+                                    default:
+                                        <div class="mb-2 small text-muted"><i class="bi bi-info-circle me-1"></i> Please provide your response below</div>
                                         <textarea name="Answers[@question.Id]" class="form-control" rows="3" placeholder="Enter your answer here..."></textarea>
                                         break;
                                 }
+                                <div class="invalid-feedback" id="error_@question.Id"></div>
                             </div>
                         </div>
                     }
                 </div>
 
+                <div class="card mb-4 border-light shadow-sm">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <strong><i class="bi bi-pencil-square me-2"></i>Additional Notes (Optional)</strong>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-2 small text-muted">
+                            <i class="bi bi-info-circle me-1"></i> Please provide any additional feedback or context that might be helpful for leadership review.
+                        </div>
+                        <textarea name="AdditionalNotes" class="form-control" rows="4" placeholder="Enter any additional notes or observations here..."></textarea>
+                    </div>
+                </div>
+
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <button type="submit" class="btn btn-primary btn-lg">
+                    <button type="button" class="cfa-btn cfa-btn-outline me-md-2" onclick="window.location.href='/Surveys'">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </button>
+                    <button type="submit" class="cfa-btn cfa-btn-primary" id="submitSurvey">
                         <i class="bi bi-send"></i> Submit Survey
                     </button>
                 </div>
+                <div class="mt-3 w-100" id="formErrorMessage"></div>
+
+                <!-- Hidden debug panel for developers -->
+                <div class="mt-3 text-center" id="debugFormActions" style="display: none;">
+                    <div class="small text-start bg-light p-2 rounded">
+                        <div>Form action: <span id="debugFormAction"></span></div>
+                        <div>Form method: <span id="debugFormMethod"></span></div>
+                        <div>SurveyId: <span id="debugSurveyId"></span></div>
+                        <div>SelectedLeaderId: <span id="debugSelectedLeaderId"></span></div>
+                        <div>Answers count: <span id="debugAnswersCount"></span></div>
+                        <div class="mt-2">
+                            <strong>Form Data:</strong>
+                            <pre id="debugFormData" class="mt-1 p-2 bg-dark text-light" style="max-height: 200px; overflow: auto;"></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DEBUG: Show debug controls after 5 seconds if needed - REMOVE AFTER DEBUGGING -->
+                <script>
+                    // Function to populate debug information
+                    function populateDebugInfo() {
+                        const debugFormActions = document.getElementById('debugFormActions');
+                        if (debugFormActions) {
+                            // Populate debug information
+                            const form = document.getElementById('surveyForm');
+                            if (form) {
+                                document.getElementById('debugFormAction').textContent = form.action;
+                                document.getElementById('debugFormMethod').textContent = form.method;
+
+                                // Collect all form data
+                                const formData = new FormData(form);
+                                let formDataText = '';
+                                for (let [key, value] of formData.entries()) {
+                                    formDataText += `${key}: ${value}\n`;
+                                }
+                                document.getElementById('debugFormData').textContent = formDataText || 'No form data found';
+                            }
+
+                            const surveyId = document.querySelector('input[name="SurveyId"]')?.value;
+                            if (surveyId) {
+                                document.getElementById('debugSurveyId').textContent = surveyId;
+                            } else {
+                                document.getElementById('debugSurveyId').textContent = 'NOT FOUND';
+                            }
+
+                            const selectedLeaderId = document.querySelector('input[name="SelectedLeaderId"]')?.value;
+                            if (selectedLeaderId) {
+                                document.getElementById('debugSelectedLeaderId').textContent = selectedLeaderId;
+                            } else {
+                                document.getElementById('debugSelectedLeaderId').textContent = 'NOT FOUND';
+                            }
+
+                            // Count answers
+                            const answerInputs = document.querySelectorAll('input[name^="Answers["], textarea[name^="Answers["]');
+                            const answersCount = answerInputs.length;
+                            document.getElementById('debugAnswersCount').textContent = answersCount;
+
+                            // Check if any answers are selected/filled
+                            let selectedAnswersCount = 0;
+                            answerInputs.forEach(input => {
+                                if ((input.type === 'radio' && input.checked) ||
+                                    (input.type === 'text' && input.value.trim() !== '') ||
+                                    (input.tagName.toLowerCase() === 'textarea' && input.value.trim() !== '')) {
+                                    selectedAnswersCount++;
+                                }
+                            });
+                            document.getElementById('debugAnswersCount').textContent += ` (${selectedAnswersCount} filled)`;
+                        }
+                    }
+
+                    setTimeout(function() {
+                        // Check if we've had errors
+                        if (console.error.called || document.getElementById('formErrorMessage').textContent) {
+                            const debugFormActions = document.getElementById('debugFormActions');
+                            if (debugFormActions) {
+                                debugFormActions.style.display = 'block';
+                                populateDebugInfo();
+                            }
+                        }
+                    }, 5000);
+                </script>
             }
             else
             {
@@ -94,3 +310,60 @@
         </form>
     </div>
 </div>
+
+@section Styles {
+    <style>
+        .form-disabled {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .form-disabled .card {
+            background-color: #f8f9fa;
+        }
+
+        .form-disabled .card-header {
+            background-color: #e9ecef !important;
+        }
+    </style>
+}
+
+@section Scripts {
+    <!-- DEBUG: Check if script is loaded properly - REMOVE AFTER DEBUGGING -->
+    <script>
+        console.log('TakeSurvey.cshtml script section loaded');
+
+        // DEBUG: Track console errors - REMOVE AFTER DEBUGGING
+        (function() {
+            // Save original console.error
+            const originalError = console.error;
+            console.error.called = false;
+
+            // Override console.error
+            console.error = function() {
+                console.error.called = true;
+                originalError.apply(console, arguments);
+
+                // Log to UI for visibility
+                const errorMsg = document.getElementById('formErrorMessage');
+                if (errorMsg) {
+                    const args = Array.from(arguments).join(' ');
+                    errorMsg.innerHTML += '<div class="mt-2 small text-danger">Console Error: ' + args + '</div>';
+                    errorMsg.classList.add('alert', 'alert-danger');
+                }
+            };
+        })();
+    </script>
+
+    <script src="~/js/takeSurvey.js"></script>
+
+    <script>
+        // Initialize the form when the document is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOMContentLoaded event fired');
+            if (typeof initializeSurveyForm === 'function') {
+                initializeSurveyForm();
+            }
+        });
+    </script>
+}

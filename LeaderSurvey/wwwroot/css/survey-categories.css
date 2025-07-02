@@ -1,0 +1,264 @@
+/* Category Statistics Styles */
+.category-stats-container {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.category-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    padding: 1rem;
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.category-card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+}
+
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+}
+
+.category-name {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.category-expand-btn {
+    padding: 0;
+    color: #666;
+    transition: all 0.2s ease;
+}
+
+.category-expand-btn:hover {
+    color: #e4002b;
+}
+
+.category-expand-btn i {
+    transition: transform 0.3s ease;
+}
+
+.category-expand-btn.expanded i {
+    transform: rotate(180deg);
+}
+
+.category-stats {
+    margin-bottom: 1rem;
+}
+
+.stat-item {
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-right: 0.5rem;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: #333;
+    margin-right: 0.5rem;
+}
+
+.stat-percentage, .stat-average {
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+
+.yesno-percentage {
+    background-color: #e3f2fd;
+    color: #0d6efd;
+}
+
+.score-average {
+    background-color: #fff3cd;
+    color: #ffc107;
+}
+
+.category-questions {
+    border-top: 1px solid #eee;
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+}
+
+.question-item {
+    padding: 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    background-color: #f8f9fa;
+    font-size: 0.9rem;
+}
+
+.question-item:last-child {
+    margin-bottom: 0;
+}
+
+.question-type-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.question-type-yesno {
+    background-color: #e3f2fd;
+    color: #0d6efd;
+}
+
+.question-type-score {
+    background-color: #fff3cd;
+    color: #ffc107;
+}
+
+/* Date Range Buttons */
+.date-range-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.date-range-btn {
+    padding: 0.5rem 1rem;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.date-range-btn:hover {
+    background-color: #e9ecef;
+}
+
+.date-range-btn.active {
+    background-color: #e4002b;
+    color: white;
+    border-color: #e4002b;
+    box-shadow: 0 0 0 2px rgba(228, 0, 43, 0.25);
+    font-weight: 500;
+}
+
+/* Custom Date Range Inputs */
+#customDateRange {
+    margin-top: 0.5rem;
+}
+
+/* Filter Highlights */
+.cfa-select:focus,
+.cfa-select.active {
+    border-color: #e4002b;
+    box-shadow: 0 0 0 0.2rem rgba(228, 0, 43, 0.25);
+}
+
+/* Area badges with better colors */
+.area-badge.area-front {
+    background-color: #ffcc00; /* Yellow */
+    color: #333;
+}
+
+.area-badge.area-drive {
+    background-color: #4caf50; /* Green */
+    color: white;
+}
+
+.area-badge.area-kitchen {
+    background-color: #9c27b0; /* Purple */
+    color: white;
+}
+
+.area-badge.area-hospitality {
+    background-color: #2196f3; /* Blue */
+    color: white;
+}
+
+/* Category card colors */
+.category-card-mechanical {
+    border-left: 4px solid #4caf50; /* Green */
+}
+
+.category-card-character {
+    border-left: 4px solid #2196f3; /* Blue */
+}
+
+.category-card-theory {
+    border-left: 4px solid #9c27b0; /* Purple */
+}
+
+/* Category checkbox styles */
+.category-checkbox.category-mechanical .form-check-input:checked {
+    background-color: #4caf50;
+    border-color: #4caf50;
+}
+
+.category-checkbox.category-character .form-check-input:checked {
+    background-color: #2196f3;
+    border-color: #2196f3;
+}
+
+.category-checkbox.category-theory .form-check-input:checked {
+    background-color: #9c27b0;
+    border-color: #9c27b0;
+}
+
+/* Category Selection in Question Form */
+.category-selection {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.form-check-inline {
+    margin-right: 1rem;
+}
+
+.form-check-input:checked {
+    background-color: #e4002b;
+    border-color: #e4002b;
+}
+
+/* Category badges */
+.badge.category-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    margin-right: 0.25rem;
+    border-radius: 4px;
+}
+
+.badge.category-mechanical {
+    background-color: #4caf50;
+    color: white;
+}
+
+.badge.category-character {
+    background-color: #2196f3;
+    color: white;
+}
+
+.badge.category-theory {
+    background-color: #9c27b0;
+    color: white;
+}

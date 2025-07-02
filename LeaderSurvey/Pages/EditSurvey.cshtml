@@ -1,0 +1,755 @@
+@page
+@model LeaderSurvey.Pages.EditSurveyModel
+@{
+    ViewData["Title"] = Model.IsViewMode ? "View Survey" : "Edit Survey";
+}
+
+<div class="survey-editor">
+    <div class="survey-editor-header">
+        <h2 class="page-title">
+            @if (Model.IsViewMode)
+            {
+                <i class="bi bi-eye"></i> <span>View Survey</span>
+            }
+            else
+            {
+                <i class="bi bi-pencil-square"></i> <span>Edit Survey</span>
+            }
+        </h2>
+    </div>
+
+    <div class="survey-editor-content">
+        <form id="surveyForm" method="post" class="needs-validation" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="Survey.Id" id="Survey_Id" value="@Model.Survey.Id" />
+            <input type="hidden" name="IsViewMode" value="@Model.IsViewMode.ToString()" />
+            <input type="hidden" name="returnToEdit" id="returnToEdit" value="true" />
+            <!-- Hidden field to store questions as JSON -->
+            <textarea id="questionsJson" name="QuestionsJson" style="display:none;"></textarea>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Survey.Name" class="form-label">Survey Name</label>
+                                <input type="text" name="Survey.Name" id="Survey_Name" class="form-control" value="@Model.Survey.Name" required @(Model.IsViewMode ? "readonly" : "") />
+                                <span asp-validation-for="Survey.Name" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Survey.Area" class="form-label">Area</label>
+                                <select name="Survey.Area" id="Survey_Area" class="form-select" required @(Model.IsViewMode ? "disabled" : "")>
+                                    <option value="">Select Area</option>
+                                    <option value="Front" @(Model.Survey.Area == "Front" ? "selected" : "")>Front</option>
+                                    <option value="Drive" @(Model.Survey.Area == "Drive" ? "selected" : "")>Drive</option>
+                                    <option value="Kitchen" @(Model.Survey.Area == "Kitchen" ? "selected" : "")>Kitchen</option>
+                                    <option value="Hospitality" @(Model.Survey.Area == "Hospitality" ? "selected" : "")>Hospitality</option>
+                                </select>
+                                <span asp-validation-for="Survey.Area" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Survey.LeaderId" class="form-label">Leader Being Surveyed</label>
+                                <!-- Add the area filter buttons container -->
+                                <div class="area-filter-buttons mb-2">
+                                    <button type="button" class="area-filter active" data-area="">All</button>
+                                    <button type="button" class="area-filter" data-area="Front">
+                                        <span class="area-badge area-front">Front</span>
+                                    </button>
+                                    <button type="button" class="area-filter" data-area="Drive">
+                                        <span class="area-badge area-drive">Drive</span>
+                                    </button>
+                                    <button type="button" class="area-filter" data-area="Kitchen">
+                                        <span class="area-badge area-kitchen">Kitchen</span>
+                                    </button>
+                                    <button type="button" class="area-filter" data-area="Hospitality">
+                                        <span class="area-badge area-hospitality">Hospitality</span>
+                                    </button>
+                                </div>
+                                <select name="Survey.LeaderId" id="Survey_LeaderId" class="form-select" required @(Model.IsViewMode ? "disabled" : "")>
+                                    <option value="">Select Leader Being Surveyed</option>
+                                    @foreach (var leader in Model.Leaders)
+                                    {
+                                        <option value="@leader.Id" data-area="@leader.Area" @(Model.Survey.LeaderId == leader.Id ? "selected" : "")>@leader.Name</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Survey.LeaderId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Survey.EvaluatorLeaderId" class="form-label">Leader Taking Survey</label>
+                                <!-- Add the area filter buttons container for evaluator -->
+                                <div class="area-filter-buttons mb-2" id="evaluator-area-filters">
+                                    <button type="button" class="evaluator-area-filter active" data-area="">All</button>
+                                    <button type="button" class="evaluator-area-filter" data-area="Front">
+                                        <span class="area-badge area-front">Front</span>
+                                    </button>
+                                    <button type="button" class="evaluator-area-filter" data-area="Drive">
+                                        <span class="area-badge area-drive">Drive</span>
+                                    </button>
+                                    <button type="button" class="evaluator-area-filter" data-area="Kitchen">
+                                        <span class="area-badge area-kitchen">Kitchen</span>
+                                    </button>
+                                    <button type="button" class="evaluator-area-filter" data-area="Hospitality">
+                                        <span class="area-badge area-hospitality">Hospitality</span>
+                                    </button>
+                                </div>
+                                <select name="Survey.EvaluatorLeaderId" id="Survey_EvaluatorLeaderId" class="form-select" required @(Model.IsViewMode ? "disabled" : "")>
+                                    <option value="">Select Leader Taking Survey</option>
+                                    @foreach (var leader in Model.Leaders)
+                                    {
+                                        <option value="@leader.Id" data-area="@leader.Area" @(Model.Survey.EvaluatorLeaderId == leader.Id ? "selected" : "")>@leader.Name</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Survey.EvaluatorLeaderId" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Survey.MonthYear" class="form-label">Month/Year</label>
+                                <input type="month" name="Survey.MonthYear" id="Survey_MonthYear" class="form-control" value="@(Model.Survey.MonthYear?.ToString("yyyy-MM"))" required @(Model.IsViewMode ? "readonly" : "") />
+                                <span asp-validation-for="Survey.MonthYear" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Survey.Description" class="form-label">Description</label>
+                        <textarea name="Survey.Description" id="Survey_Description" class="form-control" rows="3" @(Model.IsViewMode ? "readonly" : "")>@Model.Survey.Description</textarea>
+                        <span asp-validation-for="Survey.Description" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <!-- Questions Section -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        Questions <span id="question-counter" class="badge bg-primary">@(Model.Survey.Questions?.Count ?? 0)/10</span>
+                    </h5>
+                    @if (!Model.IsViewMode)
+                    {
+                        <div>
+                            <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="window.previewSurvey()" disabled title="Coming soon">
+                                <i class="bi bi-plus-circle"></i> Preview Survey
+                            </button>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="window.addNewQuestionRow(event)" data-role="add-question">
+                                <i class="bi bi-plus-circle"></i> Add Question
+                            </button>
+                        </div>
+                    }
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="questionsTable" class="table table-cfa">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px">#</th>
+                                    <th>Question</th>
+                                    <th style="width: 120px">Type</th>
+                                    @if (!Model.IsViewMode)
+                                    {
+                                        <th style="width: 100px">Actions</th>
+                                        <th style="width: 40px"></th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody id="questionsContainer">
+                                @if (Model.Survey.Questions != null)
+                                {
+                                    @for (int i = 0; i < Model.Survey.Questions.Count; i++)
+                                    {
+                                        var question = Model.Survey.Questions[i];
+                                        <tr data-index="@i" data-is-new="false" data-question-id="@question.Id">
+                                            <td class="question-number">@(i + 1)</td>
+                                            @if (Model.IsViewMode)
+                                            {
+                                                <td>@question.Text</td>
+                                                <td>@(question.QuestionType == "yesno" ? "Yes/No" : "Score (0-10)")</td>
+                                            }
+                                            else
+                                            {
+                                                <td>@question.Text</td>
+                                                <td>@(question.QuestionType == "yesno" ? "Yes/No" : "Score (0-10)")</td>
+                                                <td>
+                                                    <div class="btn-group">
+                                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="window.editQuestionRow(this)">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="window.removeQuestionRow(this)">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <i class="bi bi-grip-vertical drag-handle"></i>
+                                                </td>
+                                            }
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="d-flex justify-content-end gap-2">
+                <a href="/Surveys" class="btn btn-secondary">Back to Surveys</a>
+                @if (!Model.IsViewMode)
+                {
+                    <button type="submit" class="btn btn-primary">Save & Continue Editing</button>
+                    <button type="submit" class="btn btn-outline-primary" id="saveAndReturnBtn">Save & Return</button>
+                }
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script>
+        // -------------------------------
+        // QUESTION FUNCTIONALITY
+        // -------------------------------
+        // Global array to track questions
+        let questions = [];
+
+        // Global array to track categories
+        let categories = [];
+        @foreach (var category in Model.Categories)
+        {
+            <text>categories.push({ id: @category.Id, name: @Html.Raw(Json.Serialize(category.Name)) });</text>
+        }
+
+        // Initialize questions from model data
+        @if (Model.Survey.Questions != null)
+        {
+            <text>
+            // Initialize questions array from model data
+            @foreach (var question in Model.Survey.Questions)
+            {
+                <text>
+                questions.push({
+                    id: @question.Id,
+                    text: @Html.Raw(Json.Serialize(question.Text)),
+                    type: @Html.Raw(Json.Serialize(question.QuestionType)),
+                    categoryIds: @Html.Raw(Json.Serialize(question.CategoryIds))
+                });
+                console.log('Added question to array - ID: @question.Id, Text: @Html.Raw(Json.Serialize(question.Text)), Type: @Html.Raw(Json.Serialize(question.QuestionType)), Categories: @Html.Raw(Json.Serialize(question.CategoryIds))');
+                </text>
+            }
+            console.log('Initialized questions from model data:', JSON.stringify(questions));
+            </text>
+        }
+
+        const isViewMode = @Json.Serialize(Model.IsViewMode);
+
+        // Preview survey function (currently disabled)
+        window.previewSurvey = function() {
+            alert('Preview functionality coming soon!');
+        };
+
+        window.getAddQuestionButton = function() {
+            return document.querySelector('[data-role="add-question"]');
+        };
+
+        window.addNewQuestionRow = function(event) {
+            if (event) event.preventDefault();
+
+            if (questions.length >= 10) {
+                alert('Maximum of 10 questions allowed');
+                return;
+            }
+
+            const tbody = document.getElementById('questionsContainer');
+            const tr = document.createElement('tr');
+            tr.dataset.isNew = 'true';
+            tr.dataset.index = questions.length.toString();
+            tr.dataset.questionId = '0'; // New questions have ID 0
+
+            tr.innerHTML = `
+                <td>${questions.length + 1}</td>
+                <td>
+                    <input type="text" class="form-control" placeholder="Enter question text" required>
+                    <div class="mt-2">
+                        <label class="form-label">Categories:</label>
+                        <div class="category-selection">
+                            ${categories.map(category => `
+                                <div class="form-check form-check-inline category-checkbox category-${category.name.toLowerCase()}">
+                                    <input class="form-check-input" type="checkbox" value="${category.id}" id="category-${category.id}-${questions.length}">
+                                    <label class="form-check-label" for="category-${category.id}-${questions.length}">${category.name}</label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <select class="form-select">
+                        <option value="yesno">Yes/No</option>
+                        <option value="score">Score (0-10)</option>
+                    </select>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-success me-2" onclick="window.saveQuestionRow(this)">
+                        <i class="bi bi-check-lg"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="window.removeQuestionRow(this)">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </td>
+                <td>
+                    <i class="bi bi-grip-vertical drag-handle"></i>
+                </td>
+            `;
+
+            tbody.appendChild(tr);
+            tr.querySelector('input').focus({preventScroll: true});
+
+            // Disable the Add Question button while editing
+            const addButton = window.getAddQuestionButton();
+            if (addButton) addButton.disabled = true;
+
+            window.updateQuestionCounter();
+        };
+
+        window.saveQuestionRow = function(button) {
+            const row = button.closest('tr');
+            const questionText = row.querySelector('input[type="text"]').value.trim();
+            const questionType = row.querySelector('select').value;
+            const index = parseInt(row.dataset.index);
+
+            // Get selected categories
+            const categoryCheckboxes = row.querySelectorAll('input[type="checkbox"]:checked');
+            const categoryIds = Array.from(categoryCheckboxes).map(cb => parseInt(cb.value));
+
+            if (!questionText) {
+                alert('Question text is required');
+                return;
+            }
+
+            if (row.dataset.isNew === 'true') {
+                // For new questions, add to the array without an ID
+                const newQuestion = {
+                    id: 0, // Explicitly set ID to 0 for new questions
+                    text: questionText,
+                    type: questionType,
+                    categoryIds: categoryIds
+                };
+                questions.push(newQuestion);
+                row.dataset.isNew = 'false';
+                console.log('Added new question:', JSON.stringify(newQuestion));
+            } else {
+                // For existing questions, preserve the ID
+                const existingId = questions[index]?.id;
+                const updatedQuestion = {
+                    id: existingId, // Keep the existing ID
+                    text: questionText,
+                    type: questionType,
+                    categoryIds: categoryIds
+                };
+                questions[index] = updatedQuestion;
+                console.log(`Updated question ${index} with ID ${existingId}:`, JSON.stringify(updatedQuestion));
+            }
+
+            // Get the question ID
+            const questionId = questions[index]?.id || 0;
+
+            // Update the row with the question ID as a data attribute
+            row.setAttribute('data-question-id', questionId);
+
+            // Create category badges for display
+            const categoryBadges = categoryIds.length > 0
+                ? `<div class="mt-1">${categoryIds.map(id => {
+                    const category = categories.find(c => c.id === id);
+                    if (category) {
+                        return `<span class="badge category-badge category-${category.name.toLowerCase()}">${category.name}</span>`;
+                    }
+                    return '';
+                  }).join(' ')}</div>`
+                : '';
+
+            row.innerHTML = `
+                <td class="question-number">${index + 1}</td>
+                <td>
+                    ${questionText}
+                    ${categoryBadges}
+                </td>
+                <td>${questionType === 'yesno' ? 'Yes/No' : 'Score (0-10)'}</td>
+                <td>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="editQuestionRow(this)">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeQuestionRow(this)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </td>
+                <td>
+                    <i class="bi bi-grip-vertical drag-handle"></i>
+                </td>
+            `;
+
+            // Re-enable the Add Question button after saving
+            const addButton = window.getAddQuestionButton();
+            if (addButton) addButton.disabled = false;
+
+            window.updateQuestionCounter();
+            window.updateQuestionsInput();
+        };
+
+        window.removeQuestionRow = function(button) {
+            const row = button.closest('tr');
+            const index = parseInt(row.dataset.index);
+
+            if (confirm('Are you sure you want to delete this question?')) {
+                // Log the question being removed
+                const questionId = questions[index]?.id;
+                console.log(`Removing question at index ${index} with ID ${questionId}`);
+
+                // Remove from questions array if it's a saved question
+                if (row.dataset.isNew !== 'true') {
+                    questions.splice(index, 1);
+                }
+
+                // Remove the row
+                row.remove();
+
+                // Update indices for remaining rows
+                document.querySelectorAll('#questionsContainer tr').forEach((row, idx) => {
+                    row.dataset.index = idx.toString();
+                    row.querySelector('td:first-child').textContent = (idx + 1).toString();
+                });
+
+                // Rebuild the questions array to ensure indices match
+                const newQuestions = [];
+                document.querySelectorAll('#questionsContainer tr').forEach((row, idx) => {
+                    const rowIndex = parseInt(row.dataset.index);
+                    if (questions[rowIndex]) {
+                        newQuestions.push(questions[rowIndex]);
+                    }
+                });
+                questions = newQuestions;
+                console.log('Questions array after removal:', JSON.stringify(questions));
+
+                // Update counter and form inputs
+                window.updateQuestionCounter();
+                window.updateQuestionsInput();
+
+                // Re-enable add button if needed
+                const addButton = window.getAddQuestionButton();
+                if (addButton) addButton.disabled = false;
+            }
+        };
+
+        window.editQuestionRow = function(button) {
+            const row = button.closest('tr');
+            const index = parseInt(row.dataset.index);
+            const question = questions[index];
+
+            row.innerHTML = `
+                <td>${row.cells[0].textContent}</td>
+                <td>
+                    <input type="text" class="form-control" value="${question.text}" required>
+                    <div class="mt-2">
+                        <label class="form-label">Categories:</label>
+                        <div class="category-selection">
+                            ${categories.map(category => `
+                                <div class="form-check form-check-inline category-checkbox category-${category.name.toLowerCase()}">
+                                    <input class="form-check-input" type="checkbox" value="${category.id}" id="category-${category.id}-${index}" ${question.categoryIds && question.categoryIds.includes(category.id) ? 'checked' : ''}>
+                                    <label class="form-check-label" for="category-${category.id}-${index}">${category.name}</label>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <select class="form-select">
+                        <option value="yesno" ${question.type === 'yesno' ? 'selected' : ''}>Yes/No</option>
+                        <option value="score" ${question.type === 'score' ? 'selected' : ''}>Score (0-10)</option>
+                    </select>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-success me-2" onclick="window.saveQuestionRow(this)">
+                        <i class="bi bi-check-lg"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="window.removeQuestionRow(this)">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </td>
+                <td>
+                    <i class="bi bi-grip-vertical drag-handle"></i>
+                </td>
+            `;
+
+            row.querySelector('input').focus();
+
+            // Disable the Add Question button while editing
+            const addButton = window.getAddQuestionButton();
+            if (addButton) addButton.disabled = true;
+        };
+
+        window.updateQuestionCounter = function() {
+            const counter = document.getElementById('question-counter');
+            const currentCount = questions.length;
+            const hasNewQuestion = document.querySelector('#questionsContainer tr[data-is-new="true"]') !== null;
+
+            counter.textContent = `${currentCount}/10`;
+
+            const addButton = window.getAddQuestionButton();
+            if (addButton) {
+                addButton.disabled = currentCount >= 10 || hasNewQuestion;
+            }
+        };
+
+        window.updateQuestionsInput = function() {
+            console.log('Updating questions input with questions:', JSON.stringify(questions));
+
+            // Store the questions array as JSON in the hidden textarea
+            const questionsJson = document.getElementById('questionsJson');
+            if (questionsJson) {
+                // Make sure the property names match the C# model
+                const formattedQuestions = questions.map(q => ({
+                    Id: q.id,
+                    Text: q.text,
+                    QuestionType: q.type,
+                    CategoryIds: q.categoryIds || []
+                }));
+                questionsJson.value = JSON.stringify(formattedQuestions);
+                console.log('Questions JSON stored in textarea:', questionsJson.value);
+            } else {
+                console.error('questionsJson textarea not found!');
+            }
+        };
+
+        // -------------------------------
+        // AREA FILTER & LEADER SELECTION
+        // -------------------------------
+        document.addEventListener('DOMContentLoaded', function() {
+            if (isViewMode) {
+                // In view mode, just initialize the questions array
+                updateQuestionCounter();
+                return;
+            }
+
+            const areaSelect = document.getElementById('Survey_Area');
+            const leaderSelect = document.getElementById('Survey_LeaderId');
+            const evaluatorLeaderSelect = document.getElementById('Survey_EvaluatorLeaderId');
+            const areaFilterButtons = document.querySelectorAll('.area-filter');
+            const evaluatorAreaFilterButtons = document.querySelectorAll('.evaluator-area-filter');
+
+            // Store original leaders for filtering
+            const originalOptions = Array.from(leaderSelect.options)
+                .filter(option => option.value !== "")
+                .sort((a, b) => a.text.localeCompare(b.text));
+
+            // Store original evaluator leaders for filtering
+            const originalEvaluatorOptions = Array.from(evaluatorLeaderSelect.options)
+                .filter(option => option.value !== "")
+                .sort((a, b) => a.text.localeCompare(b.text));
+
+            function filterLeadersByArea(selectElement, originalOpts, selectedArea) {
+                // Keep the placeholder
+                const placeholder = selectElement.options[0];
+
+                // Clear current options except placeholder
+                selectElement.innerHTML = '';
+                selectElement.appendChild(placeholder);
+
+                // Filter and add leaders
+                originalOpts.forEach(option => {
+                    if (!selectedArea || option.dataset.area === selectedArea) {
+                        selectElement.appendChild(option.cloneNode(true));
+                    }
+                });
+            }
+
+            // Handle area filter button clicks for leader being surveyed
+            areaFilterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    areaFilterButtons.forEach(btn => btn.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
+
+                    const selectedArea = this.dataset.area;
+                    filterLeadersByArea(leaderSelect, originalOptions, selectedArea);
+                });
+            });
+
+            // Handle area filter button clicks for evaluator leader
+            evaluatorAreaFilterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    evaluatorAreaFilterButtons.forEach(btn => btn.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
+
+                    const selectedArea = this.dataset.area;
+                    filterLeadersByArea(evaluatorLeaderSelect, originalEvaluatorOptions, selectedArea);
+                });
+            });
+
+            // Handle leader select changes
+            if (leaderSelect) {
+                leaderSelect.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    if (selectedOption.value && areaSelect && !areaSelect.value) {
+                        const leaderArea = selectedOption.dataset.area;
+                        areaSelect.value = leaderArea;
+                    }
+                });
+            }
+
+            // Initialize sortable for questions
+            const questionsContainer = document.getElementById('questionsContainer');
+            if (questionsContainer) {
+                new Sortable(questionsContainer, {
+                    handle: '.drag-handle',
+                    animation: 150,
+                    onEnd: function() {
+                        console.log('Sortable onEnd triggered - reordering questions');
+
+                        // Get the current order of rows
+                        const rows = Array.from(document.querySelectorAll('#questionsContainer tr'));
+
+                        // Create a new array to hold the reordered questions
+                        const newQuestions = [];
+
+                        // Update question numbers and collect questions in the new order
+                        rows.forEach((row, idx) => {
+                            // Get the original index from the dataset
+                            const oldIndex = parseInt(row.dataset.index);
+                            console.log(`Row ${idx}: old index=${oldIndex}`);
+
+                            // Update the row's index and number
+                            row.dataset.index = idx.toString();
+                            row.querySelector('td:first-child').textContent = (idx + 1).toString();
+
+                            // Add the question to the new array if it exists
+                            if (questions[oldIndex]) {
+                                newQuestions.push(questions[oldIndex]);
+                                console.log(`Added question ID ${questions[oldIndex].id || 0} to new array at position ${idx}`);
+                            }
+                        });
+
+                        // Replace the questions array with the reordered one
+                        questions = newQuestions;
+                        console.log('Questions after reordering:', JSON.stringify(questions));
+
+                        // Update the hidden form inputs
+                        updateQuestionsInput();
+                    }
+                });
+            }
+
+            // Initialize form submission
+            const form = document.getElementById('surveyForm');
+            const saveAndReturnBtn = document.getElementById('saveAndReturnBtn');
+
+            if (saveAndReturnBtn) {
+                saveAndReturnBtn.addEventListener('click', function(event) {
+                    // Set returnToEdit to false when clicking Save & Return
+                    const returnToEditField = document.getElementById('returnToEdit');
+                    if (returnToEditField) {
+                        returnToEditField.value = 'false';
+                    }
+                });
+            }
+
+            if (form && !isViewMode) {
+                form.addEventListener('submit', function(event) {
+                    // Prevent default submission to ensure our code runs first
+                    event.preventDefault();
+
+                    // Log the current state of questions
+                    console.log('Questions before submission:', JSON.stringify(questions));
+
+                    // Check if we have any questions
+                    if (questions.length === 0) {
+                        console.warn('No questions to submit! This will likely cause issues.');
+
+                        // Try to get questions from the DOM as a fallback
+                        const questionRows = document.querySelectorAll('#questionsContainer tr');
+                        console.log(`Found ${questionRows.length} question rows in the DOM`);
+
+                        if (questionRows.length > 0) {
+                            // Rebuild the questions array from the DOM
+                            const rebuiltQuestions = [];
+                            questionRows.forEach((row, idx) => {
+                                const questionText = row.querySelector('td:nth-child(2)').textContent.trim();
+                                const questionType = row.querySelector('td:nth-child(3)').textContent.trim() === 'Yes/No' ? 'yesno' : 'score';
+
+                                // Try to get the question ID from a data attribute or hidden field
+                                let questionId = 0;
+                                const idAttr = row.getAttribute('data-question-id');
+                                if (idAttr) {
+                                    questionId = parseInt(idAttr);
+                                }
+
+                                rebuiltQuestions.push({
+                                    id: questionId,
+                                    text: questionText,
+                                    type: questionType
+                                });
+                            });
+
+                            console.log('Rebuilt questions from DOM:', JSON.stringify(rebuiltQuestions));
+                            questions = rebuiltQuestions;
+                        }
+                    }
+
+                    // Update the JSON textarea with the current questions
+                    const questionsJson = document.getElementById('questionsJson');
+                    if (questionsJson) {
+                        // Make sure the property names match the C# model
+                        const formattedQuestions = questions.map(q => ({
+                            Id: q.id,
+                            Text: q.text,
+                            QuestionType: q.type,
+                            CategoryIds: q.categoryIds || []
+                        }));
+                        questionsJson.value = JSON.stringify(formattedQuestions);
+                        console.log('Questions JSON set to:', questionsJson.value);
+                    } else {
+                        console.error('questionsJson textarea not found!');
+                    }
+
+                    // Now submit the form programmatically
+                    console.log('Submitting form with questions...');
+                    form.submit();
+                });
+            }
+
+            // Initialize questions
+            window.updateQuestionCounter();
+            window.updateQuestionsInput();
+
+            // Also initialize the JSON textarea with the current questions
+            const questionsJson = document.getElementById('questionsJson');
+            if (questionsJson) {
+                // Make sure the property names match the C# model
+                const formattedQuestions = questions.map(q => ({
+                    Id: q.id,
+                    Text: q.text,
+                    QuestionType: q.type,
+                    CategoryIds: q.categoryIds || []
+                }));
+                questionsJson.value = JSON.stringify(formattedQuestions);
+                console.log('Initial questions JSON set to:', questionsJson.value);
+            }
+        });
+    </script>
+
+    <!-- Link to external CSS file for survey editor styles -->
+    <link rel="stylesheet" href="/css/survey-editor.css" />
+}

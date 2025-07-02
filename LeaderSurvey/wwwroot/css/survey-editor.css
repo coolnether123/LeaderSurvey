@@ -1,0 +1,91 @@
+/* Area filter buttons */
+.area-filter-container {
+    margin-bottom: 1rem;
+}
+
+.area-filter-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.area-filter, .evaluator-area-filter {
+    padding: 0.25rem 0.75rem;
+    border: 2px solid transparent;
+    background: none;
+    color: #666;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    position: relative;
+}
+
+.area-filter:hover, .evaluator-area-filter:hover {
+    background-color: #f8f9fa;
+    color: #e51636;
+    border-color: #f8f9fa;
+}
+
+.area-filter.active, .evaluator-area-filter.active {
+    background-color: #e51636;
+    color: white;
+    border-color: #e51636;
+    box-shadow: 0 0 0 2px rgba(229, 22, 54, 0.25);
+}
+
+/* Add a glow effect for the active button */
+.area-filter.active::after, .evaluator-area-filter.active::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border-radius: 6px;
+    border: 1px solid #e51636;
+    pointer-events: none;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 0.3; }
+    100% { opacity: 0.6; }
+}
+
+/* Form elements */
+.form-select {
+    border-color: #dee2e6;
+}
+
+.form-select:focus {
+    border-color: #e51636;
+    box-shadow: 0 0 0 0.25rem rgba(229, 22, 54, 0.25);
+}
+
+/* Area badges */
+.area-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+}
+
+.area-front {
+    background-color: #ffc107; /* Yellow */
+}
+
+.area-drive {
+    background-color: #28a745; /* Green */
+}
+
+.area-kitchen {
+    background-color: #6f42c1; /* Purple */
+}
+
+.area-hospitality {
+    background-color: #007bff; /* Blue */
+}

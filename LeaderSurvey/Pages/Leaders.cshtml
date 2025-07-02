@@ -3,221 +3,534 @@
 @{
     ViewData["Title"] = "Leaders";
 }
+@Html.AntiForgeryToken()
 
-<h2 class="page-title"><i class="bi bi-people-fill"></i> Leaders Management</h2>
-
-<div class="search-container">
-    <i class="bi bi-search search-icon"></i>
-    <input type="text" id="leaderSearch" class="search-input" placeholder="Search leaders by name or area..." onkeyup="filterLeaders()">
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="page-title mb-0"><i class="bi bi-people-fill"></i> Team Management</h2>
 </div>
 
-<div class="table-container">
-    <table class="table table-cfa" id="leadersTable">
-        <thead>
-            <tr>
-                <th>Full Name</th>
-                <th>Work Area</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var leader in Model.Leaders)
-            {
-                <tr>
-                    <td><i class="bi bi-person-circle me-2"></i>@leader.Name</td>
-                    <td>
-                        <span class="badge" style="background-color: var(--primary-color);">@leader.Area</span>
-                    </td>
-                    <td>
-                        <button class="cfa-btn cfa-btn-sm me-1" onclick="editLeader(@leader.Id)">
-                            <i class="bi bi-pencil-square"></i> Edit
-                        </button>
-                        <button class="cfa-btn cfa-btn-sm me-1" onclick="showLeaderDetails(@leader.Id)">
-                            <i class="bi bi-info-circle"></i> Details
-                        </button>
-                        <button class="cfa-btn cfa-btn-sm cfa-btn-outline" 
-                                onclick="deleteLeader(@leader.Id, '@leader.Name')"
-                                style="border-color: #dc3545; color: #dc3545 !important;">
-                            <i class="bi bi-trash"></i> Delete
-                        </button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+<ul class="nav nav-tabs mb-4" id="managementTabs">
+    <li class="nav-item">
+        <a href="?tab=leaders" class="nav-link @(Model.ActiveTab == "leaders" ? "active" : "")" id="leaders-tab">
+            <i class="bi bi-people-fill"></i> Leaders
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="?tab=categories" class="nav-link @(Model.ActiveTab == "categories" ? "active" : "")" id="categories-tab">
+            <i class="bi bi-tags"></i> Categories
+        </a>
+    </li>
+</ul>
 
-    @if (!Model.Leaders.Any())
-    {
-        <div class="alert alert-cfa alert-cfa-primary text-center p-4">
-            <i class="bi bi-info-circle me-2 fs-4"></i>
-            <p class="mb-0">No leaders found. Add a new leader to get started.</p>
-        </div>
+<script>
+    function showLeadersTab() {
+        document.getElementById('leaders-content').style.display = 'block';
+        document.getElementById('categories-content').style.display = 'none';
+        document.getElementById('leaders-tab').classList.add('active');
+        document.getElementById('categories-tab').classList.remove('active');
     }
-</div>
 
-<div class="card mt-4" id="leaderForm">
-    <div class="card-header">
-        <i class="bi bi-person-plus-fill me-1" id="formIcon"></i>
-        <span id="formTitle">Add New Leader</span>
-    </div>
-    <div class="card-body">
-        <form method="post">
-            @Html.AntiForgeryToken()
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label asp-for="NewLeader.Name"></label>
-                        <div class="input-group mb-3">
-                            <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                            <input asp-for="NewLeader.Name" class="form-control" />
-                        </div>
-                        <span asp-validation-for="NewLeader.Name" class="text-danger"></span>
+    function showCategoriesTab() {
+        document.getElementById('categories-content').style.display = 'block';
+        document.getElementById('leaders-content').style.display = 'none';
+        document.getElementById('categories-tab').classList.add('active');
+        document.getElementById('leaders-tab').classList.remove('active');
+    }
+
+    // Execute the appropriate function based on the active tab
+    document.addEventListener('DOMContentLoaded', function() {
+        const activeTab = '@Model.ActiveTab';
+        console.log('Initializing with active tab:', activeTab);
+
+        // Force the correct tab to be visible
+        if (activeTab === 'leaders') {
+            showLeadersTab();
+        } else if (activeTab === 'categories') {
+            showCategoriesTab();
+        } else {
+            // Default to leaders tab if no tab is specified
+            showLeadersTab();
+        }
+    });
+</script>
+
+<div class="tab-content" id="managementTabsContent" style="display: block !important;">
+    <!-- Leaders Tab Content -->
+    <div class="tab-pane @(Model.ActiveTab == "leaders" ? "show active" : "")" id="leaders-content" role="tabpanel" aria-labelledby="leaders-tab" style="display: @(Model.ActiveTab == "leaders" ? "block" : "none") !important;">
+        <div class="container">
+            <div class="filters-section">
+                <div class="d-flex gap-3 align-items-center">
+                    <div class="filter-group">
+                        <select id="areaFilter" class="cfa-select" aria-label="Filter by area">
+                            <option value="">All Areas</option>
+                            <option value="Drive">Drive</option>
+                            <option value="Front">Front</option>
+                            <option value="Kitchen">Kitchen</option>
+                            <option value="Hospitality">Hospitality</option>
+                        </select>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label asp-for="NewLeader.Area"></label>
-                        <div class="input-group mb-3">
-                            <span class="input-group-text"><i class="bi bi-geo-alt-fill"></i></span>
-                            <select asp-for="NewLeader.Area" class="form-select">
-                                <option value="">-- Select Work Area --</option>
-                                <option value="Drive">Drive</option>
-                                <option value="Front">Front</option>
-                                <option value="Hospitality">Hospitality</option>
-                                <option value="Kitchen">Kitchen</option>
-                            </select>
-                        </div>
-                        <span asp-validation-for="NewLeader.Area" class="text-danger"></span>
+                    <div class="filter-group">
+                        <button id="sortToggle" class="cfa-btn" onclick="toggleSort()">
+                            <i class="bi bi-sort-alpha-down"></i> Sort A-Z
+                        </button>
+                    </div>
+                    <div class="ms-auto">
+                        <button class="cfa-btn" onclick="showAddLeaderModal()">
+                            <i class="bi bi-person-plus-fill"></i> Add New Leader
+                        </button>
                     </div>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary">Save</button>
-        </form>
+
+            <div class="table-responsive">
+                <table id="leadersTable" class="table table-cfa">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Area</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Leaders != null && Model.Leaders.Any())
+                        {
+                            @foreach (var leader in Model.Leaders)
+                            {
+                                <tr data-id="@leader.Id">
+                                    <td>@leader.Name</td>
+                                    <td>
+                                        <span class="badge area-badge area-@leader.Area.ToLower()">@leader.Area</span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn btn-sm btn-outline-primary me-2" onclick="editLeader(@leader.Id)">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteLeader(@leader.Id, '@leader.Name')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Categories Tab Content -->
+    <div class="tab-pane @(Model.ActiveTab == "categories" ? "show active" : "")" id="categories-content" role="tabpanel" aria-labelledby="categories-tab" style="display: @(Model.ActiveTab == "categories" ? "block" : "none") !important;">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div></div> <!-- Empty div for spacing -->
+                <button type="button" class="cfa-btn cfa-btn-primary" onclick="showCategoryModal()">
+                    <i class="bi bi-plus-circle"></i> Create New Category
+                </button>
+            </div>
+
+            <div class="row">
+                @foreach (var category in Model.Categories)
+                {
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="category-card" data-category-id="@category.Id">
+                            <div class="category-header d-flex justify-content-between align-items-center">
+                                <h5 class="category-name mb-0">@category.Name</h5>
+                                <div class="category-actions">
+                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editCategory(@category.Id, '@category.Name', '@category.Description')">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(@category.Id, '@category.Name')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="category-description mt-2">
+                                @category.Description
+                            </div>
+                            <div class="category-stats mt-3">
+                                <div class="stat-item">
+                                    <span class="stat-label">Questions:</span>
+                                    <span class="stat-value question-count" id="question-count-@category.Id">@(Model.CategoryQuestionCounts.ContainsKey(category.Id) ? Model.CategoryQuestionCounts[category.Id] : 0)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
     </div>
 </div>
 
-@if (!string.IsNullOrEmpty(Model.StatusMessage))
-{
-    <div class="alert @(Model.StatusMessage.Contains("successfully") ? "alert-cfa-success" : "alert-cfa-danger") alert-dismissible fade show" role="alert">
-        <i class="bi @(Model.StatusMessage.Contains("successfully") ? "bi-check-circle" : "bi-exclamation-circle") me-2"></i>
-        @Model.StatusMessage
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+<!-- Category Modal -->
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="categoryModalLabel">Create New Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="categoryForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="categoryId" value="0">
+                    <div class="mb-3">
+                        <label for="categoryName" class="form-label">Category Name</label>
+                        <input type="text" class="form-control" id="categoryName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="categoryDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="categoryDescription" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveCategory()">Save</button>
+            </div>
+        </div>
     </div>
+</div>
+
+<!-- Delete Confirmation Modal for Categories -->
+<div class="modal fade" id="deleteCategoryModal" tabindex="-1" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteCategoryModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the category "<span id="deleteCategoryName"></span>"?</p>
+                <p class="text-danger">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Leader Modal -->
+<div class="modal fade" id="leaderModal" tabindex="-1" aria-labelledby="leaderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="leaderModalLabel">Add New Leader</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="leaderForm" class="needs-validation" novalidate>
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="leaderId" name="Id" />
+                    <div class="mb-3">
+                        <label for="Name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="Name" name="NewLeader.Name" required>
+                        <div class="invalid-feedback">Please enter the leader's name.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="Area" class="form-label">Area</label>
+                        <select class="form-control" id="Area" name="NewLeader.Area" required>
+                            <option value="">Select Area</option>
+                            <option value="Front">Front</option>
+                            <option value="Drive">Drive</option>
+                            <option value="Kitchen">Kitchen</option>
+                            <option value="Hospitality">Hospitality</option>
+                        </select>
+                        <div class="invalid-feedback">Please select an area.</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="leaderForm" class="btn btn-primary">Save Leader</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/categories.css" />
+    <style>
+        /* Fix for tab content visibility */
+        .tab-content {
+            display: block !important;
+        }
+        .tab-pane.active {
+            display: block !important;
+        }
+        .tab-pane {
+            transition: opacity 0.15s linear;
+        }
+        .tab-pane.show {
+            opacity: 1;
+        }
+
+        /* Custom tab styling */
+        #managementTabs {
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        #managementTabs .nav-link {
+            color: #495057;
+            background-color: transparent;
+            border: 1px solid transparent;
+            border-top-left-radius: 0.25rem;
+            border-top-right-radius: 0.25rem;
+            padding: 0.5rem 1rem;
+            margin-bottom: -1px;
+            text-decoration: none;
+        }
+
+        #managementTabs .nav-link:hover {
+            border-color: #e9ecef #e9ecef #dee2e6;
+        }
+
+        #managementTabs .nav-link.active {
+            color: #495057;
+            background-color: #fff;
+            border-color: #dee2e6 #dee2e6 #fff;
+        }
+    </style>
 }
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/categories.js"></script>
     <script>
-        function editLeader(id) {
-            // Set form for editing mode
-            document.getElementById('formTitle').innerText = 'Edit Leader';
-            document.getElementById('formIcon').className = 'bi bi-pencil-square me-1';
-            document.getElementById('saveText').innerText = 'Update Leader';
-            document.getElementById('leaderId').value = id;
-            
-            // Find the leader data from the table
-            const table = document.getElementById('leadersTable');
-            const rows = table.getElementsByTagName('tr');
-            
-            for (let i = 1; i < rows.length; i++) {
-                const cells = rows[i].getElementsByTagName('td');
-                if (rows[i].getAttribute('data-id') == id || cells[2].innerHTML.includes('onclick="editLeader(' + id + ')"')) {
-                    // Extract name (remove the icon)
-                    const nameText = cells[0].innerText;
-                    document.getElementById('leaderName').value = nameText;
-                    
-                    // Extract area
-                    const areaText = cells[1].innerText.trim();
-                    document.getElementById('leaderArea').value = areaText;
-                    
-                    break;
-                }
-            }
-            
-            // Scroll to the form
-            document.getElementById('leaderForm').scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        function resetForm() {
-            document.getElementById('formTitle').innerText = 'Add New Leader';
-            document.getElementById('formIcon').className = 'bi bi-person-plus-fill me-1';
-            document.getElementById('saveText').innerText = 'Save New Leader';
-            document.getElementById('leaderId').value = '0';
-            document.getElementById('leaderName').value = '';
-            document.getElementById('leaderArea').value = '';
-        }
-        
-        function showLeaderDetails(id) {
-            // Find the leader in the table and show details
-            // This could be enhanced to show a modal with more details
-            alert('Details functionality will be implemented soon.');
-        }
-        
-        function deleteLeader(id, name) {
-            if (confirm('Are you sure you want to delete leader "' + name + '"? This action cannot be undone.')) {
-                window.location.href = '/Leaders?handler=Delete&id=' + id;
-            }
-        }
-        
-        function filterLeaders() {
-            const input = document.getElementById('leaderSearch');
-            const filter = input.value.toUpperCase();
-            const table = document.getElementById('leadersTable');
-            const tr = table.getElementsByTagName('tr');
-            
-            for (let i = 1; i < tr.length; i++) {
-                const nameCol = tr[i].getElementsByTagName('td')[0];
-                const areaCol = tr[i].getElementsByTagName('td')[1];
-                
-                if (nameCol && areaCol) {
-                    const nameText = nameCol.textContent || nameCol.innerText;
-                    const areaText = areaCol.textContent || areaCol.innerText;
-                    
-                    if (nameText.toUpperCase().indexOf(filter) > -1 || areaText.toUpperCase().indexOf(filter) > -1) {
-                        tr[i].style.display = '';
-                    } else {
-                        tr[i].style.display = 'none';
-                    }
-                }
-            }
-        }
-        
-        // Event listeners
+        let leaderModal;
+        let isAscending = true;
+
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('resetBtn').addEventListener('click', resetForm);
-            
-            // Form validation
-            const form = document.querySelector('.needs-validation');
-            form.addEventListener('submit', function(event) {
+            leaderModal = new bootstrap.Modal(document.getElementById('leaderModal'));
+            setupFilters();
+
+            // No need for tab initialization since we're using regular links with page reloads
+            console.log('Active tab:', '@Model.ActiveTab');
+
+            // Make sure the correct content is visible on page load
+            const activeTab = '@Model.ActiveTab';
+            if (activeTab === 'leaders') {
+                showLeadersTab();
+            } else if (activeTab === 'categories') {
+                showCategoriesTab();
+            }
+
+            const form = document.getElementById('leaderForm');
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
                 if (!form.checkValidity()) {
-                    event.preventDefault();
-                    event.stopPropagation();
+                    form.classList.add('was-validated');
+                    return;
                 }
-                
-                form.classList.add('was-validated');
-                
-                // Check if leader with same name exists (for edit mode)
-                if (form.checkValidity()) {
+
+                try {
                     const leaderId = document.getElementById('leaderId').value;
-                    const leaderName = document.getElementById('leaderName').value;
-                    
-                    // Only check for duplicates in add mode
-                    if (leaderId === '0') {
-                        const table = document.getElementById('leadersTable');
-                        const rows = table.getElementsByTagName('tr');
-                        
-                        for (let i = 1; i < rows.length; i++) {
-                            const nameCell = rows[i].getElementsByTagName('td')[0];
-                            if (nameCell && nameCell.innerText.trim() === leaderName) {
-                                if (!confirm('A leader with the name "' + leaderName + '" already exists. Do you want to create another leader with the same name?')) {
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                }
-                                break;
-                            }
-                        }
+                    const name = document.getElementById('Name').value.trim();
+                    const area = document.getElementById('Area').value.trim();
+
+                    if (!name || !area) {
+                        showNotification('Name and Area are required', 'error');
+                        return;
                     }
+
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                    // Determine if this is an edit or a new leader
+                    const isEdit = leaderId !== '';
+                    const url = isEdit ? '?handler=Update' : '?handler=Post';
+
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        },
+                        body: JSON.stringify({
+                            leader: {
+                                id: isEdit ? parseInt(leaderId) : 0,
+                                name: name,
+                                area: area
+                            }
+                        })
+                    });
+
+                    const responseData = await response.json();
+                    console.log('Response data:', responseData);
+
+                    if (responseData.success) {
+                        if (isEdit) {
+                            // Update existing row
+                            const row = document.querySelector(`tr[data-id="${leaderId}"]`);
+                            row.innerHTML = `
+                                <td>${name}</td>
+                                <td><span class="badge area-badge area-${area.toLowerCase()}">${area}</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-sm btn-outline-primary me-2" onclick="editLeader(${leaderId})">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteLeader(${leaderId}, '${name}')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            `;
+                        } else {
+                            // Add new row
+                            const tbody = document.querySelector('#leadersTable tbody');
+                            const newRow = document.createElement('tr');
+                            newRow.dataset.id = responseData.id;
+                            newRow.innerHTML = `
+                                <td>${responseData.name}</td>
+                                <td><span class="badge area-badge area-${responseData.area.toLowerCase()}">${responseData.area}</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-sm btn-outline-primary me-2" onclick="editLeader(${responseData.id})">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteLeader(${responseData.id}, '${responseData.name}')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            `;
+                            tbody.appendChild(newRow);
+                        }
+
+                        // Reset form and close modal
+                        form.reset();
+                        form.classList.remove('was-validated');
+                        leaderModal.hide();
+
+                        showNotification(`Leader ${isEdit ? 'updated' : 'added'} successfully`, 'success');
+                    } else {
+                        showNotification(responseData.message || `Failed to ${isEdit ? 'update' : 'save'} leader`, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showNotification('An error occurred while processing the leader', 'error');
                 }
             });
+        });
+
+        function showAddLeaderModal() {
+            document.getElementById('leaderModalLabel').textContent = 'Add New Leader';
+            document.getElementById('leaderForm').reset();
+            document.getElementById('leaderId').value = '';
+            leaderModal.show();
+        }
+
+        function editLeader(id) {
+            const row = document.querySelector(`tr[data-id="${id}"]`);
+            const name = row.cells[0].textContent;
+            const area = row.cells[1].querySelector('.badge').textContent;
+
+            document.getElementById('leaderModalLabel').textContent = 'Edit Leader';
+            document.getElementById('leaderId').value = id;
+            document.getElementById('Name').value = name;
+            document.getElementById('Area').value = area;
+
+            leaderModal.show();
+        }
+
+        function deleteLeader(id, name) {
+            if (confirm(`Are you sure you want to delete ${name}?`)) {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                fetch(`?handler=Delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ id: id })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        document.querySelector(`tr[data-id="${id}"]`).remove();
+                        showNotification('Leader deleted successfully', 'success');
+                    } else {
+                        showNotification(data.message || 'Error deleting leader', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Error deleting leader', 'error');
+                });
+            }
+        }
+
+        function setupFilters() {
+            const areaFilter = document.getElementById('areaFilter');
+            const rows = document.querySelectorAll('#leadersTable tbody tr');
+
+            areaFilter.addEventListener('change', function() {
+                filterTable();
+            });
+        }
+
+        function toggleSort() {
+            isAscending = !isAscending;
+            const button = document.getElementById('sortToggle');
+            button.innerHTML = isAscending ?
+                '<i class="bi bi-sort-alpha-down"></i> Sort A-Z' :
+                '<i class="bi bi-sort-alpha-up"></i> Sort Z-A';
+
+            sortTable();
+        }
+
+        function sortTable() {
+            const tbody = document.querySelector('#leadersTable tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+
+            rows.sort((a, b) => {
+                const nameA = a.querySelector('td').textContent.trim().toLowerCase();
+                const nameB = b.querySelector('td').textContent.trim().toLowerCase();
+                return isAscending ?
+                    nameA.localeCompare(nameB) :
+                    nameB.localeCompare(nameA);
+            });
+
+            // Clear the table body
+            tbody.innerHTML = '';
+
+            // Add sorted rows back
+            rows.forEach(row => tbody.appendChild(row));
+
+            // Apply current area filter after sorting
+            filterTable();
+        }
+
+        function filterTable() {
+            const selectedArea = document.getElementById('areaFilter').value.toLowerCase();
+            const rows = document.querySelectorAll('#leadersTable tbody tr');
+
+            rows.forEach(row => {
+                const areaCell = row.querySelector('.area-badge');
+                const rowArea = areaCell.textContent.toLowerCase();
+
+                if (!selectedArea || rowArea === selectedArea) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Initialize filters and sorting when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setupFilters();
         });
     </script>
 }

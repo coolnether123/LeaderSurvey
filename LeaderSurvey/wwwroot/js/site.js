@@ -1,9 +1,25 @@
 // Site JavaScript
-function navigateTo(url) {
-    // Add a loading state to the body
-    document.body.classList.add('navigating');
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show notification-toast`;
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
     
-    // Perform the navigation
+    // Add to container or body
+    const container = document.getElementById('notification-container') || document.body;
+    container.appendChild(notification);
+
+    // Auto dismiss after 5 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 150);
+    }, 5000);
+}
+
+function navigateTo(url) {
+    document.body.classList.add('navigating');
     window.location.href = url;
 }
 
@@ -16,6 +32,14 @@ function applyScrollbarPadding() {
     document.documentElement.style.setProperty('--scrollbar-width', `${scrollbarWidth}px`);
 }
 
+function saveMenuState(isOpen) {
+    localStorage.setItem('menuState', isOpen ? 'open' : 'closed');
+}
+
+function getMenuState() {
+    return localStorage.getItem('menuState') === 'open';
+}
+
 // Toggle hamburger menu
 function toggleMenu() {
     const hamburgerMenu = document.querySelector('.hamburger-menu');
@@ -26,9 +50,12 @@ function toggleMenu() {
     hamburgerMenu.classList.toggle('open');
     sidebarMenu.classList.toggle('open');
     menuOverlay.classList.toggle('open');
-
+    
     // Toggle menu-open class on body
     document.body.classList.toggle('menu-open');
+    
+    // Save the menu state
+    saveMenuState(hamburgerMenu.classList.contains('open'));
     
     // Toggle side-menu-active class on html element
     document.documentElement.classList.toggle('side-menu-active');
@@ -123,57 +150,8 @@ function setupSidebarNavigation() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Calculate scrollbar width and set CSS variable
-    applyScrollbarPadding();
-    
-    // Add resize listener
-    window.addEventListener('resize', applyScrollbarPadding);
-    
-    // Setup hamburger menu first to ensure it's initialized properly
-    const hamburgerMenu = document.querySelector('.hamburger-menu');
-    if (hamburgerMenu) {
-        hamburgerMenu.addEventListener('click', toggleMenu);
-        // Add a pulsating effect to draw attention to the menu button on first load
-        setTimeout(() => {
-            hamburgerMenu.classList.add('pulse-attention');
-            setTimeout(() => {
-                hamburgerMenu.classList.remove('pulse-attention');
-            }, 2000);
-        }, 500);
-        closeMenuOnOverlayClick();
-        setActiveMenuItem();
-    }
-
-    // Add table hover class to all tables
-    const tables = document.querySelectorAll('table');
-    tables.forEach(table => {
-        table.classList.add('table-hover');
-    });
-
-    // Add confirmation to delete buttons that don't already have it
-    const deleteLinks = document.querySelectorAll('a[href*="Delete"]');
-    deleteLinks.forEach(link => {
-        if (!link.hasAttribute('onclick')) {
-            link.setAttribute('onclick', 'return confirm("Are you sure you want to delete this item?")');
-        }
-    });
-
-    // Add animation to cards
-    const cards = document.querySelectorAll('.card');
-    cards.forEach(card => {
-        card.addEventListener('mouseenter', function () {
-            this.style.transform = 'translateY(-5px)';
-            this.style.boxShadow = '0 0.5rem 1rem rgba(0, 0, 0, 0.15)';
-        });
-
-        card.addEventListener('mouseleave', function () {
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = '0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)';
-        });
-    });
-
     // Add click events to navigation buttons
-    const navigationButtons = document.querySelectorAll('.navigation-button, .cfa-btn');
+    const navigationButtons = document.querySelectorAll('.navigation-button, .cfa-btn, .nav-item');
     navigationButtons.forEach(button => {
         button.addEventListener('click', function (e) {
             const url = this.getAttribute('href');
@@ -184,31 +162,108 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // The hamburger menu has already been initialized at the top of the function
+    // Add table hover class to all tables
+    const tables = document.querySelectorAll('table');
+    tables.forEach(table => {
+        table.classList.add('table-hover');
+    });
+
+    // Add confirmation to delete buttons
+    const deleteLinks = document.querySelectorAll('a[href*="Delete"]');
+    deleteLinks.forEach(link => {
+        if (!link.hasAttribute('onclick')) {
+            link.setAttribute('onclick', 'return confirm("Are you sure you want to delete this item?")');
+        }
+    });
 
     // Setup form validation
     setupFormValidation();
+});
 
-    // Initialize toggle switches if any
-    const toggleSwitches = document.querySelectorAll('.toggle-switch input');
-    toggleSwitches.forEach(toggle => {
-        toggle.addEventListener('change', function () {
-            const targetId = this.getAttribute('data-target');
-            if (targetId) {
-                const target = document.getElementById(targetId);
-                if (target) {
-                    if (this.checked) {
-                        target.style.display = 'block';
-                    } else {
-                        target.style.display = 'none';
-                    }
-                }
-            }
-        });
-        // Trigger change event to initialize state
-        toggle.dispatchEvent(new Event('change'));
+// Question handling
+let questionCount = 0;
+
+function addQuestion() {
+    if (questionCount >= 10) {
+        alert("Maximum of 10 questions reached!");
+        return;
+    }
+
+    questionCount++;
+    updateQuestionCounter();
+
+    const questionItem = document.createElement('div');
+    questionItem.className = 'question-item d-flex align-items-center';
+    questionItem.innerHTML = `
+        <i class="bi bi-grip-vertical question-drag-handle"></i>
+        <div class="question-number">${questionCount}</div>
+        <div class="flex-grow-1">
+            <input type="text" class="form-control mb-2" placeholder="Enter your question here..." required>
+            <select class="question-type-select">
+                <option value="yesno">Yes/No</option>
+                <option value="score">Score (0-10)</option>
+            </select>
+        </div>
+        <button class="cfa-btn cfa-btn-sm cfa-btn-outline ms-3" onclick="deleteQuestion(this)">
+            <i class="bi bi-trash"></i>
+        </button>
+        <div class="my-pleasure">My Pleasure!</div>
+    `;
+
+    document.getElementById('questions-container').appendChild(questionItem);
+    initializeSortable();
+}
+
+function deleteQuestion(button) {
+    if (confirm('Are you sure you would like to delete this question?')) {
+        const questionItem = button.closest('.question-item');
+        const myPleasure = questionItem.querySelector('.my-pleasure');
+        
+        // Show "My Pleasure!" message
+        myPleasure.style.opacity = '1';
+        
+        // Add deleting animation class
+        questionItem.classList.add('deleting');
+        
+        // Remove after animation
+        setTimeout(() => {
+            questionItem.remove();
+            questionCount--;
+            updateQuestionCounter();
+            renumberQuestions();
+        }, 500);
+    }
+}
+
+function updateQuestionCounter() {
+    document.getElementById('question-counter').textContent = `${questionCount}/10`;
+}
+
+function renumberQuestions() {
+    const questions = document.querySelectorAll('.question-number');
+    questions.forEach((question, index) => {
+        question.textContent = index + 1;
     });
+}
 
-    // Add the sidebar navigation setup
-    setupSidebarNavigation();
+function initializeSortable() {
+    new Sortable(document.getElementById('questions-container'), {
+        animation: 150,
+        handle: '.question-drag-handle',
+        ghostClass: 'sortable-ghost',
+        onEnd: renumberQuestions
+    });
+}
+
+// Input validation for score type
+document.addEventListener('input', function(e) {
+    if (e.target.matches('.number-input')) {
+        let value = parseInt(e.target.value);
+        if (isNaN(value)) {
+            e.target.value = '';
+        } else {
+            value = Math.min(10, Math.max(0, value));
+            e.target.value = value;
+        }
+    }
 });
