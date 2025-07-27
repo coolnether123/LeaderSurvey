@@ -37,6 +37,7 @@ namespace LeaderSurvey.Pages
         public SelectList LeaderSelectList { get; set; } = default!;
         public SelectList AreaSelectList { get; set; } = default!;
         public List<QuestionCategory> Categories { get; set; } = new();
+        public List<SurveyResponse> SurveyResponses { get; set; } = new();
 
         public class InputModel
         {
@@ -237,6 +238,21 @@ namespace LeaderSurvey.Pages
                 // Define the four valid areas
                 var areas = new[] { "Front", "Drive", "Kitchen", "Hospitality" };
                 AreaSelectList = new SelectList(areas);
+
+                // Load survey responses if in view mode
+                if (IsViewMode)
+                {
+                    _logger.LogInformation($"Loading survey responses for survey ID {id}");
+                    SurveyResponses = await _context.SurveyResponses
+                        .Where(sr => sr.SurveyId == id)
+                        .Include(sr => sr.Leader)
+                        .Include(sr => sr.Answers)
+                        .ThenInclude(a => a.Question)
+                        .OrderByDescending(sr => sr.CompletionDate)
+                        .ToListAsync();
+
+                    _logger.LogInformation($"Loaded {SurveyResponses.Count} survey responses");
+                }
 
                 return Page();
             }

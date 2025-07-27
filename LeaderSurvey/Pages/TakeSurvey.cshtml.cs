@@ -42,46 +42,8 @@ namespace LeaderSurvey.Pages
                 return NotFound();
             }
 
-            SurveyId = surveyId.Value;
-            var survey = await _context.Surveys
-                .Include(s => s.Questions)
-                .Include(s => s.Leader)
-                .Include(s => s.EvaluatorLeader)
-                .FirstOrDefaultAsync(s => s.Id == surveyId);
-
-            if (survey == null)
-            {
-                return NotFound();
-            }
-
-            // Check if survey is already completed
-            if (survey.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase))
-            {
-                StatusMessage = "This survey has already been completed. You cannot take it again.";
-                return RedirectToPage("./Surveys");
-            }
-
-            Survey = survey;
-            Questions = [.. Survey.Questions.OrderBy(q => q.QuestionOrder)];
-
-            // Only show the leader assigned to the survey
-            if (survey.LeaderId.HasValue && survey.Leader != null)
-            {
-                var leadersList = new List<Leader> { survey.Leader };
-                LeaderList = new SelectList(leadersList, "Id", "Name");
-                SelectedLeaderId = survey.LeaderId.Value;
-            }
-            else
-            {
-                // Fallback to showing leaders in the same area if no leader is assigned
-                var leaders = await _context.Leaders
-                    .Where(l => l.Area == survey.Area)
-                    .OrderBy(l => l.Name)
-                    .ToListAsync();
-                LeaderList = new SelectList(leaders, "Id", "Name");
-            }
-
-            return Page();
+            // Redirect to the public-facing survey page
+            return RedirectToPage("/PublicTakeSurvey", new { surveyId = surveyId.Value });
         }
 
         public async Task<IActionResult> OnPostAsync()
