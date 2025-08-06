@@ -198,12 +198,15 @@ function updateScoreValue(questionId, value) {
         const numValue = parseInt(value);
         valueDisplay.className = 'badge px-3 py-2';
 
-        if (numValue >= 8) {
-            valueDisplay.classList.add('bg-success');
-        } else if (numValue >= 4) {
-            valueDisplay.classList.add('bg-primary');
+        if (numValue >= 8 && numValue <= 10) {
+            valueDisplay.classList.add('bg-success'); // Green for 8-10
+        } else if (numValue >= 5 && numValue <= 7) {
+            valueDisplay.classList.add('bg-warning'); // Yellow for 5-7
+        } else if (numValue >= 1 && numValue <= 4) {
+            valueDisplay.classList.add('bg-danger'); // Red for 1-4
         } else {
-            valueDisplay.classList.add('bg-danger');
+            // For 0 or invalid values, use a neutral color
+            valueDisplay.classList.add('bg-secondary');
         }
     }
 }

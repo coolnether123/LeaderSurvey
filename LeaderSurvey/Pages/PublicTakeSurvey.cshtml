@@ -19,6 +19,10 @@
         <h2 class="h3 text-primary">
             <i class="bi bi-check2-square"></i> @Model.Survey.Name
         </h2>
+        @if (!string.IsNullOrEmpty(Model.Survey?.Description))
+        {
+            <p class="text-muted mb-2">@Model.Survey.Description</p>
+        }
         <p class="text-muted">Please complete all questions below</p>
     </div>
 }

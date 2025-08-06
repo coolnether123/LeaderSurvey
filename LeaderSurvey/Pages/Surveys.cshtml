@@ -140,9 +140,17 @@
                             <a href="/TakeSurvey?surveyId=@survey.Id" class="cfa-btn cfa-btn-sm me-1 @(survey.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase) ? "disabled" : "")" style="background-color: #28a745; color: white;" @(survey.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase) ? "aria-disabled='true'" : "")>
                                 <i class="bi bi-check2-square"></i> Take Survey
                             </a>
-                            <a href="/EditSurvey?id=@survey.Id&viewMode=true" class="cfa-btn cfa-btn-sm me-1">
+                            @if (survey.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <button class="cfa-btn cfa-btn-sm me-1"
+                                        onclick="reEnableSurvey(@survey.Id, '@survey.Name.Replace("'", "\'")')"
+                                        style="background-color: #ffc107; color: black;">
+                                    <i class="bi bi-arrow-clockwise"></i> Re-enable
+                                </button>
+                            }
+                            <button class="cfa-btn cfa-btn-sm me-1" onclick="viewSurvey(@survey.Id)">
                                 <i class="bi bi-eye"></i> View
-                            </a>
+                            </button>
                             <a href="/EditSurvey?id=@survey.Id" class="cfa-btn cfa-btn-sm me-1">
                                 <i class="bi bi-pencil-square"></i> Edit
                             </a>
@@ -195,9 +203,54 @@
 
 <!-- The modal viewer has been replaced with direct page navigation to EditSurvey -->
 
+<!-- Modal for viewing survey details -->
+<div class="modal fade" id="viewSurveyModal" tabindex="-1" aria-labelledby="viewSurveyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewSurveyModalLabel">Survey Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Content will be loaded here dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/surveys.js"></script>
+    <script>
+        function viewSurvey(surveyId) {
+            fetch(`/Surveys?handler=SurveyDetails&id=${surveyId}`)
+                .then(response => response.json())
+                .then(data => {
+                    let modalBody = document.querySelector('#viewSurveyModal .modal-body');
+                    let html = `<h5>${data.survey.name}</h5>`;
+                    html += `<p>${data.survey.description}</p>`;
+                    html += `<p><strong>Leader:</strong> ${data.survey.leader.name}</p>`;
+
+                    data.responses.forEach(response => {
+                        html += `<h6>Response from ${new Date(response.completionDate).toLocaleString()}</h6>`;
+                        html += '<ul>';
+                        response.answers.forEach(answer => {
+                            let question = data.survey.questions.find(q => q.id === answer.questionId);
+                            let category = question.categoryMappings[0]?.category?.name || 'Uncategorized';
+                            html += `<li><strong>${question.text} (${category}):</strong> ${answer.response}</li>`;
+                        });
+                        html += '</ul>';
+                        if(response.additionalNotes) {
+                            html += `<p><strong>Additional Notes:</strong> ${response.additionalNotes}</p>`;
+                        }
+                    });
+
+                    modalBody.innerHTML = html;
+                    var modal = new bootstrap.Modal(document.getElementById('viewSurveyModal'));
+                    modal.show();
+                });
+        }
+    </script>
 }
 
 @section Styles {

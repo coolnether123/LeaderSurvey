@@ -1,5 +1,5 @@
-# Use Windows-compatible .NET 8.0 SDK image
-FROM mcr.microsoft.com/dotnet/sdk:8.0-nanoserver-1809 AS build
+# Use Linux-compatible .NET 8.0 SDK image
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /app
 
 # Copy project and restore
@@ -11,7 +11,7 @@ COPY . ./
 RUN dotnet publish LeaderSurvey/LeaderSurvey.csproj -c Release -o /app/out
 
 # Final runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-nanoserver-1809 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS runtime
 WORKDIR /app
 
 # Copy published files

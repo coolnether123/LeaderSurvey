@@ -61,17 +61,53 @@ async function deleteSurvey(id, name) {
     }
 }
 
-// These functions are no longer used - we now use direct links in the HTML
-// Keeping the function signatures for backward compatibility
-function viewSurvey(id) {
-    console.log('viewSurvey is deprecated - using direct links now');
-    window.location.href = `/EditSurvey?id=${id}&viewMode=true`;
+// Re-enable Survey Function
+async function reEnableSurvey(id, name) {
+    if (!confirm(`Are you sure you want to re-enable the survey "${name}"? This will allow it to be taken again.`)) {
+        return;
+    }
+
+    try {
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        const response = await fetch('?handler=ReEnable', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': token
+            },
+            body: JSON.stringify({ id: id })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showNotification('Survey re-enabled successfully', 'success');
+
+            // Update the survey in our arrays
+            const updateSurveyInArray = (surveys) => {
+                const survey = surveys.find(s => s.id === id);
+                if (survey) {
+                    survey.status = 'Active';
+                    survey.completedDate = null;
+                }
+            };
+
+            updateSurveyInArray(allSurveys);
+            updateSurveyInArray(filteredSurveys);
+
+            // Update the table display
+            updateSurveyTable();
+        } else {
+            showNotification(result.message || 'Failed to re-enable survey', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('An error occurred while re-enabling the survey', 'error');
+    }
 }
 
-function editSurvey(id) {
-    console.log('editSurvey is deprecated - using direct links now');
-    window.location.href = `/EditSurvey?id=${id}`;
-}
+
 
 function showSurveyViewer() {
     const viewer = document.getElementById('surveyViewer');
@@ -389,6 +425,12 @@ function updateSurveyTable() {
                 <a href="/TakeSurvey?surveyId=${survey.id}" class="cfa-btn cfa-btn-sm me-1 ${survey.status.toLowerCase() === 'completed' ? 'disabled' : ''}" style="background-color: #28a745; color: white;" ${survey.status.toLowerCase() === 'completed' ? 'aria-disabled="true"' : ''}>
                     <i class="bi bi-check2-square"></i> Take Survey
                 </a>
+                ${survey.status.toLowerCase() === 'completed' ?
+                    `<button class="cfa-btn cfa-btn-sm me-1"
+                            onclick="reEnableSurvey(${survey.id}, '${survey.name.replace(/'/g, "\\'")}')"
+                            style="background-color: #ffc107; color: black;">
+                        <i class="bi bi-arrow-clockwise"></i> Re-enable
+                    </button>` : ''}
                 <a href="/EditSurvey?id=${survey.id}&viewMode=true" class="cfa-btn cfa-btn-sm me-1">
                     <i class="bi bi-eye"></i> View
                 </a>
@@ -413,14 +455,16 @@ function cycleSortColumn(column) {
 
     // Determine next sort direction
     if (currentSortColumn === column) {
-        // Same column - cycle through: none -> asc -> desc -> none
-        if (currentSortDirection === '') {
-            direction = 'asc';
-        } else if (currentSortDirection === 'asc') {
+        // Same column - cycle through: asc -> desc -> none (unsorted)
+        if (currentSortDirection === 'asc') {
             direction = 'desc';
-        } else {
+        } else if (currentSortDirection === 'desc') {
+            // Clear sorting - show original order
             direction = '';
             currentSortColumn = '';
+            currentSortDirection = '';
+        } else {
+            direction = 'asc';
         }
     } else {
         // Different column - start with ascending
@@ -428,11 +472,30 @@ function cycleSortColumn(column) {
     }
 
     if (direction === '') {
-        // Reset to default sort (date desc)
-        sortTable('date', 'desc');
+        // Clear sorting - reset to original order without any sorting
+        clearSorting();
     } else {
         sortTable(column, direction);
     }
+}
+
+function clearSorting() {
+    // Reset sort state
+    currentSortColumn = '';
+    currentSortDirection = '';
+
+    // Update visual indicators
+    updateSortIndicators('', '');
+
+    // Reset to original order (by date descending as default)
+    filteredSurveys.sort((a, b) => {
+        const dateA = a.monthYear ? new Date(a.monthYear + '-01') : new Date(0);
+        const dateB = b.monthYear ? new Date(b.monthYear + '-01') : new Date(0);
+        return dateB - dateA; // Descending order
+    });
+
+    // Update the table display
+    updateSurveyTable();
 }
 
 function sortTable(column, direction) {

@@ -64,6 +64,13 @@
                                 <label class="form-label fw-bold">Survey Name:</label>
                                 <p>@Model.Survey?.Name</p>
                             </div>
+                            @if (!string.IsNullOrEmpty(Model.Survey?.Description))
+                            {
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Description:</label>
+                                    <p>@Model.Survey.Description</p>
+                                </div>
+                            }
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Area:</label>
                                 <p><span class="badge area-badge area-@(Model.Survey?.Area?.ToLower() ?? "")">@(Model.Survey?.Area ?? "Not specified")</span></p>
@@ -167,14 +174,14 @@
                                         <div class="score-buttons-container">
                                             <div class="d-flex justify-content-between align-items-center mb-2">
                                                 <span class="text-muted">Low</span>
-                                                <span class="badge bg-primary px-3 py-2" id="scoreValue_@question.Id">5</span>
+                                                <span class="badge bg-warning px-3 py-2" id="scoreValue_@question.Id">5</span>
                                                 <span class="text-muted">High</span>
                                             </div>
                                             <div class="score-buttons">
                                                 @for (int i = 0; i <= 10; i++)
                                                 {
                                                     <input type="radio" class="btn-check" name="Answers[@question.Id]" id="score_@(question.Id)_@i" value="@i" autocomplete="off" @(i == 5 ? "checked" : "")>
-                                                    <label class="btn score-btn @(i <= 3 ? "btn-outline-danger" : i <= 7 ? "btn-outline-primary" : "btn-outline-success")"
+                                                    <label class="btn score-btn @(i == 0 ? "btn-outline-secondary" : i >= 1 && i <= 4 ? "btn-outline-danger" : i >= 5 && i <= 7 ? "btn-outline-warning" : "btn-outline-success")"
                                                            for="score_@(question.Id)_@i" onclick="updateScoreValue(@question.Id, @i)">
                                                         @i
                                                     </label>

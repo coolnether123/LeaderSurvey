@@ -89,3 +89,103 @@
 .area-hospitality {
     background-color: #007bff; /* Blue */
 }
+
+
+/* Question card styling */
+.question-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    transition: box-shadow 0.2s ease;
+}
+
+.question-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.question-header {
+    background-color: #f8f9fa;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.question-text {
+    font-weight: 600;
+    color: #333;
+}
+
+.question-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.question-body {
+    padding: 1rem;
+}
+
+.question-type-badge {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+}
+
+/* Category selection */
+.category-select-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.category-select {
+    flex-grow: 1;
+    color: black !important;
+}
+
+.category-badge {
+    display: inline-block;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 500;
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+/* Add question button */
+.add-question-btn {
+    background-color: #e51636;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.add-question-btn:hover {
+    background-color: #c8142f;
+}
+
+/* Save survey button */
+.save-survey-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+}
+
+.save-survey-btn:hover {
+    background-color: #218838;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .area-filter-buttons {
+        flex-wrap: wrap;
+    }
+}

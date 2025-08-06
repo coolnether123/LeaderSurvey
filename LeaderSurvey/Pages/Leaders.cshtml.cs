@@ -14,6 +14,34 @@ using System.Linq;
 
 namespace LeaderSurvey.Pages
 {
+    // Input models for type safety
+    public class LeaderInputModel
+    {
+        [Required(ErrorMessage = "Leader name is required")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Work area is required")]
+        public string Area { get; set; } = string.Empty;
+    }
+
+    public class LeaderUpdateInputModel
+    {
+        [Required]
+        public int Id { get; set; }
+
+        [Required(ErrorMessage = "Leader name is required")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Work area is required")]
+        public string Area { get; set; } = string.Empty;
+    }
+
+    public class LeaderDeleteInputModel
+    {
+        [Required]
+        public int Id { get; set; }
+    }
+
     public class LeadersModel : PageModel
     {
         private readonly ApplicationDbContext _context;
@@ -88,29 +116,11 @@ namespace LeaderSurvey.Pages
             }
         }
 
-        public async Task<IActionResult> OnPostAsync([FromBody] JsonElement body)
+        public async Task<IActionResult> OnPostAsync([FromBody] LeaderInputModel input)
         {
             try
             {
-                // Extract the values from the JSON body
-                var leaderData = body.GetProperty("leader");  // Changed from "newLeader" to "leader"
-                var name = leaderData.GetProperty("name").GetString()?.Trim();
-                var area = leaderData.GetProperty("area").GetString()?.Trim();
-
-                // Clear existing ModelState errors
-                ModelState.Clear();
-
                 // Validate the input
-                if (string.IsNullOrWhiteSpace(name))
-                {
-                    ModelState.AddModelError("NewLeader.Name", "Leader name is required");
-                }
-                if (string.IsNullOrWhiteSpace(area))
-                {
-                    ModelState.AddModelError("NewLeader.Area", "Work area is required");
-                }
-
-                // Check if the model is valid
                 if (!ModelState.IsValid)
                 {
                     var errors = string.Join(", ", ModelState.Values
@@ -124,7 +134,7 @@ namespace LeaderSurvey.Pages
 
                 // Check for existing leader
                 var existingLeader = await _context.Leaders
-                    .FirstOrDefaultAsync(l => l.Name.ToLower() == name.ToLower());
+                    .FirstOrDefaultAsync(l => l.Name.ToLower() == input.Name.ToLower());
 
                 if (existingLeader != null)
                 {
@@ -137,8 +147,8 @@ namespace LeaderSurvey.Pages
                 // Create and save the new leader
                 var leader = new Leader
                 {
-                    Name = name,
-                    Area = area
+                    Name = input.Name,
+                    Area = input.Area
                 };
 
                 _context.Leaders.Add(leader);
@@ -160,12 +170,19 @@ namespace LeaderSurvey.Pages
             }
         }
 
-        public async Task<IActionResult> OnPostDeleteAsync([FromBody] JsonElement body)
+        public async Task<IActionResult> OnPostDeleteAsync([FromBody] LeaderDeleteInputModel input)
         {
             try
             {
-                var id = body.GetProperty("id").GetInt32();
-                var leader = await _context.Leaders.FindAsync(id);
+                if (!ModelState.IsValid)
+                {
+                    return new JsonResult(new {
+                        success = false,
+                        message = "Invalid input"
+                    });
+                }
+
+                var leader = await _context.Leaders.FindAsync(input.Id);
 
                 if (leader == null)
                 {
@@ -176,7 +193,7 @@ namespace LeaderSurvey.Pages
                 }
 
                 // Optional: Check if leader has any associated surveys
-                var hasAssociatedSurveys = await _context.Surveys.AnyAsync(s => s.LeaderId == id);
+                var hasAssociatedSurveys = await _context.Surveys.AnyAsync(s => s.LeaderId == input.Id);
                 if (hasAssociatedSurveys)
                 {
                     return new JsonResult(new {
@@ -202,24 +219,22 @@ namespace LeaderSurvey.Pages
             }
         }
 
-        public async Task<IActionResult> OnPostUpdateAsync([FromBody] JsonElement body)
+        public async Task<IActionResult> OnPostUpdateAsync([FromBody] LeaderUpdateInputModel input)
         {
             try
             {
-                var leaderData = body.GetProperty("leader");
-                var id = leaderData.GetProperty("id").GetInt32();
-                var name = leaderData.GetProperty("name").GetString()?.Trim();
-                var area = leaderData.GetProperty("area").GetString()?.Trim();
-
-                if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(area))
+                if (!ModelState.IsValid)
                 {
+                    var errors = string.Join(", ", ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage));
                     return new JsonResult(new {
                         success = false,
-                        message = "Name and Area are required"
+                        message = errors
                     });
                 }
 
-                var leaderToUpdate = await _context.Leaders.FindAsync(id);
+                var leaderToUpdate = await _context.Leaders.FindAsync(input.Id);
                 if (leaderToUpdate == null)
                 {
                     return new JsonResult(new {
@@ -230,7 +245,7 @@ namespace LeaderSurvey.Pages
 
                 // Check if the new name conflicts with another leader (excluding the current leader)
                 var existingLeader = await _context.Leaders
-                    .FirstOrDefaultAsync(l => l.Id != id && l.Name.ToLower() == name.ToLower());
+                    .FirstOrDefaultAsync(l => l.Id != input.Id && l.Name.ToLower() == input.Name.ToLower());
 
                 if (existingLeader != null)
                 {
@@ -240,8 +255,8 @@ namespace LeaderSurvey.Pages
                     });
                 }
 
-                leaderToUpdate.Name = name;
-                leaderToUpdate.Area = area;
+                leaderToUpdate.Name = input.Name;
+                leaderToUpdate.Area = input.Area;
 
                 await _context.SaveChangesAsync();
 
@@ -256,7 +271,7 @@ namespace LeaderSurvey.Pages
             {
                 return new JsonResult(new {
                     success = false,
-                    message = $"Failed to update leader: {ex.Message}"
+                    message = $"Error updating leader: {ex.Message}"
                 });
             }
         }

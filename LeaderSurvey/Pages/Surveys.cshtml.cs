@@ -159,5 +159,69 @@ namespace LeaderSurvey.Pages
             }
             return RedirectToPage();
         }
+
+        public async Task<IActionResult> OnPostReEnableAsync([FromBody] System.Text.Json.JsonElement body)
+        {
+            try
+            {
+                var id = body.GetProperty("id").GetInt32();
+                var survey = await _context.Surveys.FindAsync(id);
+
+                if (survey == null)
+                {
+                    return new JsonResult(new { success = false, message = "Survey not found" });
+                }
+
+                // Reset the survey status to Active and clear completion date
+                survey.Status = "Active";
+                survey.CompletedDate = null;
+
+                await _context.SaveChangesAsync();
+
+                return new JsonResult(new { success = true, message = "Survey re-enabled successfully" });
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new { success = false, message = $"Error re-enabling survey: {ex.Message}" });
+            }
+        }
+
+        public async Task<IActionResult> OnGetSurveyDetailsAsync(int id)
+        {
+            var survey = await _context.Surveys
+                .Include(s => s.Leader)
+                .Include(s => s.EvaluatorLeader)
+                .Include(s => s.Questions)
+                    .ThenInclude(q => q.CategoryMappings)
+                        .ThenInclude(cm => cm.Category)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (survey == null)
+            {
+                return NotFound();
+            }
+
+            var surveyResponses = await _context.SurveyResponses
+                .Include(sr => sr.Answers)
+                .Where(sr => sr.SurveyId == id)
+                .ToListAsync();
+
+            var responseData = new
+            {
+                survey,
+                responses = surveyResponses.Select(sr => new
+                {
+                    completionDate = sr.CompletionDate,
+                    additionalNotes = sr.AdditionalNotes,
+                    answers = sr.Answers.Select(a => new
+                    {
+                        questionId = a.QuestionId,
+                        response = a.Response
+                    })
+                })
+            };
+
+            return new JsonResult(responseData);
+        }
     }
 }
