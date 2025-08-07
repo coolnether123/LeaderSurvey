@@ -1,28 +1,30 @@
-# Use Linux-compatible .NET 8.0 SDK image
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy solution and project files
+COPY ["LeaderSurvey.sln", "./"]
+COPY ["LeaderSurvey/LeaderSurvey.csproj", "LeaderSurvey/"]
+
+# Restore dependencies
+RUN dotnet restore "LeaderSurvey.sln"
+
+# Copy the rest of the application files
+COPY . .
+
+# Publish the application
+WORKDIR "/src/LeaderSurvey"
+RUN dotnet publish "LeaderSurvey.csproj" -c Release -o /app/publish
+
+# Final stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 
-# Copy project and restore
-COPY LeaderSurvey/*.csproj ./LeaderSurvey/
-RUN dotnet restore LeaderSurvey/LeaderSurvey.csproj
+# Copy the published application
+COPY --from=build /app/publish . 
 
-# Copy everything else and publish
-COPY . ./
-RUN dotnet publish LeaderSurvey/LeaderSurvey.csproj -c Release -o /app/out
+# Create a non-root user
+RUN adduser -u 1000 --disabled-password --gecos "" appuser && chown -R appuser /app
 
-# Final runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS runtime
-WORKDIR /app
+USER appuser
 
-# Copy published files
-COPY --from=build /app/out/ ./
-
-# Expose the ports the app will run on
-EXPOSE 80
-EXPOSE 8080
-
-# Environment variable for ASP.NET Core
-ENV ASPNETCORE_URLS=http://+:80;http://+:8080
-
-# Start the application
-ENTRYPOINT ["dotnet", "LeaderSurvey.dll"]
+ENTRYPOINT ["sh", "-c", "sleep 5 && dotnet LeaderSurvey.dll"]

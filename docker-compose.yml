@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: leadersurvey-db
+    environment:
+      POSTGRES_DB: leadersurvey
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Armchair4-Afar-Kitten
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: LeaderSurvey/Dockerfile
+    container_name: leadersurvey-app
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db;Database=leadersurvey;Username=postgres;Password=Armchair4-Afar-Kitten
+
+volumes:
+  postgres_data:
