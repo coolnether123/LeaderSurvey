@@ -10,6 +10,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 
 namespace LeaderSurvey.Pages
@@ -50,25 +51,29 @@ namespace LeaderSurvey.Pages
         {
             _context = context;
             Leaders = new List<Leader>();
-            NewLeader = new InputModel { Name = "", Area = "" };
+            NewLeader = new();
             Categories = new List<QuestionCategory>();
             CategoryQuestionCounts = new Dictionary<int, int>();
         }
 
+        [ValidateNever]
         public required List<Leader> Leaders { get; set; }
 
         [BindProperty]
-        public required InputModel NewLeader { get; set; }
+        [ValidateNever]
+        public InputModel? NewLeader { get; set; }
 
         [BindProperty]
-        public Leader SelectedLeader { get; set; } = default!;
+        [ValidateNever]
+        public Leader? SelectedLeader { get; set; } = default!;
 
         public List<QuestionCategory> Categories { get; set; }
         public Dictionary<int, int> CategoryQuestionCounts { get; set; }
 
         // Active tab ("leaders" or "categories")
         [BindProperty(SupportsGet = true)]
-        public string ActiveTab { get; set; } = "leaders";
+        [ValidateNever]
+        public string? ActiveTab { get; set; } = "leaders";
 
         public class InputModel
         {
@@ -120,16 +125,14 @@ namespace LeaderSurvey.Pages
         {
             try
             {
-                // Validate the input
-                if (!ModelState.IsValid)
+                // Validate just the DTO, not the whole PageModel
+                ModelState.Clear();
+                if (!TryValidateModel(input))
                 {
                     var errors = string.Join(", ", ModelState.Values
                         .SelectMany(v => v.Errors)
                         .Select(e => e.ErrorMessage));
-                    return new JsonResult(new {
-                        success = false,
-                        message = errors
-                    });
+                    return new JsonResult(new { success = false, message = errors });
                 }
 
                 // Check for existing leader
@@ -174,12 +177,13 @@ namespace LeaderSurvey.Pages
         {
             try
             {
-                if (!ModelState.IsValid)
+                ModelState.Clear();
+                if (!TryValidateModel(input))
                 {
-                    return new JsonResult(new {
-                        success = false,
-                        message = "Invalid input"
-                    });
+                    var errors = string.Join(", ", ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage));
+                    return new JsonResult(new { success = false, message = errors });
                 }
 
                 var leader = await _context.Leaders.FindAsync(input.Id);
@@ -223,15 +227,13 @@ namespace LeaderSurvey.Pages
         {
             try
             {
-                if (!ModelState.IsValid)
+                ModelState.Clear();
+                if (!TryValidateModel(input))
                 {
                     var errors = string.Join(", ", ModelState.Values
                         .SelectMany(v => v.Errors)
                         .Select(e => e.ErrorMessage));
-                    return new JsonResult(new {
-                        success = false,
-                        message = errors
-                    });
+                    return new JsonResult(new { success = false, message = errors });
                 }
 
                 var leaderToUpdate = await _context.Leaders.FindAsync(input.Id);

@@ -1,8 +1,11 @@
 using LeaderSurvey.Data;
-using LeaderSurvey.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using Microsoft.Extensions.Logging;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
+using System.Security.Claims;
+
+// Ensure Npgsql uses modern timestamp behavior globally.
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", false);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,19 +18,22 @@ builder.Services.AddRazorPages()
     });
 
 // Configure the DbContext
-// This will automatically use the connection string from environment variables on Cloud Run
-// and fall back to appsettings.json for local development.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString,
-        x => x.SetPostgresVersion(9, 6)
-    ));
 
-// Add Swagger/OpenAPI (Optional, but useful for testing APIs)
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    // Correct configuration for latest Npgsql on .NET 8
+    options.UseNpgsql(connectionString, o =>
+    {
+        o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+    });
+});
+
+// Add Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Listen on the port specified by the PORT environment variable for containerized environments
+// Listen on the port specified by the PORT environment variable
 var port = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrWhiteSpace(port))
 {
@@ -36,48 +42,57 @@ if (!string.IsNullOrWhiteSpace(port))
 
 var app = builder.Build();
 
-// Initialize the database
-using (var scope = app.Services.CreateScope())
+// ---- MIGRATION/SEED JOB MODE ----
+if (Environment.GetEnvironmentVariable("MIGRATE_ONLY") == "true")
 {
+    using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
-    try
-    {
-        var context = services.GetRequiredService<ApplicationDbContext>();
-        await DbInitializer.InitializeAsync(context);
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database.");
-    }
+    var db = services.GetRequiredService<ApplicationDbContext>();
+
+    Console.WriteLine("Applying EF Core migrations...");
+    await db.Database.MigrateAsync();
+    Console.WriteLine("Migrations complete. Seeding...");
+    await DbInitializer.InitializeAsync(db);  // safe to call here
+    Console.WriteLine("Seeding complete. Exiting.");
+    return; // don't start Kestrel
 }
+
+// ---- NORMAL WEB STARTUP (non-blocking, no crashes) ----
+var ready = true; // flip this if you add other long inits
+app.MapGet("/healthz", () => ready ? Results.Ok("ok") : Results.StatusCode(503));
+
+// OPTIONAL: do seeding in background if you really need it at runtime
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    _ = Task.Run(async () =>
+    {
+        try
+        {
+            using var scope = app.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await DbInitializer.InitializeAsync(db);  // idempotent seed recommended
+            Console.WriteLine("Background seed complete.");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Background seed failed: {ex}");
+            // don't crash the container
+        }
+    });
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-
-    // TODO: REMOVE IN PRODUCTION - Development only admin access
-    app.Use(async (context, next) =>
-    {
-        var identity = new ClaimsIdentity(new[]
-        {
-            new Claim(ClaimTypes.Role, "Admin"),
-            new Claim(ClaimTypes.Name, "TestAdmin"),
-            new Claim(ClaimTypes.NameIdentifier, "test-admin-id")
-        }, "TestAuthType");
-
-        context.User = new ClaimsPrincipal(identity);
-        await next();
-    });
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles(); // Serve static files (CSS, JS, etc.)
+app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthorization();
 app.MapControllers();
-app.MapRazorPages(); // Map Razor Pages endpoints
+app.MapRazorPages();
 
 app.Run();

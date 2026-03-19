@@ -27,4 +27,4 @@ RUN adduser -u 1000 --disabled-password --gecos "" appuser && chown -R appuser /
 
 USER appuser
 
-ENTRYPOINT ["sh", "-c", "sleep 5 && dotnet LeaderSurvey.dll"]
+ENTRYPOINT ["dotnet", "LeaderSurvey.dll"]

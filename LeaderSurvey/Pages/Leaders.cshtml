@@ -342,6 +342,20 @@
                     // Determine if this is an edit or a new leader
                     const isEdit = leaderId !== '';
                     const url = isEdit ? '?handler=Update' : '?handler=Post';
+                    
+                    let body;
+                    if (isEdit) {
+                        body = JSON.stringify({
+                            id: parseInt(leaderId),
+                            name: name,
+                            area: area
+                        });
+                    } else {
+                        body = JSON.stringify({
+                            name: name,
+                            area: area
+                        });
+                    }
 
                     const response = await fetch(url, {
                         method: 'POST',
@@ -349,13 +363,7 @@
                             'Content-Type': 'application/json',
                             'RequestVerificationToken': token
                         },
-                        body: JSON.stringify({
-                            leader: {
-                                id: isEdit ? parseInt(leaderId) : 0,
-                                name: name,
-                                area: area
-                            }
-                        })
+                        body: body
                     });
 
                     const responseData = await response.json();
